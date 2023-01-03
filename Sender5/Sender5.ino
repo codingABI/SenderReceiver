@@ -22,7 +22,7 @@
  * - Control LED (blinks every 8 seconds) which can be enabled/disabled by a physical jumper J8
  *
  * Current consumption (messured on J6) 
- * - 28uA in deep sleep (5uA from HT7333 idle current)
+ * - 28uA in deep sleep (5uA is HT7333 idle current)
  * - 5mA after wake up
  * - 120mA while sending via LoRa
  *
