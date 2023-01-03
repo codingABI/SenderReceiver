@@ -6,7 +6,7 @@
  * will also be sent.
  *
  * License: 2-Clause BSD License
- * Copyright (c) 2022 codingABI
+ * Copyright (c) 2023 codingABI
  * For details see: License.txt
  * 
  * External code: 
