@@ -1,7 +1,7 @@
 /*
  * Project: Sender5 (Ding15)
  * Description:
- * Sends the magnetic switch state in my mailbox and battery state triggered 
+ * Sends the magnetic reed-switch state in my mailbox and battery state triggered 
  * by switch change via LoRa to a receiver. Additionally once per day the current states 
  * will also be sent.
  *
@@ -18,7 +18,7 @@
  * - HT7333 Voltag regulator
  * - Lora SX1278 Ra-02
  * - 18650 Battery with integrated protection against deep discharge
- * - Magnetic switch "normaly closed" with external pullup resistor (2M)
+ * - Magnetic reed-switch "normaly closed" with external pullup resistor (2M)
  * - Control LED (blinks every 8 seconds) which can be enabled/disabled by a physical jumper J8
  *
  * Current consumption (messured on J6) 
@@ -39,7 +39,7 @@
 #include <avr/wdt.h> 
  
 #define LED_PIN 5 // Alive LED (momentary on while sending or 8 seconds on when Lora init fails)
-#define SENSW_PIN 3 // Magnatic switch "normaly closed" with external pullup resistor
+#define SENSW_PIN 3 // Magnetic reed-switch "normaly closed" with external pullup resistor
 #define NSS_PIN 10 // Lora NSS
 #define RST_PIN 9 // Lora RST
 #define DIO0_PIN 2 // Lora IRQ
