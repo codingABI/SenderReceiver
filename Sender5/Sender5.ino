@@ -186,8 +186,6 @@ void loop() {
 
   LoRa.beginPacket();  
   LoRa.print(sendData);
-  LoRa.print(" ");
-  LoRa.print(Switch);
   LoRa.endPacket();
   
   SERIALDEBUG.println("End LoRa sending");
