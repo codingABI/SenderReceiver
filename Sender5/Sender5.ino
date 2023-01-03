@@ -110,7 +110,6 @@ void pciSetup(byte pin) {
   PCICR |= bit(digitalPinToPCICRbit(pin)); // Enable interrupt for group
 }
 
-
 void setup() {
   SERIALDEBUG.begin(115200);
 
@@ -137,7 +136,6 @@ void setup() {
     while (1);
   }
   LoRa.setSyncWord(0xA5); // ranges from 0-0xFF, default 0x34, see API docs
-
   
   delay(1000);
 }
