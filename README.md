@@ -14,7 +14,7 @@ Hardware:
 
 [Arduino-Sketch](/Sender5/Sender5.ino)
 
-![Schema](assets/images/Sender5/Schema.png)
+![Schematic](assets/images/Sender5/Schematic.png)
 ![Perfboard frontside](assets/images/Sender5/PerfboardFrontside.jpg)
 ![Perfboard backside](assets/images/Sender5/PerfboardBackside.jpg)
 ![Components](assets/images/Sender5/Components.jpg)
