@@ -2,11 +2,11 @@
 <!-- Created with Fritzing (https://fritzing.org/) -->
 
 <svg
-   viewBox="0 0 623.02801 302.00543"
+   viewBox="0 0 501.61281 302.00543"
    version="1.2"
    x="0in"
    height="4.19452in"
-   width="8.6531668in"
+   width="6.9668446in"
    y="0in"
    id="svg7285"
    sodipodi:docname="Schema.svg"
@@ -28,18 +28,18 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="in"
      showgrid="false"
-     inkscape:zoom="1.6199774"
-     inkscape:cx="336.42445"
-     inkscape:cy="200.62009"
+     inkscape:zoom="3.0116834"
+     inkscape:cx="267.62441"
+     inkscape:cy="324.40329"
      inkscape:window-width="1920"
      inkscape:window-height="974"
      inkscape:window-x="-11"
      inkscape:window-y="-11"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg7285" />
+     inkscape:current-layer="schematicframe" />
   <g
      id="watermark"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        id="g5508">
       <g
@@ -88,184 +88,176 @@
     </g>
   </g>
   <g
-     partID="872872990"
-     id="g5536"
-     transform="translate(-119.11204,-0.72155373)">
-    <g
-       transform="translate(326.555,227.266)"
-       id="g5534">
-      <g
-         id="schematicframe">
-        <rect
-           x="0.14399999"
-           height="52.127998"
-           stroke-width="0.288"
-           width="153.68401"
-           stroke="#000000"
-           fill="none"
-           y="0.14399999"
-           id="rect5511" />
-        <rect
-           x="0.14399999"
-           height="52.127998"
-           stroke-width="0.288"
-           width="153.68401"
-           stroke="#000000"
-           fill="none"
-           y="0.14399999"
-           id="rect5513" />
-        <text
-           id="descr"
-           text-anchor="left"
-           x="3.78"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#000000"
-           font-size="5.1588px"
-           y="7.9200001">Interrupt driven switch sensor with LoRa sender</text>
-        <text
-           id="descr+"
-           text-anchor="left"
-           x="3.78"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#000000"
-           font-size="5.1588px"
-           y="15.912" />
-        <line
-           y2="19.908001"
-           x2="153.972"
-           y1="19.908001"
-           stroke-width="0.192002"
-           stroke="#000000"
-           x1="0"
-           fill="none"
-           id="line5517" />
-        <text
-           id="project label"
-           x="3.78"
-           stroke-width="0"
-           stroke="none"
-           fill="#666666"
-           font-family="'Droid Sans'"
-           font-size="5.1588px"
-           y="27.288">Projekt</text>
-        <text
-           id="project"
-           text-anchor="left"
-           x="31.968"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#000000"
-           font-size="6.876px"
-           y="27.648001">Sender 5</text>
-        <line
-           y2="30.708"
-           x2="153.972"
-           y1="30.708"
-           stroke-width="0.288"
-           stroke="#000000"
-           x1="0"
-           fill="none"
-           id="line5521" />
-        <text
-           id="filename label"
-           x="3.78"
-           stroke-width="0"
-           stroke="none"
-           fill="#666666"
-           font-family="'Droid Sans'"
-           font-size="5.1588px"
-           y="37.98">Dateiname</text>
-        <text
-           id="filename"
-           text-anchor="left"
-           x="31.968"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#000000"
-           font-size="5.1588px"
-           y="37.98">Sender5.fzz</text>
-        <text
-           id="rev label"
-           text-anchor="left"
-           x="112.428"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#666666"
-           font-size="5.1588px"
-           y="37.98">Revision</text>
-        <text
-           id="rev"
-           text-anchor="left"
-           x="129.60001"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#000000"
-           font-size="5.1588px"
-           y="37.98">2</text>
-        <line
-           y2="41.580002"
-           x2="153.972"
-           y1="41.580002"
-           stroke-width="0.288"
-           stroke="#000000"
-           x1="0"
-           fill="none"
-           id="line5527" />
-        <text
-           id="date label"
-           text-anchor="left"
-           x="3.78"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#666666"
-           font-size="5.1588px"
-           y="48.492001">Datum</text>
-        <text
-           id="date"
-           text-anchor="left"
-           x="31.968"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#000000"
-           font-size="5.1588px"
-           y="48.779999">26 Dez 2022 10:07:31</text>
-        <text
-           id="sheet label"
-           text-anchor="left"
-           x="112.428"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#666666"
-           font-size="5.1588px"
-           y="49.5">Blatt</text>
-        <text
-           id="sheet"
-           text-anchor="left"
-           x="129.60001"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#000000"
-           font-size="5.1588px"
-           y="49.5">1/1</text>
-      </g>
-    </g>
+     id="schematicframe"
+     transform="translate(86.02779,226.54445)">
+    <rect
+       x="0.14399999"
+       height="52.127998"
+       stroke-width="0.288"
+       width="153.68401"
+       stroke="#000000"
+       fill="none"
+       y="0.14399999"
+       id="rect5511" />
+    <rect
+       x="0.14399999"
+       height="52.127998"
+       stroke-width="0.288"
+       width="153.68401"
+       stroke="#000000"
+       fill="none"
+       y="0.14399999"
+       id="rect5513" />
+    <text
+       id="descr"
+       text-anchor="left"
+       x="3.78"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#000000"
+       font-size="5.1588px"
+       y="7.9200001">Interrupt driven switch sensor with LoRa sender</text>
+    <text
+       id="descr+"
+       text-anchor="left"
+       x="3.78"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#000000"
+       font-size="5.1588px"
+       y="15.912" />
+    <line
+       y2="19.908001"
+       x2="153.972"
+       y1="19.908001"
+       stroke-width="0.192002"
+       stroke="#000000"
+       x1="0"
+       fill="none"
+       id="line5517" />
+    <text
+       id="project label"
+       x="3.78"
+       stroke-width="0"
+       stroke="none"
+       fill="#666666"
+       font-family="'Droid Sans'"
+       font-size="5.1588px"
+       y="27.288">Projekt</text>
+    <text
+       id="project"
+       text-anchor="left"
+       x="31.968"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#000000"
+       font-size="6.876px"
+       y="27.648001">Sender 5</text>
+    <line
+       y2="30.708"
+       x2="153.972"
+       y1="30.708"
+       stroke-width="0.288"
+       stroke="#000000"
+       x1="0"
+       fill="none"
+       id="line5521" />
+    <text
+       id="filename label"
+       x="3.78"
+       stroke-width="0"
+       stroke="none"
+       fill="#666666"
+       font-family="'Droid Sans'"
+       font-size="5.1588px"
+       y="37.98">Dateiname</text>
+    <text
+       id="filename"
+       text-anchor="left"
+       x="31.968"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#000000"
+       font-size="5.1588px"
+       y="37.98">Sender5.fzz</text>
+    <text
+       id="rev label"
+       text-anchor="left"
+       x="112.428"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#666666"
+       font-size="5.1588px"
+       y="37.98">Revision</text>
+    <text
+       id="rev"
+       text-anchor="left"
+       x="132.60001"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#000000"
+       font-size="5.1588px"
+       y="37.98">2</text>
+    <line
+       y2="41.580002"
+       x2="153.972"
+       y1="41.580002"
+       stroke-width="0.288"
+       stroke="#000000"
+       x1="0"
+       fill="none"
+       id="line5527" />
+    <text
+       id="date label"
+       text-anchor="left"
+       x="3.78"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#666666"
+       font-size="5.1588px"
+       y="48.492001">Datum</text>
+    <text
+       id="date"
+       text-anchor="left"
+       x="31.968"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#000000"
+       font-size="5.1588px"
+       y="48.779999">26 Dez 2022 10:07:31</text>
+    <text
+       id="sheet label"
+       text-anchor="left"
+       x="112.428"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#666666"
+       font-size="5.1588px"
+       y="49.5">Blatt</text>
+    <text
+       id="sheet"
+       text-anchor="left"
+       x="129.60001"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#000000"
+       font-size="5.1588px"
+       y="49.5">1/1</text>
   </g>
   <g
      partID="872422900"
      id="g5613"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(539.136,215.651)"
        id="g5611">
@@ -289,7 +281,7 @@
           <g
              id="g5550">
             <polygon
-               points="9.9,7.416 13.5,7.416 9.9,14.616 6.3,7.416 "
+               points="9.9,14.616 6.3,7.416 9.9,7.416 13.5,7.416 "
                fill="#ffffff"
                id="polygon5546" />
             <path
@@ -363,7 +355,7 @@
           <g
              id="connector1terminal">
             <polygon
-               points="9.901,0.216 9.9,0.216 9.901,0.216 "
+               points="9.901,0.216 9.9,0.216 "
                fill="none"
                id="polygon5585" />
           </g>
@@ -408,7 +400,7 @@
   <g
      partID="872386310"
      id="g5646"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(654.532,58.1424)"
        id="g5644">
@@ -564,7 +556,7 @@
   <g
      partID="872456030"
      id="g5664"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(546.574,79.7584)"
        id="g5662">
@@ -628,7 +620,7 @@
   <g
      partID="872743970"
      id="g5679"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(496.629,25.7496)"
        id="g5677">
@@ -679,7 +671,7 @@
   <g
      partID="872705980"
      id="g5697"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(603.676,212.951)"
        id="g5695">
@@ -730,7 +722,7 @@
   <g
      partID="872652580"
      id="g5715"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(691.03,198.55)"
        id="g5713">
@@ -781,7 +773,7 @@
   <g
      partID="872597120"
      id="g5733"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(691.03,133.75)"
        id="g5731">
@@ -832,7 +824,7 @@
   <g
      partID="872577550"
      id="g5751"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(654.076,112.151)"
        id="g5749">
@@ -883,7 +875,7 @@
   <g
      partID="872573940"
      id="g5767"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(532.152,111.674)"
        id="g5765">
@@ -930,7 +922,7 @@
   <g
      partID="872553010"
      id="g5783"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(481.752,140.474)"
        id="g5781">
@@ -977,7 +969,7 @@
   <g
      partID="872522200"
      id="g5799"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(337.752,183.674)"
        id="g5797">
@@ -1024,7 +1016,7 @@
   <g
      partID="872510940"
      id="g5815"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(452.952,147.674)"
        id="g5813">
@@ -1071,7 +1063,7 @@
   <g
      partID="872504750"
      id="g5831"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(409.752,140.474)"
        id="g5829">
@@ -1118,7 +1110,7 @@
   <g
      partID="872495790"
      id="g5847"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(366.552,147.674)"
        id="g5845">
@@ -1165,7 +1157,7 @@
   <g
      partID="872486230"
      id="g5863"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(337.752,126.074)"
        id="g5861">
@@ -1212,7 +1204,7 @@
   <g
      partID="872773080"
      id="g5880"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(496.58,68.932)"
        id="g5878">
@@ -1258,7 +1250,7 @@
   <g
      partID="872710340"
      id="g5898"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(574.926,25.7688)"
        id="g5896">
@@ -1304,7 +1296,7 @@
   <g
      partID="872660770"
      id="g5914"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(654.571,198.977)"
        id="g5912">
@@ -1346,7 +1338,7 @@
   <g
      partID="872587470"
      id="g5932"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(682.926,112.169)"
        id="g5930">
@@ -1392,7 +1384,7 @@
   <g
      partID="872583380"
      id="g5950"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(525.38,112.132)"
        id="g5948">
@@ -1438,7 +1430,7 @@
   <g
      partID="872551470"
      id="g5966"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(481.771,90.9776)"
        id="g5964">
@@ -1480,7 +1472,7 @@
   <g
      partID="872528590"
      id="g5982"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(337.734,154.923)"
        id="g5980">
@@ -1522,7 +1514,7 @@
   <g
      partID="872513220"
      id="g5998"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(452.971,90.9776)"
        id="g5996">
@@ -1564,7 +1556,7 @@
   <g
      partID="872316820"
      id="g6026"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(337.774,173.358)"
        id="g6024">
@@ -1676,7 +1668,7 @@
   <g
      partID="872425920"
      id="g6052"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(546.532,173.342)"
        id="g6050">
@@ -1784,7 +1776,7 @@
   <g
      partID="872214970"
      id="g6080"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(514.161,32.9712)"
        id="g6078">
@@ -1896,7 +1888,7 @@
   <g
      partID="872203430"
      id="g6108"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(348.545,112.171)"
        id="g6106">
@@ -2008,7 +2000,7 @@
   <g
      partID="872202040"
      id="g6136"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(337.732,122.942)"
        id="g6134">
@@ -2120,7 +2112,7 @@
   <g
      partID="872184820"
      id="g6212"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(697.732,137.342)"
        id="g6210">
@@ -2516,7 +2508,7 @@
   <g
      partID="872184780"
      id="g6298"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(697.732,202.142)"
        id="g6296">
@@ -2912,7 +2904,7 @@
   <g
      partID="872184660"
      id="g6492"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(553.753,54.5504)"
        id="g6490">
@@ -4150,237 +4142,222 @@
   <g
      partID="872186840"
      id="g6550"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
+    <rect
+       x="402.552"
+       height="21.599899"
+       stroke-width="0"
+       width="28.8001"
+       stroke="none"
+       fill="#ffffff"
+       class="interior rect"
+       y="104.95"
+       id="rect6494" />
+    <line
+       y2="126.5499"
+       x2="431.3522"
+       y1="126.5499"
+       stroke-width="0.900002"
+       stroke="#000000"
+       x1="402.552"
+       class="other"
+       stroke-linecap="round"
+       id="line6498" />
+    <line
+       y2="104.95"
+       x2="431.3522"
+       y1="126.5499"
+       stroke-width="0.900002"
+       stroke="#000000"
+       x1="431.3522"
+       class="other"
+       stroke-linecap="round"
+       id="line6500" />
+    <line
+       y2="104.95"
+       x2="402.552"
+       y1="104.95"
+       stroke-width="0.900002"
+       stroke="#000000"
+       x1="431.3522"
+       class="other"
+       stroke-linecap="round"
+       id="line6502" />
+    <line
+       y2="126.5499"
+       x2="402.552"
+       y1="104.95"
+       stroke-width="0.900002"
+       stroke="#000000"
+       x1="402.552"
+       class="other"
+       stroke-linecap="round"
+       id="line6504" />
+    <line
+       id="line6506"
+       connectorname="IN"
+       y2="112.14998"
+       x2="402.552"
+       y1="112.14998"
+       stroke-width="0.7"
+       stroke="#787878"
+       x1="395.35199"
+       class="pin"
+       stroke-linecap="round" />
     <g
-       transform="translate(395.002,104.374)"
-       id="g6548">
+       id="g6508"
+       x="0.35"
+       height="0.000283464"
+       stroke-width="0"
+       width="0.000283465"
+       stroke="none"
+       fill="none"
+       class="terminal"
+       y="7.77598"
+       transform="translate(395.002,104.374)" />
+    <text
+       text-anchor="middle"
+       x="398.952"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#8c8c8c"
+       class="text"
+       font-size="2.50001px"
+       y="111.09997"
+       id="text6510">2</text>
+    <text
+       text-anchor="start"
+       x="404.65201"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#787878"
+       class="text"
+       font-size="3.5px"
+       y="112.84996"
+       id="text6512">IN</text>
+    <line
+       id="line6514"
+       connectorname="GND"
+       y2="126.5499"
+       x2="416.952"
+       y1="133.74989"
+       stroke-width="0.7"
+       stroke="#787878"
+       x1="416.952"
+       class="pin"
+       stroke-linecap="round" />
+    <g
+       id="g6516"
+       x="21.95"
+       height="0.000283464"
+       stroke-width="0"
+       width="0.000283465"
+       stroke="none"
+       fill="none"
+       class="terminal"
+       y="29.3759"
+       transform="translate(395.002,104.374)" />
+    <g
+       transform="translate(415.9021,130.1499)"
+       id="g6526">
       <g
-         id="g6546">
-        <rect
-           x="7.5500102"
-           height="21.599899"
-           stroke-width="0"
-           width="28.8001"
-           stroke="none"
-           fill="#ffffff"
-           class="interior rect"
-           y="0.57599801"
-           id="rect6494" />
-        <text
-           id="text6496"
-           text-anchor="middle"
-           x="21.950001"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#000000"
-           class="text"
-           font-size="4.25002px"
-           y="9.1092501">78XX</text>
-        <line
-           y2="22.1759"
-           x2="36.350201"
-           y1="22.1759"
-           stroke-width="0.900002"
-           stroke="#000000"
-           x1="7.5500102"
-           class="other"
-           stroke-linecap="round"
-           id="line6498" />
-        <line
-           y2="0.57599801"
-           x2="36.350201"
-           y1="22.1759"
-           stroke-width="0.900002"
-           stroke="#000000"
-           x1="36.350201"
-           class="other"
-           stroke-linecap="round"
-           id="line6500" />
-        <line
-           y2="0.57599801"
-           x2="7.5500102"
-           y1="0.57599801"
-           stroke-width="0.900002"
-           stroke="#000000"
-           x1="36.350201"
-           class="other"
-           stroke-linecap="round"
-           id="line6502" />
-        <line
-           y2="22.1759"
-           x2="7.5500102"
-           y1="0.57599801"
-           stroke-width="0.900002"
-           stroke="#000000"
-           x1="7.5500102"
-           class="other"
-           stroke-linecap="round"
-           id="line6504" />
-        <line
-           id="line6506"
-           connectorname="IN"
-           y2="7.77598"
-           x2="7.5500102"
-           y1="7.77598"
-           stroke-width="0.7"
-           stroke="#787878"
-           x1="0.34999999"
-           class="pin"
-           stroke-linecap="round" />
+         id="g6524">
         <g
-           id="g6508"
-           x="0.35"
-           height="0.000283464"
-           stroke-width="0"
-           width="0.000283465"
-           stroke="none"
-           fill="none"
-           class="terminal"
-           y="7.77598" />
-        <text
-           text-anchor="middle"
-           x="3.95"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#8c8c8c"
-           class="text"
-           font-size="2.50001px"
-           y="6.7259698"
-           id="text6510">2</text>
-        <text
-           text-anchor="start"
-           x="9.6500101"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#787878"
-           class="text"
-           font-size="3.5px"
-           y="8.4759598"
-           id="text6512">IN</text>
-        <line
-           id="line6514"
-           connectorname="GND"
-           y2="22.1759"
-           x2="21.950001"
-           y1="29.3759"
-           stroke-width="0.7"
-           stroke="#787878"
-           x1="21.950001"
-           class="pin"
-           stroke-linecap="round" />
-        <g
-           id="g6516"
-           x="21.95"
-           height="0.000283464"
-           stroke-width="0"
-           width="0.000283465"
-           stroke="none"
-           fill="none"
-           class="terminal"
-           y="29.3759" />
-        <g
-           transform="translate(20.9001,25.7759)"
-           id="g6526">
+           transform="rotate(-90)"
+           id="g6522">
           <g
-             id="g6524">
-            <g
-               transform="rotate(-90)"
-               id="g6522">
-              <g
-                 id="g6520">
-                <text
-                   text-anchor="middle"
-                   x="0"
-                   stroke-width="0"
-                   stroke="none"
-                   font-family="'Droid Sans'"
-                   fill="#8c8c8c"
-                   class="text"
-                   font-size="2.50001px"
-                   y="0"
-                   id="text6518">1</text>
-              </g>
-            </g>
+             id="g6520">
+            <text
+               text-anchor="middle"
+               x="0"
+               stroke-width="0"
+               stroke="none"
+               font-family="'Droid Sans'"
+               fill="#8c8c8c"
+               class="text"
+               font-size="2.50001px"
+               y="0"
+               id="text6518">1</text>
           </g>
         </g>
-        <g
-           transform="translate(22.6501,20.076)"
-           id="g6536">
-          <g
-             id="g6534">
-            <g
-               transform="rotate(-90)"
-               id="g6532">
-              <g
-                 id="g6530">
-                <text
-                   text-anchor="start"
-                   x="0"
-                   stroke-width="0"
-                   stroke="none"
-                   font-family="'Droid Sans'"
-                   fill="#787878"
-                   class="text"
-                   font-size="3.5px"
-                   y="0"
-                   id="text6528">GND</text>
-              </g>
-            </g>
-          </g>
-        </g>
-        <line
-           id="line6538"
-           connectorname="OUT"
-           y2="7.77598"
-           x2="36.350201"
-           y1="7.77598"
-           stroke-width="0.7"
-           stroke="#787878"
-           x1="43.550201"
-           class="pin"
-           stroke-linecap="round" />
-        <g
-           id="g6540"
-           x="43.5502"
-           height="0.000283464"
-           stroke-width="0"
-           width="0.000283465"
-           stroke="none"
-           fill="none"
-           class="terminal"
-           y="7.77598" />
-        <text
-           text-anchor="middle"
-           x="39.950199"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#8c8c8c"
-           class="text"
-           font-size="2.50001px"
-           y="6.7259698"
-           id="text6542">3</text>
-        <text
-           text-anchor="end"
-           x="34.25"
-           stroke-width="0"
-           stroke="none"
-           font-family="'Droid Sans'"
-           fill="#787878"
-           class="text"
-           font-size="3.5px"
-           y="8.4759598"
-           id="text6544">OUT</text>
       </g>
     </g>
+    <g
+       transform="translate(417.6521,124.45)"
+       id="g6536">
+      <g
+         id="g6534">
+        <g
+           transform="rotate(-90)"
+           id="g6532">
+          <g
+             id="g6530">
+            <text
+               text-anchor="start"
+               x="0"
+               stroke-width="0"
+               stroke="none"
+               font-family="'Droid Sans'"
+               fill="#787878"
+               class="text"
+               font-size="3.5px"
+               y="0"
+               id="text6528">GND</text>
+          </g>
+        </g>
+      </g>
+    </g>
+    <line
+       id="line6538"
+       connectorname="OUT"
+       y2="112.14998"
+       x2="431.3522"
+       y1="112.14998"
+       stroke-width="0.7"
+       stroke="#787878"
+       x1="438.55222"
+       class="pin"
+       stroke-linecap="round" />
+    <g
+       id="g6540"
+       x="43.5502"
+       height="0.000283464"
+       stroke-width="0"
+       width="0.000283465"
+       stroke="none"
+       fill="none"
+       class="terminal"
+       y="7.77598"
+       transform="translate(395.002,104.374)" />
+    <text
+       text-anchor="middle"
+       x="434.95221"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#8c8c8c"
+       class="text"
+       font-size="2.50001px"
+       y="111.09997"
+       id="text6542">3</text>
+    <text
+       text-anchor="end"
+       x="429.25201"
+       stroke-width="0"
+       stroke="none"
+       font-family="'Droid Sans'"
+       fill="#787878"
+       class="text"
+       font-size="3.5px"
+       y="112.84996"
+       id="text6544">OUT</text>
   </g>
   <g
      partID="872201220"
      id="g6596"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(366.193,119)"
        id="g6594">
@@ -4540,7 +4517,7 @@
   <g
      partID="872201250"
      id="g6642"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(452.593,119)"
        id="g6640">
@@ -4700,7 +4677,7 @@
   <g
      partID="872201280"
      id="g6684"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(483.193,111.8)"
        id="g6682">
@@ -4846,7 +4823,7 @@
   <g
      partID="872215870"
      id="g6720"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(524.603,29.8544)"
        id="g6718">
@@ -5012,7 +4989,7 @@
   <g
      partID="872385780"
      id="g6758"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(597.303,208.846)"
        id="g6756">
@@ -5182,7 +5159,7 @@
   <g
      partID="872213380"
      id="g6796"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(546.903,64.8464)"
        id="g6794">
@@ -5352,7 +5329,7 @@
   <g
      partID="873021830"
      id="g6803"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(227.112,178)"
        id="g6801">
@@ -5374,7 +5351,7 @@
   <g
      partID="873021310"
      id="g6811"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-194.23026,-12.758759)">
     <g
        transform="translate(235.558,90.8)"
        id="g6809">
@@ -5396,7 +5373,7 @@
   <g
      partID="873021290"
      id="g6821"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(487.144,77.6007)"
        id="g6819">
@@ -5421,7 +5398,7 @@
   <g
      partID="873021270"
      id="g6831"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(460.475,188.001)"
        id="g6829">
@@ -5446,7 +5423,7 @@
   <g
      partID="873021250"
      id="g6841"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(699.404,110.654)"
        id="g6839">
@@ -5472,7 +5449,7 @@
   <g
      partID="873021230"
      id="g6851"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(735.437,246.586)"
        id="g6849">
@@ -5498,7 +5475,7 @@
   <g
      partID="873021210"
      id="g6859"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(400.09)"
        id="g6857">
@@ -5520,7 +5497,7 @@
   <g
      partID="873020190"
      id="g6867"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(0,112.623)"
        id="g6865">
@@ -5529,42 +5506,37 @@
         <text
            id="text6861"
            text-anchor="middle"
-           x="219.041"
+           x="280.15295"
            stroke-width="0"
            fill="#000000"
            font-family="'Droid Sans'"
            xml:space="preserve"
            font-size="5.1539px"
-           y="4.6385102">I use a 18650 battery with builtin discharge protection on J3 (Allowed is DC 3.4-12V)</text>
+           y="-1.8430617"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.1539px;font-family:'Droid Sans';-inkscape-font-specification:'Droid Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;fill:#000000;stroke-width:0"><tspan
+             sodipodi:role="line"
+             id="tspan8350"
+             x="280.15295"
+             y="-1.8430617">I use a 18650 battery with </tspan><tspan
+             sodipodi:role="line"
+             id="tspan8352"
+             x="280.15295"
+             y="4.5993137">builtin discharge protection on J3</tspan><tspan
+             sodipodi:role="line"
+             id="tspan8354"
+             x="280.15295"
+             y="11.041689"> (Allowed is DC 3.4-12V)</tspan></text>
       </g>
     </g>
   </g>
   <g
      partID="873006980"
      id="g6875"
-     transform="translate(-119.11204,-0.72155373)">
-    <g
-       transform="translate(175.793,76.4352)"
-       id="g6873">
-      <g
-         id="g6871">
-        <text
-           id="text6869"
-           text-anchor="middle"
-           x="224.19501"
-           stroke-width="0"
-           fill="#000000"
-           font-family="'Droid Sans'"
-           xml:space="preserve"
-           font-size="5.1539px"
-           y="4.6385102">Please ignore the Label 78XX. I found no schematic part in fritzing for the used HT7333</text>
-      </g>
-    </g>
-  </g>
+     transform="translate(-240.52721,-0.72155373)" />
   <g
      partID="872489470"
      id="g6879"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="119.334"
        x2="337.711"
@@ -5578,7 +5550,7 @@
   <g
      partID="872487880"
      id="g6883"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="119.406"
        x2="344.755"
@@ -5592,7 +5564,7 @@
   <g
      partID="872494880"
      id="g6887"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="112.15"
        x2="395.353"
@@ -5604,7 +5576,7 @@
        id="line6885" />
   </g>
   <circle
-     cx="254.75294"
+     cx="133.33778"
      r="1.4400001"
      stroke-width="0"
      stroke="none"
@@ -5614,7 +5586,7 @@
   <g
      partID="872491460"
      id="g6893"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="112.38"
        x2="373.86499"
@@ -5628,7 +5600,7 @@
   <g
      partID="872491540"
      id="g6897"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="112.134"
        x2="337.711"
@@ -5642,7 +5614,7 @@
   <g
      partID="872496610"
      id="g6901"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="140.95"
        x2="373.75299"
@@ -5656,7 +5628,7 @@
   <g
      partID="872505550"
      id="g6905"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="133.75"
        x2="416.953"
@@ -5670,7 +5642,7 @@
   <g
      partID="872507090"
      id="g6909"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="119.35"
        x2="373.75299"
@@ -5684,7 +5656,7 @@
   <g
      partID="872508680"
      id="g6913"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="119.35"
        x2="460.15302"
@@ -5696,7 +5668,7 @@
        id="line6911" />
   </g>
   <circle
-     cx="341.07797"
+     cx="219.66281"
      r="1.4400001"
      stroke-width="0"
      stroke="none"
@@ -5706,7 +5678,7 @@
   <g
      partID="872507160"
      id="g6919"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="112.38"
        x2="460.19"
@@ -5720,7 +5692,7 @@
   <g
      partID="872511720"
      id="g6923"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="148.14999"
        x2="460.15302"
@@ -5734,7 +5706,7 @@
   <g
      partID="872513310"
      id="g6927"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="104.95"
        x2="460.15302"
@@ -5748,7 +5720,7 @@
   <g
      partID="872545260"
      id="g6931"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="184.14999"
        x2="344.953"
@@ -5762,7 +5734,7 @@
   <g
      partID="872548400"
      id="g6935"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="176.966"
        x2="337.75299"
@@ -5776,7 +5748,7 @@
   <g
      partID="872546850"
      id="g6939"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="176.95"
        x2="344.953"
@@ -5790,7 +5762,7 @@
   <g
      partID="872555310"
      id="g6943"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="133.75"
        x2="488.953"
@@ -5804,7 +5776,7 @@
   <g
      partID="872556850"
      id="g6947"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="112.15"
        x2="488.953"
@@ -5818,7 +5790,7 @@
   <g
      partID="872571190"
      id="g6951"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="61.750301"
        x2="654.55298"
@@ -5832,7 +5804,7 @@
   <g
      partID="872571440"
      id="g6955"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="68.950302"
        x2="654.55298"
@@ -5846,7 +5818,7 @@
   <g
      partID="872571670"
      id="g6959"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="76.150299"
        x2="654.55298"
@@ -5860,7 +5832,7 @@
   <g
      partID="872576060"
      id="g6963"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="112.15"
        x2="553.75299"
@@ -5874,7 +5846,7 @@
   <g
      partID="872581910"
      id="g6967"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="104.95"
        x2="654.55298"
@@ -5888,7 +5860,7 @@
   <g
      partID="872586040"
      id="g6971"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="104.95"
        x2="553.75299"
@@ -5902,7 +5874,7 @@
   <g
      partID="872591970"
      id="g6975"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="119.35"
        x2="668.953"
@@ -5916,7 +5888,7 @@
   <g
      partID="872599000"
      id="g6979"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="140.95"
        x2="697.75299"
@@ -5930,7 +5902,7 @@
   <g
      partID="872604580"
      id="g6983"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="148.14999"
        x2="697.75299"
@@ -5944,7 +5916,7 @@
   <g
      partID="872617930"
      id="g6987"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="155.35001"
        x2="697.75299"
@@ -5958,7 +5930,7 @@
   <g
      partID="872616040"
      id="g6991"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="155.543"
        x2="654.422"
@@ -5972,7 +5944,7 @@
   <g
      partID="872614150"
      id="g6995"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="140.98801"
        x2="654.422"
@@ -5986,7 +5958,7 @@
   <g
      partID="872635860"
      id="g6999"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="162.55"
        x2="697.75201"
@@ -6000,7 +5972,7 @@
   <g
      partID="872633870"
      id="g7003"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="162.569"
        x2="661.95001"
@@ -6014,7 +5986,7 @@
   <g
      partID="872631880"
      id="g7007"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="133.961"
        x2="661.95099"
@@ -6028,7 +6000,7 @@
   <g
      partID="872641790"
      id="g7011"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="169.75"
        x2="697.75299"
@@ -6042,7 +6014,7 @@
   <g
      partID="872639820"
      id="g7015"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="169.59599"
        x2="668.97803"
@@ -6056,7 +6028,7 @@
   <g
      partID="872637850"
      id="g7019"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="126.433"
        x2="668.97699"
@@ -6070,7 +6042,7 @@
   <g
      partID="872650630"
      id="g7023"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="227.35001"
        x2="697.75299"
@@ -6084,7 +6056,7 @@
   <g
      partID="872648680"
      id="g7027"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="227.313"
        x2="647.396"
@@ -6098,7 +6070,7 @@
   <g
      partID="872653400"
      id="g7031"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="205.75"
        x2="690.55298"
@@ -6110,7 +6082,7 @@
        id="line7029" />
   </g>
   <circle
-     cx="571.44092"
+     cx="450.02576"
      r="1.4400001"
      stroke-width="0"
      stroke="none"
@@ -6120,7 +6092,7 @@
   <g
      partID="872657280"
      id="g7037"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="212.95"
        x2="697.75299"
@@ -6134,7 +6106,7 @@
   <g
      partID="872655350"
      id="g7041"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="212.758"
        x2="690.55902"
@@ -6146,7 +6118,7 @@
        id="line7039" />
   </g>
   <circle
-     cx="571.44092"
+     cx="450.02576"
      r="1.4400001"
      stroke-width="0"
      stroke="none"
@@ -6156,7 +6128,7 @@
   <g
      partID="872665740"
      id="g7047"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="212.95"
        x2="661.75201"
@@ -6170,7 +6142,7 @@
   <g
      partID="872663850"
      id="g7051"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="220.287"
        x2="661.95099"
@@ -6184,7 +6156,7 @@
   <g
      partID="872675080"
      id="g7055"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="83.3507"
        x2="553.75299"
@@ -6198,7 +6170,7 @@
   <g
      partID="872673210"
      id="g7059"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="83.269997"
        x2="517.90802"
@@ -6212,7 +6184,7 @@
   <g
      partID="872667630"
      id="g7063"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="234.34"
        x2="517.90802"
@@ -6226,7 +6198,7 @@
   <g
      partID="872687130"
      id="g7067"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="133.75"
        x2="553.75299"
@@ -6240,7 +6212,7 @@
   <g
      partID="872685300"
      id="g7071"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="133.75"
        x2="539.35303"
@@ -6254,7 +6226,7 @@
   <g
      partID="872683470"
      id="g7075"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="176.95"
        x2="539.35303"
@@ -6268,7 +6240,7 @@
   <g
      partID="872914780"
      id="g7079"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="184.14999"
        x2="546.55298"
@@ -6282,7 +6254,7 @@
   <g
      partID="872701000"
      id="g7083"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="184.14999"
        x2="539.35303"
@@ -6296,7 +6268,7 @@
   <g
      partID="872733390"
      id="g7087"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="90.550102"
        x2="553.75299"
@@ -6310,7 +6282,7 @@
   <g
      partID="872731640"
      id="g7091"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="90.817001"
        x2="510.819"
@@ -6322,7 +6294,7 @@
        id="line7089" />
   </g>
   <circle
-     cx="391.44098"
+     cx="270.02582"
      r="1.4400001"
      stroke-width="0"
      stroke="none"
@@ -6332,7 +6304,7 @@
   <g
      partID="872745230"
      id="g7097"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="32.950298"
        x2="496.15302"
@@ -6346,7 +6318,7 @@
   <g
      partID="872759730"
      id="g7101"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="76.150497"
        x2="553.75299"
@@ -6360,7 +6332,7 @@
   <g
      partID="872806280"
      id="g7105"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="205.75"
        x2="596.95203"
@@ -6374,7 +6346,7 @@
   <g
      partID="872807960"
      id="g7109"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="205.75"
        x2="568.15198"
@@ -6388,7 +6360,7 @@
   <g
      partID="872815100"
      id="g7113"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="61.750301"
        x2="546.55298"
@@ -6402,7 +6374,7 @@
   <g
      partID="872816740"
      id="g7117"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="61.750401"
        x2="517.75299"
@@ -6416,7 +6388,7 @@
   <g
      partID="872822800"
      id="g7121"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="32.950699"
        x2="524.953"
@@ -6428,7 +6400,7 @@
        id="line7119" />
   </g>
   <circle
-     cx="391.44098"
+     cx="270.02582"
      r="1.4400001"
      stroke-width="0"
      stroke="none"
@@ -6438,7 +6410,7 @@
   <g
      partID="872824440"
      id="g7127"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <line
        y2="32.9506"
        x2="553.75299"
@@ -6452,7 +6424,7 @@
   <g
      id="partLabel"
      partID="872184660"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(647.353,48.9504)"
        id="g7132">
@@ -6475,7 +6447,7 @@
   <g
      id="g7141"
      partID="872184780"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(712.132,196.542)"
        id="g7139">
@@ -6498,7 +6470,7 @@
   <g
      id="g7149"
      partID="872184820"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(712.132,131.742)"
        id="g7147">
@@ -6521,7 +6493,7 @@
   <g
      id="g7159"
      partID="872201220"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(383.822,128.378)"
        id="g7157">
@@ -6548,7 +6520,7 @@
   <g
      id="g7169"
      partID="872201250"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(470.724,128.378)"
        id="g7167">
@@ -6575,7 +6547,7 @@
   <g
      id="g7179"
      partID="872201280"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(496.72,119.672)"
        id="g7177">
@@ -6602,7 +6574,7 @@
   <g
      id="g7187"
      partID="872202040"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(317.656,100.433)"
        id="g7185">
@@ -6625,7 +6597,7 @@
   <g
      id="g7195"
      partID="872316820"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(312.178,166.253)"
        id="g7193">
@@ -6648,7 +6620,7 @@
   <g
      id="g7203"
      partID="872425920"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(566.132,178.542)"
        id="g7201">
@@ -6671,7 +6643,7 @@
   <g
      id="g7211"
      partID="872203430"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(343.371,90.164)"
        id="g7209">
@@ -6694,7 +6666,7 @@
   <g
      id="g7219"
      partID="872214970"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(497.096,11.4656)"
        id="g7217">
@@ -6717,7 +6689,7 @@
   <g
      id="g7229"
      partID="872215870"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(534.027,15.8624)"
        id="g7227">
@@ -6744,7 +6716,7 @@
   <g
      id="g7239"
      partID="872213380"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(527.831,46.168)"
        id="g7237">
@@ -6771,7 +6743,7 @@
   <g
      id="g7249"
      partID="872385780"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(575.248,213.443)"
        id="g7247">
@@ -6798,7 +6770,7 @@
   <g
      id="g7257"
      partID="872386310"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(668.932,52.5424)"
        id="g7255">
@@ -6821,7 +6793,7 @@
   <g
      id="g7267"
      partID="872422900"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(548.74,220.004)"
        id="g7265">
@@ -6848,7 +6820,7 @@
   <g
      id="g7275"
      partID="872456030"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(530.011,66.9584)"
        id="g7273">
@@ -6871,7 +6843,7 @@
   <g
      id="g7283"
      partID="872186840"
-     transform="translate(-119.11204,-0.72155373)">
+     transform="translate(-240.52721,-0.72155373)">
     <g
        transform="translate(407.283,96.2648)"
        id="g7281">
