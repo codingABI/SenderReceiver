@@ -1,6 +1,8 @@
 # SenderReceiver
 ## Receiver (433 MHz ASK and LoRa)
+To be done...
 ## Sender 1 (433 MHz ASK)
+To be done...
 ## Sender 5 (433 MHz LoRa)
 Sensor for the slot of a mailbox. When the slot is opened, a magnetic reed switch triggers and sends a LoRa signal to the receiver. Additionally once per day the current battery voltage and the magnetic reed switch state will also be sent to the receiver.
 
