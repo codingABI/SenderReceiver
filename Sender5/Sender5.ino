@@ -16,14 +16,14 @@
  * For details see externalCode.ino
  *
  * Hardware:
- * - Microcontroller ATmega328P-PU (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
+ * - Microcontroller ATmega328PU (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
  * - HT7333 voltage regulator
  * - Lora SX1278 Ra-02
  * - 18650 Battery with integrated protection against deep discharge
  * - Magnetic reed-switch "normaly closed" with external pullup resistor (2M)
- * - Control LED (blinks every 8 seconds) which can be enabled/disabled by a physical jumper J8
+ * - Control LED (blinks every 8 seconds) which can be enabled/disabled by a physical jumper SW2A
  *
- * Current consumption (messured on J6) 
+ * Current consumption (messured on SW1A) 
  * - 28uA in deep sleep (5uA is HT7333 idle current)
  * - 5mA after wake up
  * - 120mA while sending via LoRa
