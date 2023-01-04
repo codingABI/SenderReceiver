@@ -9,6 +9,8 @@
  * Copyright (c) 2023 codingABI
  * For details see: License.txt
  * 
+ * created by codingABI https://github.com/codingABI/SenderReceiver
+ * 
  * External code: 
  * getBandgap() from https://forum.arduino.cc/t/measuring-battery-voltage-conditionally/319327/5
  * For details see externalCode.ino
@@ -136,7 +138,7 @@ void setup() {
     while (1);
   }
   LoRa.setSyncWord(0xA5); // ranges from 0-0xFF, default 0x34, see API docs
-  
+
   delay(1000);
 }
 
@@ -161,8 +163,8 @@ void loop() {
   SERIALDEBUG.println(Switch);
   
   Vcc = getBandgap();
-  // Enable battery warning when below threshold
-  if (Vcc < 300 ) lowBattery=1; else lowBattery=0;
+  // Enable battery warning when below threshold 
+  if (Vcc < 300 ) lowBattery=1; else lowBattery=0; // Vcc 300 = 3.0V
   SERIALDEBUG.print("Battery ");
   SERIALDEBUG.println(Vcc);
 
