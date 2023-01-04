@@ -20,10 +20,10 @@
  * - HT7333 voltage regulator
  * - Lora SX1278 Ra-02
  * - 18650 Battery with integrated protection against deep discharge
- * - Magnetic reed-switch "normaly closed" with external pullup resistor (2M)
+ * - Magnetic reed-switch "normally closed" with external pullup resistor (2M)
  * - Control LED (blinks every 8 seconds) which can be enabled/disabled by demand with physical jumper SW2A
  *
- * Current consumption (meassured on SW1A while LED switch SW2A was opened) 
+ * Current consumption (measured on SW1A while LED switch SW2A was opened) 
  * - 28uA in deep sleep (5uA is HT7333 idle current)
  * - 5mA after wake up
  * - 120mA while sending via LoRa
@@ -41,7 +41,7 @@
 #include <avr/wdt.h> 
  
 #define LED_PIN 5 // Alive LED (Switched on for a short time, during sending the signal or switched on for 8 seconds when Lora init fails)
-#define SENSW_PIN 3 // Magnetic reed-switch "normaly closed" with external pullup resistor
+#define SENSW_PIN 3 // Magnetic reed-switch "normally closed" with external pullup resistor
 #define NSS_PIN 10 // Lora NSS
 #define RST_PIN 9 // Lora RST
 #define DIO0_PIN 2 // Lora IRQ
@@ -54,7 +54,7 @@
  * 1 bit: Low battery
  * 6 bit: Vcc (0-63)
  * 1 bit: Mail box sensor switch
- * 1 bit: Pin change event (1 if signal was triggered by the mailbox slot; 0 if signal is the daily status signal)
+ * 1 bit: Pin change interrupt (1 if signal was triggered by the mailbox slot; 0 if signal is the daily status signal)
  * 15 bit: unused
  */
 
@@ -151,8 +151,8 @@ void loop() {
   byte oldADCSRA;
   unsigned long sendData;
 
-  if (v_pinChangeInterrupt) { // Wait after PinChangeEvent to get switch state more stabile
-    SERIALDEBUG.println("Delay after PinChangeEvent"); 
+  if (v_pinChangeInterrupt) { // Wait after PinChangeInterrupt to get switch state more stabile
+    SERIALDEBUG.println("Delay after PinChangeInterrupt"); 
     delay(200);
     wdt_reset(); 
   } 
@@ -162,9 +162,12 @@ void loop() {
   SERIALDEBUG.print("Switch state ");
   SERIALDEBUG.println(Switch);
   
-  Vcc = getBandgap();
-  // Enable battery warning when below threshold 
-  if (Vcc < 300 ) lowBattery=1; else lowBattery=0; // Vcc 300 = 3.0V
+  Vcc = getBandgap(); // Vcc in 10mV units
+  /* Enable low battery warning when below threshold Vcc 300 = 3.0V 
+   * We measure the voltage after the voltage regulator and not the real battery voltage,
+   * but this should be enough to detect, when the battery is low 
+   */
+  if (Vcc < 300 ) lowBattery=1; else lowBattery=0; 
   SERIALDEBUG.print("Battery ");
   SERIALDEBUG.println(Vcc);
 
