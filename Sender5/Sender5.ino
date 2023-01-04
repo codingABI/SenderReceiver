@@ -40,7 +40,7 @@
 #include <avr/sleep.h> 
 #include <avr/wdt.h> 
  
-#define LED_PIN 5 // Alive LED (Switched on for a short time, during sending the signal or switched on for 8 seconds when Lora init fails)
+#define LED_PIN 5 // Alive LED (Switched on a) 100ms every 8 seconds, b) for a short time, during sending the signal and c) for 8 seconds when Lora init fails)
 #define SENSW_PIN 3 // Magnetic reed-switch "normally closed" with external pullup resistor
 #define NSS_PIN 10 // Lora NSS
 #define RST_PIN 9 // Lora RST
