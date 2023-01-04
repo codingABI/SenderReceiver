@@ -23,7 +23,7 @@
  * - Magnetic reed-switch "normaly closed" with external pullup resistor (2M)
  * - Control LED (blinks every 8 seconds) which can be enabled/disabled by a physical jumper SW2A
  *
- * Current consumption (messured on SW1A) 
+ * Current consumption (messured on SW1A while LED switch SW2A was opened) 
  * - 28uA in deep sleep (5uA is HT7333 idle current)
  * - 5mA after wake up
  * - 120mA while sending via LoRa
