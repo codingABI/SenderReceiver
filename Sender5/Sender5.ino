@@ -1,9 +1,9 @@
 /*
  * Project: Sender5 (Ding15)
  * Description:
- * Sends the magnetic reed-switch state in my mailbox and battery state triggered 
- * by switch change via LoRa to a receiver. Additionally once per day the current states 
- * will also be sent.
+ * Sensor for the slot of a mailbox. When the slot is opened, a magenetic reed sensor 
+ * triggers and sends a signal LoRa to the receiver. Additionally once per day the 
+ * current battery voltage and the magnetic reed switch state will also be sent to the receiver.
  *
  * License: 2-Clause BSD License
  * Copyright (c) 2023 codingABI
@@ -40,7 +40,7 @@
 #include <avr/sleep.h> 
 #include <avr/wdt.h> 
  
-#define LED_PIN 5 // Alive LED (momentary on while sending or 8 seconds on when Lora init fails)
+#define LED_PIN 5 // Alive LED (Switched on for a short time, during sending the signal or switched on for 8 seconds when Lora init fails)
 #define SENSW_PIN 3 // Magnetic reed-switch "normaly closed" with external pullup resistor
 #define NSS_PIN 10 // Lora NSS
 #define RST_PIN 9 // Lora RST
@@ -49,14 +49,14 @@
 
 #define RCSIGNATURE 0b00111000000000000000000000000000UL // Signature for signals (only the first 5 bits are the signature)
 /* Signal (32-bit):
-  * 5 bit: Signature
-  * 3 bit: ID
-  * 1 bit: Low battery
-  * 6 bit: Vcc (0-63)
-  * 1 bit: Mail box sensor switch
-  * 1 bit: Pin change event
-  * 15 bit: unused
-  */
+ * 5 bit: Signature
+ * 3 bit: ID
+ * 1 bit: Low battery
+ * 6 bit: Vcc (0-63)
+ * 1 bit: Mail box sensor switch
+ * 1 bit: Pin change event (1 if signal was triggered by the mailbox slot; 0 if signal is the daily status signal)
+ * 15 bit: unused
+ */
 
 // -------- Global variables --------
 volatile bool v_pinChangeInterrupt = false;
