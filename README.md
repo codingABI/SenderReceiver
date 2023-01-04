@@ -10,7 +10,8 @@ Hardware:
 * Magnetic reed-switch "normaly closed" with external pullup resistor (2M)
 * Control LED (blinks every 8 seconds) which can be enabled/disabled by a physical jumper J8
 
-![Sketch](/Sender5/Sender5.ino)
+[Arduino-Sketch](/Sender5/Sender5.ino)
+
 ![Schema](assets/images/Sender5/Schema.svg)
 ![Perfboard frontside](assets/images/Sender5/PerfboardFrontside.jpg)
 ![Perfboard backside](assets/images/Sender5/PerfboardBackside.jpg)
