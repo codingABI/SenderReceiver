@@ -1,6 +1,6 @@
 # SenderReceiver
 ## Sender 5 (433 MHz LoRa)
-Sensor for the slot of a mailbox. When the slot is opened, a magenetic reed sensor triggers and sends a LoRa signal to the receiver. Additionally once per day the current battery voltage and the magnetic reed switch state will also be sent to the receiver.
+Sensor for the slot of a mailbox. When the slot is opened, a magnetic reed switch triggers and sends a LoRa signal to the receiver. Additionally once per day the current battery voltage and the magnetic reed switch state will also be sent to the receiver.
 
 Hardware:
 * Microcontroller ATmega328P-PU (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
