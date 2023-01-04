@@ -163,7 +163,7 @@ void loop() {
   SERIALDEBUG.println(Switch);
   
   Vcc = getBandgap(); // Vcc in 10mV units
-  /* Enable low battery warning when below threshold Vcc 300 = 3.0V 
+  /* Enable low battery warning, when below threshold 300 = 3.0V 
    * We measure the voltage after the voltage regulator and not the real battery voltage,
    * but this should be enough to detect, when the battery is low 
    */
