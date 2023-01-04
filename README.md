@@ -11,8 +11,8 @@ Hardware:
 * HT7333 voltage regulator
 * Lora SX1278 Ra-02 (433 MHz)
 * 18650 Battery with integrated protection against deep discharge
-* Magnetic reed-switch "normaly closed" with external pullup resistor (2M)
-* Control LED (blinks every 8 seconds) which can be enabled/disabled by demand with physical jumper SW2A
+* Magnetic reed-switch "normally closed" with external pullup resistor (2M)
+* Control LED (blinks every 8 seconds) which can be enabled/disabled on demand with physical jumper SW2A
 
 [Arduino-Sketch](/Sender5/Sender5.ino)
 
