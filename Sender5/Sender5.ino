@@ -1,7 +1,7 @@
 /*
  * Project: Sender5 (Ding15)
  * Description:
- * Sensor for the slot of a mailbox. When the slot is opened, a magnetic reed switch 
+ * Sensor for the slot of a mailbox. When the lid of the slot is opened, a magnetic reed switch 
  * triggers and sends a LoRa signal to the receiver. Additionally once per day the 
  * current battery voltage and the magnetic reed switch state will also be sent to the receiver.
  *
