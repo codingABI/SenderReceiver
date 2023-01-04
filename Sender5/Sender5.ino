@@ -21,7 +21,7 @@
  * - Lora SX1278 Ra-02
  * - 18650 Battery with integrated protection against deep discharge
  * - Magnetic reed-switch "normally closed" with a pullup resistor
- * - Control LED (blinks every 8 seconds) which can be enabled/disabled on demand with physical jumper SW2A
+ * - Control LED (blinks every 8 seconds) which can be enabled/disabled on demand with a physical jumper SW2A
  *
  * Current consumption (measured on SW1A while LED switch SW2A was opened) 
  * - 28uA in deep sleep (5uA is HT7333 idle current)
