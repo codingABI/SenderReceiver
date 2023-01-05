@@ -28,10 +28,11 @@
  * Current consumption (measured on JP1 while JP2 was opened): 
  * - 28uA in deep sleep (5uA is HT7333 idle current)
  * - 5mA after wake up
- * - 120mA while sending via LoRa
+ * - 120mA while sending LoRa signal
  *
  * History: 
  * 20221226, Initial version
+ * 20230105, Simplify pinMode for LED_PIN
  */
 
 #define DEBUG false  // true for Serial.print
