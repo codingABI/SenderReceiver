@@ -7,7 +7,7 @@ To be done...
 Sensor for the slot of a mailbox. When the lid of the slot is opened, a magnetic reed switch triggers and sends a LoRa signal to the receiver. Additionally once per day the current battery voltage and the magnetic reed switch state will also be sent to the receiver.
 
 Hardware:
-* Microcontroller ATmega328PU (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
+* Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
 * HT7333 voltage regulator
 * Lora SX1278 Ra-02 (433 MHz)
 * 18650 Battery with integrated protection against deep discharge
