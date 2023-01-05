@@ -123,9 +123,6 @@ void setup() {
   SERIALDEBUG.print("Init Sender ID ");
   SERIALDEBUG.println(ID);
   
-  // Control LED
-  pinMode(LED_PIN,OUTPUT);
-
   enableWatchdogTimer(); // Watchdog timer
   // Pin mode and Pin change interrupt for the switch
   pinMode(SENSW_PIN,INPUT);
@@ -137,6 +134,8 @@ void setup() {
   SERIALDEBUG.println("Init LoRa Sender");
 
   if (!LoRa.begin(433E6)) { // 433 MHz
+    // Enable control LED
+    pinMode(LED_PIN,OUTPUT);
     digitalWrite(LED_PIN,HIGH);
     SERIALDEBUG.println("Starting LoRa failed");
     // Starting LoRa failed => wait for watchdog reset
