@@ -18,7 +18,7 @@
  * Hardware:
  * - Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
  * - HT7333 voltage regulator
- * - Lora SX1278 Ra-02 (433 MHz)
+ * - LoRa SX1278 Ra-02 (433 MHz)
  * - 18650 Battery with integrated protection against deep discharge
  * - Magnetic reed-switch "normally closed" with a pullup resistor
  * - Control LED (Switched on a) 100ms every 8 seconds, b) for a short time, 
