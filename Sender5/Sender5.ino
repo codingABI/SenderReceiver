@@ -18,11 +18,11 @@
  * Hardware:
  * - Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
  * - HT7333 voltage regulator
- * - Lora SX1278 Ra-02
+ * - Lora SX1278 Ra-02 (433 MHz)
  * - 18650 Battery with integrated protection against deep discharge
  * - Magnetic reed-switch "normally closed" with a pullup resistor
  * - Control LED (Switched on a) 100ms every 8 seconds, b) for a short time, 
- *   during sending the signal and c) for 8 seconds when Lora init fails) 
+ *   during sending the signal and c) for 8 seconds when LoRa init fails) 
  *   which can be enabled/disabled on demand with physical jumper JP2
  * 
  * Current consumption (measured on JP1 while JP2 was opened) 
@@ -42,12 +42,12 @@
 #include <avr/sleep.h> 
 #include <avr/wdt.h> 
  
-#define LED_PIN 5 // Control LED (Switched on a) 100ms every 8 seconds, b) for a short time, during sending the signal and c) for 8 seconds when Lora init fails)
+#define LED_PIN 5 // Control LED (Switched on a) 100ms every 8 seconds, b) for a short time, during sending the signal and c) for 8 seconds when LoRa init fails)
 #define SENSW_PIN 3 // Magnetic reed-switch "normally closed" with external pullup resistor
-#define NSS_PIN 10 // Lora NSS
-#define RST_PIN 9 // Lora RST
-#define DIO0_PIN 2 // Lora IRQ
-#define ID 5 // Nbr for the individual sender
+#define NSS_PIN 10 // LoRa NSS
+#define RST_PIN 9 // LoRa RST
+#define DIO0_PIN 2 // LoRa IRQ
+#define ID 5 // ID/Nbr for the individual sender
 
 #define RCSIGNATURE 0b00111000000000000000000000000000UL // Signature for signals (only the first 5 bits are the signature)
 /* Signal (32-bit):
