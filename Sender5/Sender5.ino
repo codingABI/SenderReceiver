@@ -107,8 +107,8 @@ void enableWatchdogTimer() {
 ISR(WDT_vect) {
 }
 
-ISR (PCINT2_vect) // handle pin change interrupt for D0 to D7 here
-{
+// Handle pin change interrupt for D0 to D7 here
+ISR(PCINT2_vect) { 
   v_pinChangeInterrupt = true;
 }
  
