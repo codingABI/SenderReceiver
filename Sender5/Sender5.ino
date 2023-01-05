@@ -25,7 +25,7 @@
  *   during sending the signal and c) for 8 seconds when LoRa init fails) 
  *   which can be enabled/disabled on demand with physical jumper JP2
  * 
- * Current consumption (measured on JP1 while JP2 was opened) 
+ * Current consumption (measured on JP1 while JP2 was opened):
  * - 28uA in deep sleep (5uA is HT7333 idle current)
  * - 5mA after wake up
  * - 120mA while sending via LoRa
