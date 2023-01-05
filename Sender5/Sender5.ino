@@ -25,7 +25,7 @@
  *   during sending the signal and c) for 8 seconds when LoRa init fails) 
  *   which can be enabled/disabled on demand with physical jumper JP2
  * 
- * Current consumption (measured on JP1 while JP2 was opened):
+ * Current consumption (measured on JP1 while JP2 was opened): 
  * - 28uA in deep sleep (5uA is HT7333 idle current)
  * - 5mA after wake up
  * - 120mA while sending via LoRa
@@ -74,11 +74,14 @@ void sleep(int seconds) {
     sleep_disable(); // Disable SE bit from SMCR register
 
     enableWatchdogTimer(); // Reenable Watchdog (without the ISR will be startet once and the device resets)
-    
+
+    // Flash control LED
     pinMode(LED_PIN,OUTPUT);
     digitalWrite(LED_PIN,HIGH);
     delay(100);
+    digitalWrite(LED_PIN,LOW);
     pinMode(LED_PIN,INPUT);
+    
     if (v_pinChangeInterrupt) break; // End loop when IRQ was triggered by switch
   }
 }
@@ -175,6 +178,8 @@ void loop() {
 
   wdt_reset();
 
+  // Enable control LED while sending
+  pinMode(LED_PIN,OUTPUT);
   digitalWrite(LED_PIN,HIGH);
 
   // Send data
@@ -197,12 +202,14 @@ void loop() {
   
   SERIALDEBUG.println("End LoRa sending");
 
+  // Disable control LED
   digitalWrite(LED_PIN,LOW);
   
   // Goto to sleep
   SERIALDEBUG.println("Going to sleep");
   SERIALDEBUG.flush();
-  
+
+  pinMode(LED_PIN,INPUT);
   LoRa.sleep();
   wdt_reset();
 
