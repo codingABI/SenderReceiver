@@ -16,7 +16,7 @@
  * For details see externalCode.ino
  *
  * Hardware:
- * - Microcontroller ATmega328PU (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
+ * - Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
  * - HT7333 voltage regulator
  * - Lora SX1278 Ra-02
  * - 18650 Battery with integrated protection against deep discharge
