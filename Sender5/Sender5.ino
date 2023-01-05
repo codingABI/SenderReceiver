@@ -156,7 +156,7 @@ void loop() {
   byte oldADCSRA;
   unsigned long sendData;
 
-  if (v_pinChangeInterrupt) { // Wait after PinChangeInterrupt to get switch state more stabile
+  if (v_pinChangeInterrupt) { // Wait after PinChangeInterrupt to get switch state more stable
     SERIALDEBUG.println("Delay after PinChangeInterrupt"); 
     delay(200);
     wdt_reset(); 
