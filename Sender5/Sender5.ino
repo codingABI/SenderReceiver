@@ -1,7 +1,7 @@
 /*
  * Project: Sender5 (Ding15)
  * Description:
- * Sensor for the slot of a mailbox. When the lid of the slot is opened, a magnetic reed switch 
+ * Sensor for a mailbox. When the lid of the slot is opened, a magnetic reed switch 
  * triggers and sends a LoRa signal to the receiver. Additionally once per day the 
  * current battery voltage and the magnetic reed switch state will also be sent to the receiver.
  *
@@ -22,7 +22,7 @@
  * - 18650 Battery with integrated protection against deep discharge
  * - Magnetic reed-switch "normally closed" with a pullup resistor
  * - Control LED (Switched on a) 100ms every 8 seconds, b) for a short time, 
- *   during sending the signal and c) for 8 seconds when LoRa init fails) 
+ *   during sending the LoRa signal and c) for 8 seconds when LoRa init fails) 
  *   which can be enabled/disabled on demand with physical jumper JP2
  * 
  * Current consumption (measured on JP1 while JP2 was opened): 
@@ -168,9 +168,9 @@ void loop() {
   SERIALDEBUG.println(Switch);
   
   Vcc = getBandgap(); // Vcc in 10mV units
-  /* Enable low battery warning, when below threshold 300 = 3.0V 
+  /* Enable low battery warning, when voltage is below threshold 300 = 3.0V 
    * We measure the voltage after the voltage regulator and not the real battery voltage,
-   * but this should be enough to detect, when the battery is low 
+   * but this should be enough to detect, when the battery is too low 
    */
   if (Vcc < 300 ) lowBattery=1; else lowBattery=0; 
   SERIALDEBUG.print("Battery ");
@@ -204,12 +204,12 @@ void loop() {
 
   // Disable control LED
   digitalWrite(LED_PIN,LOW);
-  
+  pinMode(LED_PIN,INPUT);
+    
   // Goto to sleep
   SERIALDEBUG.println("Going to sleep");
   SERIALDEBUG.flush();
 
-  pinMode(LED_PIN,INPUT);
   LoRa.sleep();
   wdt_reset();
 
