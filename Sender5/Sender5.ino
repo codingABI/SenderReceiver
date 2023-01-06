@@ -21,8 +21,8 @@
  * - LoRa SX1278 Ra-02 (433 MHz)
  * - 18650 Battery with integrated protection against deep discharge
  * - Magnetic reed-switch "normally closed" with a pullup resistor
- * - Control LED (Switched on a) 100ms every 8 seconds, b) for a short time, 
- *   during sending the LoRa signal and c) for 8 seconds when LoRa init fails) 
+ * - Control LED (Switched on a) 50ms every 8 seconds, b) for a short time, 
+ *   during sending the LoRa signal and c) for 16 seconds when LoRa init fails) 
  *   which can be enabled/disabled on demand with physical jumper JP2
  * 
  * Current consumption (measured on JP1 while JP2 was opened): 
@@ -79,7 +79,7 @@ void sleep(int seconds) {
     // Flash control LED
     pinMode(LED_PIN,OUTPUT);
     digitalWrite(LED_PIN,HIGH);
-    delay(100);
+    delay(50);
     digitalWrite(LED_PIN,LOW);
     pinMode(LED_PIN,INPUT);
     
