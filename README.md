@@ -20,6 +20,8 @@ Hardware:
 ![Perfboard frontside](assets/images/Sender5/PerfboardFrontside.jpg)
 ![Perfboard backside](assets/images/Sender5/PerfboardBackside.jpg)
 ![Components](assets/images/Sender5/Components.jpg)
+The sender is in a standard junction box
 ![Case opened](assets/images/Sender5/CaseOpened.jpg)
 ![Case closed](assets/images/Sender5/CaseClosed.jpg)
+The device is inside the mailbox
 ![Mailbox](assets/images/Sender5/Mailbox.jpg)
