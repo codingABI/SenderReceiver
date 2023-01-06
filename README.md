@@ -22,3 +22,4 @@ Hardware:
 ![Components](assets/images/Sender5/Components.jpg)
 ![Case opened](assets/images/Sender5/CaseOpened.jpg)
 ![Case closed](assets/images/Sender5/CaseClosed.jpg)
+![Mailbox](assets/images/Sender5/Mailbox.jpg)
