@@ -14,7 +14,7 @@ Hardware:
 [Arduino-Sketch](/Sender1/Sender1.ino)
 
 ![Schematic](assets/images/Sender1/Schematic.png)
-Case for the device is a pice (~36cm) standard PVC 25mm installation  tube. The three AA batteries are in a pice (~18cm) standard PVC 20mm installation tube.
+Case for the whole device is a pice (~36cm) standard PVC 25mm installation  tube. The three AA batteries are in a pice (~18cm) standard PVC 20mm installation tube.
 ![Device](assets/images/Sender1/device.jpg)
 
 ## Sender 3 (433 MHz ASK)
