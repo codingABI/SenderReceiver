@@ -14,6 +14,8 @@ Hardware:
 [Arduino-Sketch](/Sender1/Sender1.ino)
 
 ![Schematic](assets/images/Sender1/Schematic.png)
+![Schematic](assets/images/Sender1/Device.jpg)
+
 ## Sender 3 (433 MHz ASK)
 Magnetic reed switch sensor to detect if a window is open or tilted. Sends the window state, temperature, humidity and battery state every 30 minutes or triggered by magnetic reed switch change via a 433MHz-ASK to a receiver.
 
