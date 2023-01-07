@@ -20,7 +20,7 @@
  * - Control LED (blinks every 8 seconds) which can be enabled by a physical jumper
  *
  * History: 
- * 20230106, Initial version of PCB version
+ * 20230106, Initial version with PCB
  */
 #include <avr/sleep.h> 
 #include <avr/wdt.h> 
@@ -37,14 +37,14 @@
 
 #define RCSIGNATURE 0b00111000000000000000000000000000UL // Signature for 433MHz signals (only the first 5 bits are the signature)
 /* Signal (32-bit):
-  * 5 bit: Signature
-  * 3 bit: ID
-  * 1 bit: Low battery
-  * 6 bit: Vcc (0-63)
-  * 3 bit: unused
-  * 7 bit: Humidity (127 marks invalid value)
-  * 7 bit: Temperature with +50 degree shift to provide a range of -50 to +76 degree Celsius (77 marks an invalid value)
-  */
+ * 5 bit: Signature
+ * 3 bit: ID
+ * 1 bit: Low battery
+ * 6 bit: Vcc (0-63)
+ * 3 bit: unused
+ * 7 bit: Humidity (127 marks invalid value)
+ * 7 bit: Temperature with +50 degree shift to provide a range of -50 to +76 degree Celsius (77 marks an invalid value)
+ */
 
 // Invalid sensor values (to distinguish valid values)
 #define NOVALIDHUMIDITYDATA_SENDER1 127
