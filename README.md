@@ -2,7 +2,7 @@
 ## Receiver (433 MHz ASK and LoRa)
 To be done...
 ## Sender 1 (433 MHz ASK)
-Sends temperature, humidity and battery state every 30 minutes via a 433MHz-ASK to a receiver.
+Sends temperature, humidity and battery state every 30 minutes via a 433MHz-ASK signal to a receiver
 
 Hardware:
 * Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
