@@ -23,7 +23,7 @@
  * - Two magnetic reed switches "normally closed" to detect open windows
  *
  * History: 
- * 20230106, Initial version of PCB version
+ * 20230106, Initial version with PCB
  */
 #include <avr/sleep.h> 
 #include <avr/wdt.h> 
