@@ -2,6 +2,17 @@
 ## Receiver (433 MHz ASK and LoRa)
 To be done...
 ## Sender 1 (433 MHz ASK)
+Sends temperature, humidity and battery state every 30 minutes via a 433MHz-ASK to a receiver.
+
+Hardware:
+* Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
+* DHT22 sensor
+* 433MHz FS1000A sender
+* 3x AA-Batteries without voltage regulation (runtime >8 months, dependent on usage of rechargeable or normal batteries)
+* Control LED (blinks every 8 seconds) which can be enabled by a physical jumper
+
+[Arduino-Sketch](/Sender1/Sender1.ino)
+
 ![Schematic](assets/images/Sender1/Schematic.png)
 ## Sender 3 (433 MHz ASK)
 Magnetic reed switch sensor to detect if a window is open or tilted. Sends the window state, temperature, humidity and battery state every 30 minutes or triggered by magnetic reed switch change via a 433MHz-ASK to a receiver.
