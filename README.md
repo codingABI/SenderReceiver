@@ -10,6 +10,7 @@ Hardware:
 * 433MHz FS1000A sender
 * 3x AA-Batteries without voltage regulation (runtime >8 months, dependent on usage of rechargeable or normal batteries)
 * Control LED (blinks every 8 seconds) which can be enabled by a physical jumper
+* Selfmade PCB
 
 [Arduino-Sketch](/Sender1/Sender1.ino)
 
@@ -27,6 +28,7 @@ Hardware:
 * 3x AA-Batteries without voltage regulation (runtime >8 months, dependent on usage of rechargeable or normal batteries)
 * Control LED (blinks every 8 seconds) which can be enabled by a physical jumper
 * Two magnetic reed switches "normally closed" to detect the window state
+* Selfmade PCB
 
 [Arduino-Sketch](/Sender3/Sender3.ino)
 
@@ -49,6 +51,7 @@ Hardware:
 * 18650 Battery with integrated protection against deep discharge
 * Magnetic reed-switch "normally closed" with external pullup resistor
 * Control LED which can be enabled/disabled on demand with physical jumper JP2
+* Selfmade perfboard
 
 [Arduino-Sketch](/Sender5/Sender5.ino)
 
