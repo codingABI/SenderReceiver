@@ -14,7 +14,7 @@ Hardware:
 [Arduino-Sketch](/Sender1/Sender1.ino)
 
 ![Schematic](assets/images/Sender1/Schematic.png)
-![Schematic](assets/images/Sender1/Device.jpg)
+![Device](assets/images/Sender1/device.jpg)
 
 ## Sender 3 (433 MHz ASK)
 Magnetic reed switch sensor to detect if a window is open or tilted. Sends the window state, temperature, humidity and battery state every 30 minutes or triggered by magnetic reed switch change via a 433MHz-ASK to a receiver.
@@ -31,12 +31,12 @@ Hardware:
 
 ![Schematic](assets/images/Sender3/Schematic.png)
 
-![Schematic](assets/images/Sender3/PCB.jpg)
+![PCB](assets/images/Sender3/PCB.jpg)
 Case for the 3xAA batteries is a pice standard PVC installation tube (20mm)
-![Schematic](assets/images/Sender3/BatteriesPCB.jpg)
+![Batteries and PCB](assets/images/Sender3/BatteriesPCB.jpg)
 Case for the device is a standard PVC installation tube (25mm)
-![Schematic](assets/images/Sender3/Case.jpg)
-![Schematic](assets/images/Sender3/WindowReedSwitches.jpg)
+![Case](assets/images/Sender3/Case.jpg)
+![Window reed switches](assets/images/Sender3/WindowReedSwitches.jpg)
 
 ## Sender 5 (433 MHz LoRa)
 Sensor for a mailbox. When the lid of the slot is opened, a magnetic reed switch triggers and sends a LoRa signal to the receiver. Additionally once per day the current battery voltage and the magnetic reed switch state will also be sent to the receiver.
