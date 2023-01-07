@@ -33,9 +33,9 @@ Hardware:
 ![Schematic](assets/images/Sender3/Schematic.png)
 
 ![PCB](assets/images/Sender3/PCB.jpg)
-Case for the 3xAA batteries is a pice standard PVC installation tube (20mm)
+Case for the 3xAA batteries is a pice (~18cm) standard PVC installation tube (20mm)
 ![Batteries and PCB](assets/images/Sender3/BatteriesPCB.jpg)
-Case for the device is a standard PVC installation tube (25mm)
+Case for the device is a pice (~36cm) of a standard PVC installation tube (25mm)
 ![Case](assets/images/Sender3/Case.jpg)
 ![Window reed switches](assets/images/Sender3/WindowReedSwitches.jpg)
 
