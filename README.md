@@ -1,8 +1,9 @@
 # SenderReceiver
 Receiver and senders to monitor environmental data like temperature, humidity ... window and mailbox states.
 ![Overview](assets/images/Overview.png)
-This project is not a "step-by-step"-manual. It is a documention of my real devices. 
+This project is not a "step-by-step"-manual. It is a documention of my devices. 
 ## Receiver (433 MHz ASK and LoRa)
+Description:
 * Receives sensor data by 433MHz ASK or LoRa signals
 * Saves them to local csv files 
 * Forwards some sensor data to Blynk
