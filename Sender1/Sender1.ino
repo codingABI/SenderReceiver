@@ -8,6 +8,8 @@
  * Copyright (c) 2023 codingABI
  * For details see: License.txt
  * 
+ * created by codingABI https://github.com/codingABI/SenderReceiver
+ * 
  * External code: 
  * getBandgap() from https://forum.arduino.cc/t/measuring-battery-voltage-conditionally/319327/5
  * For details see externalCode.ino
