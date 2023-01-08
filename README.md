@@ -1,5 +1,5 @@
 # SenderReceiver
-Receiver and senders to monitor environmental data like tempature, humidity ... and window states.
+Receiver and senders to monitor environmental data like temperature, humidity ... and window states.
 ![Overview](assets/images/Overview.png)
 This project is not a "step-by-step"-manual. It is a documention of my real devices. 
 ## Receiver (433 MHz ASK and LoRa)
