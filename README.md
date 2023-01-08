@@ -28,11 +28,11 @@ Hardware:
 [Arduino-Sketch](/Receiver)
 
 ![Schematic](assets/images/Receiver/Schematic.png)
-Wooden case
+Wooden selfmade case
 ![Case with TFT](assets/images/Receiver/CaseTFT.jpg)
-PCB will be stacked on the TFT
+The CB will be stacked on the TFT
 ![PCB](assets/images/Receiver/PCB.jpg)
-BME280 is outside the case, because the ESP32 produces too much heat.
+The BME280 is outside the case, because the ESP32 produces too much heat.
 ![Case close](assets/images/Receiver/CaseClosed.jpg)
 ![Case frontside](assets/images/Receiver/CaseFront.jpg)
 ![Case backside open](assets/images/Receiver/CaseOpen.jpg)
