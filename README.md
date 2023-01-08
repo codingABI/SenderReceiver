@@ -5,7 +5,7 @@ This project is not a "step-by-step"-manual. It is a documention of my devices.
 ## ASK
 ASK (Amplitude-Shift Keying) is a simple signal modulation, which is used in cheap 433 MHz modules like the FS1000A.
 ## LoRa
-LoRa is more sophisticated then ASK and was needed in this project, because ASK signals from the metal mailbox were not received reliably by the Receiver in my environment.
+LoRa is more sophisticated then ASK and was needed in this project, because ASK signals from inside the metal mailbox were not received reliably by the Receiver in my environment.
 ## Apendix
 ### Receiver (433 MHz ASK and LoRa)
 Description:
