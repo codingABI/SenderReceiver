@@ -28,7 +28,7 @@ Hardware:
 [Arduino-Sketch](/Receiver)
 
 ![Schematic](assets/images/Receiver/Schematic.png)
-Wooden selfmade case
+Wooden selfmade case with TFT on first layyer.
 ![Case with TFT](assets/images/Receiver/CaseTFT.jpg)
 The PCB will be stacked on the TFT
 ![PCB](assets/images/Receiver/PCB.jpg)
