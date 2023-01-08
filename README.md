@@ -3,7 +3,23 @@ Receiver and senders to monitor environmental data like tempature, humidity ... 
 ![Overview](assets/images/Overview.png)
 This project is not a "step-by-step"-manual. It is a documention of my real devices. 
 ## Receiver (433 MHz ASK and LoRa)
-To be done...
+* Receives sensor data by 433MHz ASK or LoRa signals
+* Saves them to local csv files 
+* Forwards some sensor data to Blynk
+* Displays some sensor data on a touch display 
+* Provides a webserver to show sensor data in a browser 
+
+Hardware: 
+ * ESP-WROOM-32 NodeMCU (Board manager: ESP32 Dev Model, Baud 115200)
+ * ILI9341 with XPT2046-Touch
+ * PIR sensor AM312 to wakeup display from screensaver
+ * Passive buzzer
+ * RXB6 433MHz receiver (At the beginning I used a MX-05v, but this receiver was too bad)
+ * BME280 sensor for pressure, temperature and humidity
+ * Lora SX1278 Ra-02
+
+[Arduino-Sketch](/Receiver)
+
 ## Sender 1 (433 MHz ASK)
 Sends temperature, humidity and battery state every 30 minutes via a 433MHz-ASK signal to a receiver
 
