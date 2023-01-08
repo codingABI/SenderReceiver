@@ -2,7 +2,12 @@
 Receiver and senders to monitor environmental data like temperature, humidity ... window and mailbox states.
 ![Overview](assets/images/Overview.png)
 This project is not a "step-by-step"-manual. It is a documention of my devices. 
-## Receiver (433 MHz ASK and LoRa)
+## ASK
+ASK (Amplitude-Shift Keying) is a simple signal modulation, which is used in cheap 433 MHz modules like the FS1000A.
+## LoRa
+LoRa is more sophisticated then ASK and was needed in this project, because ASK signals from the metal mailbox were not received reliably by the Receiver in my environment.
+## Apendix
+### Receiver (433 MHz ASK and LoRa)
 Description:
 * Receives sensor data by 433MHz ASK or LoRa signals
 * Saves them to local csv files 
@@ -32,7 +37,7 @@ BME280 is outside the case because the ESP32 produces too much heat.
 ![Case frontside](assets/images/Receiver/CaseFront.jpg)
 ![Case backside open](assets/images/Receiver/CaseOpen.jpg)
 
-## Sender 1 (433 MHz ASK)
+### Sender 1 (433 MHz ASK)
 Sends temperature, humidity and battery state every 30 minutes via a 433MHz-ASK signal to a receiver
 
 Hardware:
@@ -49,7 +54,7 @@ Hardware:
 Case for the whole device is a pice (~36cm) standard PVC 25mm installation  tube. The three AA batteries are in a pice (~18cm) standard PVC 20mm installation tube.
 ![Device](assets/images/Sender1/device.jpg)
 
-## Sender 3 (433 MHz ASK)
+### Sender 3 (433 MHz ASK)
 Magnetic reed switch sensor to detect if a window is open or tilted. Sends the window state, temperature, humidity and battery state every 30 minutes or triggered by magnetic reed switch change via a 433MHz-ASK to a receiver.
 
 Hardware:
@@ -72,7 +77,7 @@ Case for the device is a pice (~36cm) of a standard PVC 25mm installation tube
 ![Case](assets/images/Sender3/Case.jpg)
 ![Window reed switches](assets/images/Sender3/WindowReedSwitches.jpg)
 
-## Sender 5 (433 MHz LoRa)
+### Sender 5 (433 MHz LoRa)
 Sensor for a mailbox. When the lid of the slot is opened, a magnetic reed switch triggers and sends a LoRa signal to the receiver. Additionally once per day the current battery voltage and the magnetic reed switch state will also be sent to the receiver.
 
 Hardware:
