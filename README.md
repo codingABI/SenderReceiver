@@ -23,6 +23,8 @@ Hardware:
 * RXB6 433MHz receiver (At the beginning I used a MX-05v, but this receiver was too bad)
 * BME280 sensor for pressure, temperature and humidity
 * Lora SX1278 Ra-02
+* LM2596 Step down voltage converter
+* Old 12V DC powersupply as input for LM2596 (1.6W when TFT is on, 0.8W when TFT is off)
 * Selfdesigned PCB
 
 [Arduino-Sketch](/Receiver)
