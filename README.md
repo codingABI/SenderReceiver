@@ -28,7 +28,7 @@ Hardware:
 ![PCB](assets/images/Receiver/PCB.jpg)
 ![Case close](assets/images/Receiver/CaseClosed.jpg)
 ![Case frontside](assets/images/Receiver/CaseFront.jpg)
-![Case backside](assets/images/Receiver/CaseBack.jpg)
+![Case backside open](assets/images/Receiver/CaseOpen.jpg)
 
 ## Sender 1 (433 MHz ASK)
 Sends temperature, humidity and battery state every 30 minutes via a 433MHz-ASK signal to a receiver
