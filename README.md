@@ -55,7 +55,7 @@ Case for the whole device is a pice (~36cm) standard PVC 25mm installation  tube
 ![Device](assets/images/Sender1/device.jpg)
 
 ### Sender 3 (433 MHz ASK)
-Magnetic reed switch sensor to detect if a window is open or tilted. Sends the window state, temperature, humidity and battery state every 30 minutes or triggered by magnetic reed switch change via a 433MHz-ASK to a receiver.
+Magnetic reed switch sensor to detect, if a window is open or tilted. Sends the window state, temperature, humidity and battery state every 30 minutes or triggered by magnetic reed switch change via a 433MHz-ASK to a receiver.
 
 Hardware:
 * Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
