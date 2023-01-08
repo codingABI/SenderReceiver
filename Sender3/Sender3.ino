@@ -10,6 +10,8 @@
  * Copyright (c) 2023 codingABI
  * For details see: License.txt
  * 
+ * created by codingABI https://github.com/codingABI/SenderReceiver
+ * 
  * External code: 
  * getBandgap() from https://forum.arduino.cc/t/measuring-battery-voltage-conditionally/319327/5
  * For details see externalCode.ino
@@ -205,7 +207,7 @@ void loop(){
   v_pinChangeInterrupt = false;
 
   // Sleep mode
-  sleep(1800); // Sleep for ~30 minutes 
+  sleep(1795); // Sleep for ~30 minutes (5 Seconds less then sensor 1 to avoid collisions)
   
   // Restore ADC
   ADCSRA = oldADCSRA;
