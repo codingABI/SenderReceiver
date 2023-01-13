@@ -40,7 +40,7 @@ The BME280 is outside the case, because the ESP32 produces too much heat.
 ![Case backside open](assets/images/Receiver/CaseOpen.jpg)
 
 ### Sender 1 (433 MHz ASK)
-Sends temperature, humidity and battery state of the staircase every 30 minutes via a 433MHz-ASK signal to a receiver
+Sends temperature, humidity and battery state of the staircase every 30 minutes via a 433MHz-ASK signal to the Receiver
 
 Hardware:
 * Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
@@ -57,7 +57,7 @@ Case for the whole device is a piece (~36cm) standard PVC 25mm installation  tub
 ![Device](assets/images/Sender1/device.jpg)
 
 ### Sender 3 (433 MHz ASK)
-Magnetic reed switch sensor to detect, if a window is closed, open or tilted. Sends the window state, outdoor temperature, humidity and battery state every 30 minutes or triggered by magnetic reed switch change via a 433MHz-ASK to a receiver.
+Magnetic reed switch sensor to detect, if a window is closed, open or tilted. Sends the window state, outdoor temperature, humidity and battery state every 30 minutes or triggered by magnetic reed switch change via a 433MHz-ASK to the Receiver.
 
 Hardware:
 * Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
@@ -80,7 +80,7 @@ Case for the device is a piece (~36cm) of a standard PVC 25mm installation tube
 ![Window reed switches](assets/images/Sender3/WindowReedSwitches.jpg)
 
 ### Sender 5 (433 MHz LoRa)
-Sensor for a mailbox. When the lid of the slot is opened, a magnetic reed switch triggers and sends a LoRa signal to the receiver. Additionally once per day the current battery voltage and the magnetic reed switch state will also be sent to the receiver.
+Sensor for a mailbox. When the lid of the slot is opened, a magnetic reed switch triggers and sends a LoRa signal to the Receiver. Additionally once per day the current battery voltage and the magnetic reed switch state will also be sent to the Receiver.
 
 Hardware:
 * Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
