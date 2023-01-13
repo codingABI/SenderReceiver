@@ -47,7 +47,7 @@ Hardware:
 * DHT22 sensor
 * 433MHz FS1000A sender (distance to receiver ~3m without line of sight with one wall between)
 * 3x AA-Batteries without voltage regulation (I use rechargeable AAs and the runtime is ~8 month)
-* Control LED (blinks every 8 seconds) which can be enabled/disabled on demand by a physical jumper
+* Control LED (blinks every 8 seconds) which can be enabled/disabled on demand with physical jumper SW2
 * Self-designed PCB
 
 [Arduino-Sketch](/Sender1/Sender1.ino)
@@ -64,7 +64,7 @@ Hardware:
 * DHT22 sensor
 * 433MHz FS1000A sender (distance to receiver ~4m without line of sight with one wall between)
 * 3x AA-Batteries without voltage regulation (I use non-rechargeable AAs, because the sender is outside the house, runtime > 1 year)
-* Control LED (blinks every 8 seconds) which can be enabled/disabled on demand by a physical jumper
+* Control LED (blinks every 8 seconds) which can be enabled/disabled on demand with physical jumper SW2
 * Two magnetic reed switches "normally closed" to detect the window state
 * Self-designed PCB
 
