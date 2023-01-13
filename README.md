@@ -18,7 +18,7 @@ Description:
 Hardware: 
 * ESP-WROOM-32 NodeMCU (Board manager: ESP32 Dev Model, Baud 115200)
 * ILI9341 TFT with XPT2046-Touch
-* PIR sensor AM312 to wake up the display from screensaver
+* PIR sensor AM312 to wake up the display from screensaver (blank screen)
 * Passive buzzer
 * RXB6 433MHz receiver (At the beginning I used a MX-05v, but this receiver was too bad)
 * BME280 sensor for pressure, temperature and humidity
