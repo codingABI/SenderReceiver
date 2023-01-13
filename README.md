@@ -10,7 +10,7 @@ LoRa is more sophisticated then ASK and was needed in this project, because ASK 
 ### Receiver (433 MHz ASK and LoRa)
 Description:
 * Receives sensor data by 433MHz ASK or LoRa signals
-* Saves some sensor data local CSV files 
+* Saves some sensor data to local CSV files 
 * Forwards some sensor data to Blynk
 * Displays some sensor data on a touch display 
 * Provides a webserver to show sensor data in a browser 
