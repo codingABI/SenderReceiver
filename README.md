@@ -27,7 +27,7 @@ Hardware:
 * Old 12V DC power supply as input for LM2596 (Power consumption on 230V side: 1.6W when TFT is on, 0.8W when TFT is off)
 * Self-designed PCB
 
-[Arduino-Sketch](/Receiver)
+[Arduino-Sketch](/Receiver/Receiver.ino)
 
 ![Schematic](assets/images/Receiver/Schematic.png)
 Wooden self-made case with TFT on first layyer.
