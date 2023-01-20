@@ -1,5 +1,8 @@
 // File for data which should not be published to the public
 
+// Device name
+#define HOSTNAME "yourdata"
+
 // OTA password
 #define OTAPASSWORD "yourdata"
 
