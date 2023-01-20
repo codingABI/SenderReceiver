@@ -1,1 +1,957 @@
 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name='viewport' content='width=device-width,initial-scale=1.0' />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="description" content="Sensor data view">
+  <meta name="author" content="codingABI">
+
+  <title>Sensordaten</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
+  <script src="https://chartjs-plugin-crosshair.netlify.app/chartjs-plugin-crosshair.js"></script>
+  <style>
+    .smallChart { /* Small chart */
+      background-color: #202020;
+      padding: 5px 10px;
+      margin: 5px;
+      width:  calc(50% - 32px); /* half of screen with margin&border-fix */
+      float: left; /* to left side */
+      border: 1px dotted gray;
+      border-collapse: collapse;
+    }
+    table {
+      /* Center table */
+      margin-left: auto;
+      margin-right: auto;
+    }
+    @media screen and (max-width: 800px) { /* if width < 800px */
+      .smallChart {
+        float: none; /* no float */
+        width: auto; /* Use complete width */
+      }
+      .rotateableHeader th { /* Rotate labels */
+        writing-mode: vertical-rl; /* Rotate Text */
+        transform: rotate(180deg);  /* Mirror content vertically */
+        white-space: nowrap;
+        text-align:left;
+      }
+    }
+    .bigChart {
+      height: 18em;
+      background-color: #202020;
+      border: 1px dotted gray;
+      border-collapse: collapse;
+      margin: 5px 5px;
+    }
+    a.activeA:link, a.activeA:visited, a.inactiveA:link, a.inactiveA:visited {
+      padding: 4px 10px;
+      text-align: center;
+      text-decoration: none;
+      margin: auto;
+      line-height: 2em;
+    }
+    a.activeA:link, a.activeA:visited {
+      background-color: #606060;
+      color: white;
+    }
+    a.activeA:hover, a.activeA:active {
+      background-color: red;
+    }
+    a.inactiveA:link, a.inactiveA:visited {
+      background-color: black;
+      color: grey;
+    }
+    a.inactiveA:hover, a.inactiveA:active {
+      background-color: black;
+    }
+    body {
+      background-color:#202020; 
+      margin:0;
+      padding:0; 
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24'%3E%3Cpath stroke='none' fill='%23252525' d='M23,4l-8 -4l-8 4l16 8l16 -8l-8 -4z M7,12 l-8 4v8l16 -8z M39,12 l8 4l2 -1v8l-2 1-16 -8z'/%3E%3Cpath stroke='none' fill='%23171717' d='M15,0l8 4v-5h-8zM23,12v13h-6l-2 -1v-8l-8 -4v-8zM31 0l8 4v8l8 4l2 -1v-18h-18zM31 16v8l2 1h14v-1z'/%3E%3Cpath stroke='%23000000' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' fill='none' d='M23,-1v5l-8 -4v-1m0 1l-8 4l16 8l16 -8l-8 -4v-1m0 1l-8 4m-16 0v8l8 4v8m-2 1l2 -1l2 1m-2 -9l-16 8v1m0 -1l-2 -1m2 -7v-16l-2 -1m2 1l2 -1m-4 16l2 1l8 -4m16 0v13m6 0l2 -1l2 1m-2 -1v-8l8 -4v-8m10 19l-2 1v1m0 -1l-16 -8m8 -4l8 4l2 -1l-2 1v-16l-2 -1m2 1l2 -1'/%3E%3C/svg%3E") , linear-gradient(to bottom,#000000 0%,#202020 90%,#ffffff);
+      background-blend-mode: darken;
+      background-repeat: repeat, no-repeat;
+      color:white;
+      font-family:'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    }
+    header {
+      margin: 5px;
+    }
+    td,th {
+      vertical-align: middle;
+      text-align: center;
+      padding: 5px;
+      font-size:0.75em; 
+    }
+    table, th, td{
+      border-width: 1px;
+      border-style: dotted;
+      border-collapse: collapse;
+    }
+    table, td {
+      border-color: gray;
+    }
+    th {
+      background-color:#606060;
+      border-color: black;
+    }
+    tbody tr:nth-child(even) {
+      background-color:#000000;
+      }
+    tbody tr:nth-child(odd) {
+      background-color:#202020;
+    }
+    p {
+      margin: 5px 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav>
+      <a href="javascript:void(0)" id="linkPrev" onclick="javascript:makePrevChart()" class="activeA">&#9668;</a>
+      <a href="javascript:void(0)" id="linkNext" onclick="javascript:makeNextChart()" class="activeA">&#9658;</a>
+
+      <a href="info.html" class="activeA">&#128161;Info</a>
+      <a href="javascript:void(0)" id="linkDownload" class="activeA">&#128229;Download</a>
+
+      <span id="labelMonth"></span>
+    </nav>
+  </header>
+  <main>
+    <p>Zeitlicher Verlauf:</p>
+    <div id="mainChartDiv" class="bigChart">
+      <canvas id="ctxMain"></canvas>
+    </div>
+    <p>H&auml;ufigkeitsverteilung Treppenhaus:</p>
+    <div id="distributionHumidityStairsChartDiv" class="smallChart">
+      <canvas id="ctxdistributionHumidityStairs"></canvas>
+    </div>  
+    <div id="distributionTemperatureStairsChartDiv" class="smallChart">
+      <canvas id="ctxdistributionTemperatureStairs"></canvas>
+    </div>
+    <p>Min-/Durchschnitts-/Maxwerte:</p>
+    <div id="summary" class="statisticTable">
+      <table class="rotateableHeader">
+      <thead>
+      <tr><th></th><th>Rel. Luft&shy;feuchtig&shy;keit &phi;<sub>Treppe</sub></th><th>Rel. Luft&shy;feuchtig&shy;keit &phi;<sub>Wohnung</sub></th><th>Rel. Luft&shy;feuchtig&shy;keit &phi;<sub>Fenster</sub></th><th>Temperatur &thetasym;<sub>Treppe</sub></th><th>Temperatur &thetasym;<sub>Wohnung</sub></th><th>Temperatur &thetasym;<sub>Fenster</sub></th><th>Rel. Luft&shy;druck (NN) &rho;</th></tr>
+      </thead>
+      <tbody>
+      <tr><td>Min</td><td align="right" id="humidityStairsMin"></td><td align="right" id="humidityRoomMin"></td><td align="right" id="humidityWindowMin"></td><td align="right" id="temperatureStairsMin"></td><td align="right" id="temperatureRoomMin"></td><td align="right" id="temperatureWindowMin"></td><td align="right" id="pressureMin"></td></tr>
+      <tr><td>&Oslash;</td><td align="right" id="humidityStairsAvg"></td><td align="right" id="humidityRoomAvg"></td><td align="right" id="humidityWindowAvg"></td><td align="right" id="temperatureStairsAvg"></td><td align="right" id="temperatureRoomAvg"></td><td align="right" id="temperatureWindowAvg"></td><td align="right" id="pressureAvg"></td></tr>
+      <tr><td>Max</td><td align="right" id="humidityStairsMax"></td><td align="right" id="humidityRoomMax"></td><td align="right" id="humidityWindowMax"></td><td align="right" id="temperatureStairsMax"></td><td align="right" id="temperatureRoomMax"></td><td align="right" id="temperatureWindowMax"></td><td align="right" id="pressureMax"></td>
+      </tr>
+      </tbody>
+      </table>
+    </div>
+  </main>
+  <footer>
+    <p align="right">&copy; codingABI 2022</p>
+  </footer>
+<script>
+
+// Global variables
+var mainChart = null;
+var distributionTemperatureStairsChart = null;
+var distributionHumidityStairsChart = null;
+// Current dataset timestamp
+let datasetMonth 
+// statistics data
+let temperatureRoomMin
+let temperatureRoomMax
+let temperatureRoomSum
+let temperatureRoomCnt
+let temperatureStairsMin
+let temperatureStairsMax
+let temperatureStairsSum
+let temperatureStairsCnt
+let temperatureWindowMin
+let temperatureWindowMax
+let temperatureWindowSum
+let temperatureWindowCnt
+let humidityStairsMin
+let humidityStairsMax
+let humidityStairsSum
+let humidityStairsCnt
+let humidityRoomMin
+let humidityRoomMax
+let humidityRoomSum
+let humidityRoomCnt
+let humidityWindowMin
+let humidityWindowMax
+let humidityWindowSum
+let humidityWindowCnt
+let pressureMin
+let pressureMax
+let pressureSum
+let pressureCnt
+let distributionHumidityStairs
+let distributionTemperatureStairs
+// Full names for month
+var months = ['Januar', 'Februar', 'M&auml;rz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+
+// Create/update all charts
+function makeChart(sensors) {
+  // Process timestamp as labels
+  var sensorLabels = sensors.map(function(dataset) {
+    return dataset.Time
+  });
+  // Process data sets by columns
+  var temperatureData1 = sensors.map(function(dataset) {
+    if (dataset.T_stairs != "") {
+      var currentIntValue = parseInt(dataset.T_stairs);
+      if (!isNaN(currentIntValue)) {
+        temperatureStairsSum+=currentIntValue;
+        temperatureStairsCnt++;
+        if (dataset.T_stairs in distributionTemperatureStairs) {
+          distributionTemperatureStairs[dataset.T_stairs]++;
+        } else {
+          distributionTemperatureStairs[dataset.T_stairs] = 1;
+        }
+        if (dataset.T_stairs < temperatureStairsMin) temperatureStairsMin = dataset.T_stairs;
+        if (dataset.T_stairs > temperatureStairsMax) temperatureStairsMax = dataset.T_stairs;
+      }
+      return dataset.T_stairs
+    } 
+  });
+  var humidityData1 = sensors.map(function(dataset) { 
+    if (dataset.H_stairs != "") {
+      var currentIntValue = parseInt(dataset.H_stairs);
+      if (!isNaN(currentIntValue)) {
+        humidityStairsSum+=currentIntValue;
+        humidityStairsCnt++;
+        if (dataset.H_stairs in distributionHumidityStairs) {
+          distributionHumidityStairs[dataset.H_stairs]++;
+        } else {
+          distributionHumidityStairs[dataset.H_stairs] = 1;
+        }
+        if (dataset.H_stairs < humidityStairsMin) humidityStairsMin = dataset.H_stairs;
+        if (dataset.H_stairs > humidityStairsMax) humidityStairsMax = dataset.H_stairs;
+      }
+      return dataset.H_stairs
+    }
+  });
+  var temperatureData2 = sensors.map(function(dataset) {
+    if (dataset.T_room != "") {
+      var currentIntValue = parseInt(dataset.T_room);
+      if (!isNaN(currentIntValue)) {
+        temperatureRoomSum+=currentIntValue;
+        temperatureRoomCnt++;
+        if (currentIntValue < temperatureRoomMin) temperatureRoomMin = currentIntValue;
+        if (currentIntValue > temperatureRoomMax) temperatureRoomMax = currentIntValue;
+      }
+      return dataset.T_room
+    }
+  });
+  var humidityData2 = sensors.map(function(dataset) {
+    if (dataset.H_room != "") {
+      var currentIntValue = parseInt(dataset.H_room);
+      if (!isNaN(currentIntValue)) {
+        humidityRoomSum+=currentIntValue;
+        humidityRoomCnt++;
+        if (currentIntValue < humidityRoomMin) { humidityRoomMin = currentIntValue; }
+        if (currentIntValue > humidityRoomMax) humidityRoomMax = currentIntValue;
+      }
+      return dataset.H_room
+    }
+  });
+  var temperatureData3 = sensors.map(function(dataset) {
+    if (dataset.T_window != "") {
+      var currentIntValue = parseInt(dataset.T_window);
+      if (!isNaN(currentIntValue)) {
+        temperatureWindowSum+=currentIntValue;
+        temperatureWindowCnt++;
+        if (currentIntValue < temperatureWindowMin) temperatureWindowMin = currentIntValue;
+        if (currentIntValue > temperatureWindowMax) temperatureWindowMax = currentIntValue;
+      }
+      return dataset.T_window
+    }
+  });
+  var humidityData3 = sensors.map(function(dataset) { 
+    if (dataset.H_window != "") {
+      var currentIntValue = parseInt(dataset.H_window);
+      if (!isNaN(currentIntValue)) {
+        humidityWindowSum+=currentIntValue;
+        humidityWindowCnt++;
+        if (dataset.H_window < humidityWindowMin) humidityWindowMin = dataset.H_window;
+        if (dataset.H_window> humidityWindowMax) humidityWindowMax = dataset.H_window;
+      }
+      return dataset.H_window
+    }
+  });
+  var pressureData = sensors.map(function(dataset) {
+     if (dataset.P_room != "") {
+      var currentIntValue = parseInt(dataset.P_room);
+      if (!isNaN(currentIntValue)) {
+        pressureSum+=currentIntValue;
+        pressureCnt++;
+        if (currentIntValue < pressureMin) pressureMin = currentIntValue;
+        if (currentIntValue > pressureMax) pressureMax = currentIntValue;
+      }
+      return dataset.P_room
+    } 
+  });
+  var switchData1 = sensors.map(function(dataset) {
+    if (dataset.S1_window != "") {
+      return dataset.S1_window
+    } 
+  });
+  var switchData2 = sensors.map(function(dataset) {
+    if (dataset.S2_window != "") {
+      return dataset.S2_window
+    } 
+  });
+  if (mainChart != null) { // Does main chart already exists?
+    // Yes, main chart exists => Update data
+    mainChart.data.datasets[0].data = humidityData1;
+    mainChart.data.datasets[1].data = humidityData2;
+    mainChart.data.datasets[2].data = humidityData3;
+    mainChart.data.datasets[3].data = temperatureData1;
+    mainChart.data.datasets[4].data = temperatureData2;
+    mainChart.data.datasets[5].data = temperatureData3;
+    mainChart.data.datasets[6].data = pressureData;
+    mainChart.data.datasets[7].data = switchData2;
+    mainChart.data.datasets[8].data = switchData1;
+  
+    mainChart.data.labels = sensorLabels;
+    mainChart.update();
+    distributionHumidityStairsChart.data.datasets[0].data = Object.keys(distributionHumidityStairs).map(function (key) { return Math.round(1000*distributionHumidityStairs[key]/humidityStairsCnt)/10; });
+    distributionHumidityStairsChart.data.labels = Object.keys(distributionHumidityStairs)
+    distributionHumidityStairsChart.update();
+    distributionTemperatureStairsChart.data.datasets[0].data = Object.keys(distributionTemperatureStairs).map(function (key) { return Math.round(1000*distributionTemperatureStairs[key]/temperatureStairsCnt)/10; });
+    distributionTemperatureStairsChart.data.labels = Object.keys(distributionTemperatureStairs)
+    distributionTemperatureStairsChart.update();
+  } else {
+    // Main chart does not exist => create charts
+
+    // Main chart
+    mainChart = new Chart(ctxMain, {
+      type: 'line',
+      options: {
+        locale: "de-DE",
+        maintainAspectRatio: false,
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          crosshair: {
+            zoom: {
+              enabled: false,
+            },
+            snap: {
+              enabled: true
+            },
+            sync: {
+              enabled: false
+            }
+          },
+          legend: {
+            labels: { color: 'white' },
+          },
+          tooltip: {
+            backgroundColor : '#606060',
+            usePointStyle : true,
+            multiKeyBackground : '#606060',
+            position: 'nearest',
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+
+                if (label) {
+                  label += ': '
+                }
+                if ((context.datasetIndex==7) || (context.datasetIndex==8)) {
+                  label = '';
+                  if ((context.parsed.y == 1) && (context.datasetIndex==8)) label='Fenster gekippt';
+                  if ((context.parsed.y == 1) && (context.datasetIndex==7)) label='Fenster geöffnet';
+                } else {
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y;
+                    switch(context.datasetIndex) {
+                      case 0 : label+='%';break;
+                      case 1 : label+='%';break;
+                      case 2 : label+='%';break;
+                      case 3 : label+='°C';break;
+                      case 4 : label+='°C';break;
+                      case 5 : label+='°C';break;
+                      case 6 : label+='hPa';break;
+                    }
+                  }
+                }
+                return label;
+              }
+            }
+          },
+        },
+        scales: {
+          x: {
+            type: 'time',
+            unit: "hour",
+            time: { tooltipFormat:"HH:mm dd.MM.yyyy", displayFormats: { hour: "HH:mm", minute: "HH:mm", second: "HH:mm:ss" } },
+            grid: {
+              borderColor: 'white',
+              color: 'gray',
+              borderDash: [2,1],
+            },
+            ticks: {
+              color: 'white',
+            }
+          },
+          y: {
+            title: { display: true, text: 'Temperatur in °C',color: 'red'},
+            type: 'linear',
+            grid: {
+              borderColor: 'red',
+              borderDash: [1,3],
+              color: 'red',
+            },
+            ticks: {
+              color: 'red',
+            }
+          },
+          y2: {
+            title: { display: true, text: 'Rel. Luftfeuchtigkeit in %', color: 'LightSkyBlue'},
+            type: 'linear',
+            position: 'right',
+            grid: {
+              borderColor: 'LightSkyBlue',
+              borderDash: [1,3],
+              color: 'LightSkyBlue'
+            },
+            ticks: {
+              color: 'LightSkyBlue',
+            },
+          },
+          y3: {
+            title: { display: true, text: 'Luftdruck in hPa', color: 'green'},
+            type: 'linear',
+            position: 'right',
+            grid: {
+              gridLines: {
+                display:false
+              }   
+            },
+            ticks: {
+              callback: function(value, index, values) { // This callback prevents the 1000-seperator "."
+                return value;
+              },
+              color: 'green',
+            }
+          },
+          y4: {
+            title: { display: true, text: 'Sensor', color: 'yellow'},
+            type: 'linear',
+            position: 'right',
+            min: 0,
+            max: 1,
+            grid: {
+              gridLines: {
+                display:false
+              }   
+            },
+            ticks: {
+              count: 2,
+              color: 'yellow',
+            }
+          }
+        }
+      },
+      data: {
+        labels: sensorLabels,
+        datasets: [
+          {
+            label: 'Rel. Luftfeuchtigkeit \u03C6 Treppe',
+            borderColor: 'LightSkyBlue',
+            borderWidth: 2,
+            data: humidityData1,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointStyle: 'rect',
+            yAxisID: 'y2',
+            hoverBorderWidth: 2,
+            spanGaps: true
+          },
+          {
+            label: 'Rel. Luftfeuchtigkeit \u03C6 Wohnung',
+            borderColor: 'LightSkyBlue',
+            data: humidityData2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointStyle: 'rectRounded',
+            yAxisID: 'y2',
+            hoverBorderWidth: 2,
+            borderWidth: 1,
+            spanGaps: true,
+            hidden: true
+          },
+          {
+            label: 'Rel. Luftfeuchtigkeit \u03C6 Fenster',
+            borderColor: 'LightSkyBlue',
+            data: humidityData3,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointStyle: 'triangle',
+            yAxisID: 'y2',
+            hoverBorderWidth: 2,
+            borderWidth: 1,
+            spanGaps: true,
+            hidden: true,
+            borderDash: [5, 5]
+          },
+          {
+            label: "Temperatur \u03D1 Treppe",
+            borderColor: 'red',
+            data: temperatureData1,
+            borderWidth: 2, 
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            hoverBorderWidth: 2,
+            spanGaps: true
+          },
+          {
+            label: 'Temperatur \u03D1 Wohnung',
+            borderColor: 'red',
+            data: temperatureData2, 
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointStyle: 'triangle',
+            hoverBorderWidth: 2,
+            borderWidth: 1,
+            spanGaps: true,
+            hidden: true
+          },
+          {
+            label: 'Temperatur \u03D1 Fenster',
+            borderColor: 'red',
+            data: temperatureData3, 
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointStyle: 'rect',
+            hoverBorderWidth: 2,
+            borderWidth: 1,
+            spanGaps: true,
+            hidden: true,
+            borderDash: [5, 5]
+          },
+          {
+            label: 'Rel. Luftdruck (NN) \u03C1',
+            borderColor: 'green',
+            data: pressureData,
+            borderWidth: 1, 
+            pointRadius: 0,
+            pointStyle: 'crossRot',
+            pointHoverRadius: 4,
+            hoverBorderWidth: 2,
+            yAxisID: 'y3',
+            spanGaps: true,
+            hidden: true
+          },
+          {
+            label: 'Offen-Sensor',
+            stepped: true,
+            borderColor: 'yellow',
+            data: switchData2,
+            borderWidth: 2, 
+            pointRadius: 0,
+            fill: true,
+            backgroundColor: 'rgba(255, 255, 0, 0.2)',
+            pointStyle: 'star',
+            pointHoverRadius: 4,
+            hoverBorderWidth: 2,
+            yAxisID: 'y4',
+            spanGaps: true
+          },
+          {
+            label: 'Kipp-Sensor',
+            stepped: true,
+            borderColor: 'orange',
+            data: switchData1,
+            borderWidth: 1, 
+            pointRadius: 0,
+            fill: true,
+            backgroundColor: 'rgba(255, 165, 0, 0.2)',
+            pointStyle: 'rectRot',
+            pointHoverRadius: 4,
+            hoverBorderWidth: 2,
+            yAxisID: 'y4',
+            spanGaps: true
+          },
+        ]
+      }
+    });
+    // Small chart for humidity distribution
+    distributionHumidityStairsChart = new Chart(ctxdistributionHumidityStairs, {
+      type: 'line',
+      options: {
+        locale: "de-DE",
+        maintainAspectRatio: false,
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          crosshair: {
+            zoom: {
+              enabled: false,
+            },
+            snap: {
+              enabled: true
+            },
+            sync: {
+              enabled: false
+            }
+          },
+          legend: {
+            display: false
+          },
+          tooltip: {
+            displayColors: false, 
+            backgroundColor : '#606060',
+            usePointStyle : true,
+            multiKeyBackground : '#606060',
+            position: 'nearest',
+            callbacks: {
+              label: function(context) {
+                let label = context.parsed.y + "% der Zeit lag die Luftfeuchtigkeit bei " + context.label + "%";
+                return label;
+              },
+              title: function(tooltipItem, data) {
+                return ""; // No tooltip title for small chart
+              }
+            }
+          },
+        },
+        scales: {
+          x: {
+           grid: {
+              borderColor: 'white',
+              color: 'gray',
+              borderDash: [2,1],
+            },
+            ticks: {
+              callback: function(value) { 
+                return this.getLabelForValue(value) + "%";
+              },
+              color: 'white',
+            },
+            title: { display: true, text: 'Rel. Luftfeuchtigkeit \u03C6 Treppe', color: 'White'},
+          },
+          y: {
+            title: { display: true, text: 'Verteilung', color: 'LightSkyBlue'},
+            type: 'linear',
+            grid: {
+              borderColor: 'LightSkyBlue',
+              borderDash: [1,3],
+              color: 'LightSkyBlue'
+            },
+            ticks: {
+              callback: function(value) { 
+                return value + "%"
+              },
+              color: 'LightSkyBlue',
+            },
+          }
+        }
+      },
+      data: {
+        labels: Object.keys(distributionHumidityStairs),
+        datasets: [
+          {
+            label: 'Rel. Luftfeuchtigkeit in % Treppe',
+            borderColor: 'LightSkyBlue',
+            borderWidth: 2,
+            data: Object.keys(distributionHumidityStairs).map(function (key) { return Math.round(1000*distributionHumidityStairs[key]/humidityStairsCnt)/10; }) ,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointStyle: 'rect',
+            hoverBorderWidth: 2,
+            spanGaps: true
+          }
+        ]
+      }
+    });
+
+    // Small chart for temperature distribution
+    distributionTemperatureStairsChart = new Chart(ctxdistributionTemperatureStairs, {
+      type: 'line',
+      options: {
+        locale: "de-DE",
+        maintainAspectRatio: false,
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          crosshair: {
+            zoom: {
+              enabled: false,
+            },
+            snap: {
+              enabled: true
+            },
+            sync: {
+              enabled: false
+            }
+          },
+          legend: {
+            display: false
+          },
+          tooltip: {
+            displayColors: false, 
+            backgroundColor : '#606060',
+            usePointStyle : true,
+            multiKeyBackground : '#606060',
+            position: 'nearest',
+            callbacks: {
+              label: function(context) {
+                let label = context.parsed.y + "% der Zeit lag die Temperatur bei " + context.label + "°C";
+                return label;
+              },
+              title: function(tooltipItem, data) {
+                return ""; // No tooltip title for small chart
+              }
+            }
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              borderColor: 'white',
+              color: 'gray',
+              borderDash: [2,1],
+            },
+            ticks: {
+              callback: function(value) { 
+                return this.getLabelForValue(value) + "°C"
+              },
+              color: 'white',
+            },
+            title: { display: true, text: 'Temperatur \u03D1 Treppe', color: 'White'},
+          },
+          y: {
+            title: { display: true, text: 'Verteilung', color: 'red'},
+            type: 'linear',
+            grid: {
+              borderColor: 'red',
+              borderDash: [1,3],
+              color: 'red'
+            },
+            ticks: {
+              callback: function(value) { 
+                return value + "%"
+              },
+              color: 'red',
+            },
+          }
+        }
+      },
+      data: {
+        labels: Object.keys(distributionTemperatureStairs),
+        datasets: [
+          {
+            label: 'Temperatur in °C Treppe',
+            borderColor: 'red',
+            borderWidth: 2,
+            data: Object.keys(distributionTemperatureStairs).map(function (key) { return Math.round(1000*distributionTemperatureStairs[key]/temperatureStairsCnt)/10; }) ,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointStyle: 'triangle',
+            hoverBorderWidth: 2,
+            spanGaps: true
+          }
+        ]
+      }
+    });
+  }
+}
+
+// Function to create  a leading zero (used for month)
+Number.prototype.pad = function(size) {
+    var s = String(this);
+    while (s.length < (size || 2)) {s = "0" + s;}
+    return s;
+}
+
+// Reset statistics
+function resetStats() {
+  temperatureRoomMin = 255
+  temperatureRoomMax = -255
+  temperatureRoomSum = 0
+  temperatureRoomCnt = 0
+  temperatureStairsMin = 255
+  temperatureStairsMax = -255
+  temperatureStairsSum = 0
+  temperatureStairsCnt = 0
+  temperatureWindowMin = 255
+  temperatureWindowMax = -255
+  temperatureWindowSum = 0
+  temperatureWindowCnt = 0
+  humidityStairsMin = 255
+  humidityStairsMax = -255
+  humidityStairsSum = 0
+  humidityStairsCnt = 0
+  humidityRoomMin = 255
+  humidityRoomMax = -255
+  humidityRoomSum = 0
+  humidityRoomCnt = 0
+  humidityWindowMin = 255
+  humidityWindowMax = -255
+  humidityWindowSum = 0
+  humidityWindowCnt = 0
+  pressureMin = 2000
+  pressureMax = -2000
+  pressureSum = 0
+  pressureCnt = 0
+  distributionHumidityStairs = {}
+  distributionTemperatureStairs = {}
+}
+
+// Update statistics table
+function showStats() {
+  let sensorData = ""
+
+  if (temperatureStairsMin !== 255) sensorData = temperatureStairsMin; else sensorData = "-";
+  document.getElementById("temperatureStairsMin").innerHTML = sensorData + "&deg;C"
+
+  if (temperatureStairsMax !== -255) sensorData = temperatureStairsMax; else sensorData = "-";
+  document.getElementById("temperatureStairsMax").innerHTML = sensorData + "&deg;C";
+
+  if ((temperatureStairsSum !== 0) && (temperatureStairsCnt !== 0)) sensorData = Math.round(temperatureStairsSum/temperatureStairsCnt); else sensorData = "-";
+  document.getElementById("temperatureStairsAvg").innerHTML = sensorData + "&deg;C";
+
+  if (temperatureRoomMin !== 255) sensorData = temperatureRoomMin; else sensorData = "-";
+  document.getElementById("temperatureRoomMin").innerHTML = sensorData + "&deg;C"
+
+  if (temperatureRoomMax !== -255) sensorData = temperatureRoomMax; else sensorData = "-";
+  document.getElementById("temperatureRoomMax").innerHTML = sensorData + "&deg;C";
+
+  if ((temperatureRoomSum !== 0) && (temperatureRoomCnt !== 0)) sensorData = Math.round(temperatureRoomSum/temperatureRoomCnt); else sensorData = "-";
+  document.getElementById("temperatureRoomAvg").innerHTML = sensorData + "&deg;C";
+
+  if (temperatureWindowMin !== 255) sensorData = temperatureWindowMin; else sensorData = "-";
+  document.getElementById("temperatureWindowMin").innerHTML = sensorData + "&deg;C"
+
+  if (temperatureWindowMax !== -255) sensorData = temperatureWindowMax; else sensorData = "-";
+  document.getElementById("temperatureWindowMax").innerHTML = sensorData + "&deg;C";
+
+  if ((temperatureWindowSum !== 0) && (temperatureWindowCnt !== 0)) sensorData = Math.round(temperatureWindowSum/temperatureWindowCnt); else sensorData = "-";
+  document.getElementById("temperatureWindowAvg").innerHTML = sensorData + "&deg;C";
+
+  if (humidityStairsMin !== 255) sensorData = humidityStairsMin; else sensorData = "-";
+  document.getElementById("humidityStairsMin").innerHTML = sensorData + "%";
+
+  if (humidityStairsMax !== -255) sensorData = humidityStairsMax; else sensorData = "-";
+  document.getElementById("humidityStairsMax").innerHTML = sensorData + "%";
+
+  if ((humidityStairsSum !== 0) && (humidityStairsCnt !== 0)) sensorData = Math.round(humidityStairsSum/humidityStairsCnt); else sensorData = "-";
+  document.getElementById("humidityStairsAvg").innerHTML = sensorData + "%";
+
+  if (humidityRoomMin !== 255) sensorData = humidityRoomMin; else sensorData = "-";
+  document.getElementById("humidityRoomMin").innerHTML = sensorData + "%";
+
+  if (humidityRoomMax !== -255) sensorData = humidityRoomMax; else sensorData = "-";
+  document.getElementById("humidityRoomMax").innerHTML = sensorData + "%";
+
+  if ((humidityRoomSum !== 0) && (humidityRoomCnt !== 0)) sensorData = Math.round(humidityRoomSum/humidityRoomCnt); else sensorData = "-";
+  document.getElementById("humidityRoomAvg").innerHTML = sensorData + "%";
+
+  if (humidityWindowMin !== 255) sensorData = humidityWindowMin; else sensorData = "-";
+  document.getElementById("humidityWindowMin").innerHTML = sensorData + "%";
+
+  if (humidityWindowMax !== -255) sensorData = humidityWindowMax; else sensorData = "-";
+  document.getElementById("humidityWindowMax").innerHTML = sensorData + "%";
+
+  if ((humidityWindowSum !== 0) && (humidityWindowCnt !== 0)) sensorData = Math.round(humidityWindowSum/humidityWindowCnt); else sensorData = "-";
+  document.getElementById("humidityWindowAvg").innerHTML = sensorData + "%";
+
+  if (pressureMin !== 2000) sensorData = pressureMin; else sensorData = "-";
+  document.getElementById("pressureMin").innerHTML = sensorData + " hPa";
+
+  if (pressureMax !== -2000) sensorData = pressureMax; else sensorData = "-";
+  document.getElementById("pressureMax").innerHTML = sensorData + " hPa";
+
+  if ((pressureSum !== 0) && (pressureCnt !== 0)) sensorData = Math.round(pressureSum/pressureCnt); else sensorData = "-";
+  document.getElementById("pressureAvg").innerHTML = sensorData + " hPa";
+}
+
+// Goto previous month
+function makePrevChart() {
+  if ((datasetMonth.getUTCFullYear() == 2021) && (datasetMonth.getUTCMonth()==8)) document.getElementById("linkPrev").className="inactiveA"; // Disable previous button if displayed month is the second month
+  if ((datasetMonth.getUTCFullYear() == 2021) && (datasetMonth.getUTCMonth()==7)) return; // Exit if displayed month is the first month
+  document.getElementById("linkNext").className="activeA"; // Enable next button 
+  // Set dataset timestamp to last month
+  datasetMonth.setUTCMonth(datasetMonth.getUTCMonth()-1);
+  datasetMonth.setUTCDate(1);
+  fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
+  resetStats();
+  d3.dsv(';',fileName).then(makeChart).then(showStats); // Load month to charts
+  document.getElementById("linkDownload").href=fileName; // Set download link for csv file
+  document.getElementById("labelMonth").innerHTML=months[datasetMonth.getUTCMonth()] + " " + datasetMonth.getUTCFullYear() // Set label in top row
+}
+
+// Goto next month or summary view
+function makeNextChart() {
+  var today = new Date();
+  var nextMonth = new Date();
+
+  nextMonth.setUTCMonth(today.getUTCMonth()+1);
+  nextMonth.setUTCDate(1);
+
+  if ((today.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (today.getUTCMonth()==datasetMonth.getUTCMonth())) document.getElementById("linkNext").className="inactiveA"; // Disable next button if displayed month is the current month
+  if ((nextMonth.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (nextMonth.getUTCMonth()==datasetMonth.getUTCMonth())) return; // Exit if we are already in summary view
+  document.getElementById("linkPrev").className="activeA"; // Enable previous button
+  // Set dataset timestamp to next month
+  datasetMonth.setUTCMonth(datasetMonth.getUTCMonth()+1);
+  datasetMonth.setUTCDate(1);
+  resetStats();
+  if ((nextMonth.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (nextMonth.getUTCMonth()==datasetMonth.getUTCMonth())) { // Make summary view with all months, if displayed month would be the beyond the current month 
+    let filesList = [];
+
+    let iterationDate = new Date('2021-08-01T12:00:00'); // First day of my data recordings
+    while (iterationDate <= today) { // Create list of all needed csv files
+      filesList.push( 'sn' + iterationDate.getUTCFullYear() + (iterationDate.getUTCMonth()+1).pad()  + '.csv');
+      iterationDate.setUTCMonth(iterationDate.getUTCMonth()+1);      
+    }
+    document.getElementById("labelMonth").innerHTML="Gesamt" // Set label in top row in summary view
+    document.getElementById("linkDownload").href="javascript:downloadFiles(\"" + filesList + "\")"; // Set download function for all csv files
+    Promise.all(filesList.map(url => d3.dsv(";",url))).then(function(allData) { makeChart(d3.merge(allData))}).then(showStats); // Load all months to chart
+  } else {
+    // Load next month
+    fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
+    d3.dsv(';',fileName).then(makeChart).then(showStats); // Load month to charts
+    document.getElementById("linkDownload").href=fileName; // Set download link for csv file
+    document.getElementById("labelMonth").innerHTML=months[datasetMonth.getUTCMonth()] + " " + datasetMonth.getUTCFullYear() // Set label in top row to displayed month
+  }
+}
+
+// Simple download for a list of files (could trigger popup blocker)
+function downloadFiles(filesString) {
+  var filesList = filesString.split(",");
+  for (var i = 0; i < filesList.length; i++) {
+    setTimeout(window.open('/' + filesList[i]), 2000*i);
+  }
+}
+
+datasetMonth = new Date() // Set dataset timestamp to current date
+
+// Create csv file name from current date
+let fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
+// Reset statistics
+resetStats();
+
+d3.dsv(';',fileName).then(makeChart).then(showStats); // Load month to charts
+document.getElementById("linkDownload").href=fileName; // Set download link for csv file
+document.getElementById("labelMonth").innerHTML=months[datasetMonth.getUTCMonth()] + " " + datasetMonth.getUTCFullYear() // Set label in top row to displayed month
+
+</script>
+</body>
