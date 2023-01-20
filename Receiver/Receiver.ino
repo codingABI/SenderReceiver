@@ -79,7 +79,6 @@
 #include "sensordata.h"
 #include <BlynkSimpleEsp32.h>
 
-#define HOSTNAME "esp32abi01"
 #define RCSIGNATURE 0b00111000000000000000000000000000UL // Signature for 433MHz signals (only the first 5 bits are the signature)
 #define SECS_PER_MIN 60
 #define SECS_PER_HOUR 3600
