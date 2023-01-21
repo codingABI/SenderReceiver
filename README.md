@@ -8,7 +8,7 @@ ASK (Amplitude-Shift Keying) is a simple signal modulation, which is used in che
 LoRa is more sophisticated then ASK and was needed in this project, because ASK signals from inside the metal mailbox were not received reliably by the Receiver in my environment.
 
 ## License and copyright
-This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Receiver) is licensed under the terms of the 2-Clause BSD License [Copyright (c) 2022 codingABI](LICENSE). 
+This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Receiver) is licensed under the terms of the 2-Clause BSD License [Copyright (c) 2023 codingABI](LICENSE). 
 
 The code in [externalCode.ino](/Receiver/externalCode.ino) is licensed under the terms of MIT/BSD/FreeBSD License [Written by Limor Fried/Ladyada for Adafruit Industries, Copyright (c) 2012 Adafruit Industries, Copyright (c) 2022 Bodmer (https://github.com/Bodmer)](LICENSE.TFT-eSPI).
 
