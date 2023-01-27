@@ -319,7 +319,7 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("Reset reason CPU0",rtc_get_reset_reason(0))
   SIMPLETABLELINE("Internal temperature",temperatureRead())
   SIMPLETABLELINE("Compile time",__DATE__ " " __TIME__)
-  snprintf(strData,MAXSTRDATALENGTH+1,"%i seconds (%i days)",esp_timer_get_time()/1000/1000,esp_timer_get_time()/1000/1000/SECS_PER_DAY);
+  snprintf(strData,MAXSTRDATALENGTH+1,"%lld seconds (%lld days)",esp_timer_get_time()/1000/1000,esp_timer_get_time()/1000/1000/SECS_PER_DAY);
   SIMPLETABLELINE("Uptime",strData)
   SIMPLETABLEEND
 
