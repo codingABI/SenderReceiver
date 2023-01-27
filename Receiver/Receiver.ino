@@ -36,6 +36,8 @@
  *   
  * History: 
  * 20230120, Initial public version
+ * 20230122, Start Wifi every noon, if not already started as part ot the message of the day (for the case that the Wifi on signal was missed)
+ * 20230127, Add mini pie chart on web page for LittleFS usage
  */
 
 #include "secrets.h"
@@ -602,6 +604,18 @@ void showMotD() {
           snprintf(msg.strData,MAXMSGLENGTH+1,"%d%% disk used",100 *LittleFS.usedBytes()/LittleFS.totalBytes());
           xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
         }
+        
+        // Start WiFi every noon, if not already started
+        if ((WiFi.status() != WL_CONNECTED) && (g_nextWifiOn==0)) {
+          SERIALDEBUG.println("It is noon and wifi is not enabled => enable");
+          g_nextWifiOn = now + SECS_PER_MIN * 5; // Power on wifi in 5 minutes to give access point enough time for booting
+    
+          ptrTimeinfo = localtime(&g_nextWifiOn);
+          msg.id=ID_INFO;
+          snprintf(msg.strData,MAXMSGLENGTH+1,"Wifi start at %02d:%02d",ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min);
+          xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+        }
+
         g_motdShown = true;
       }
     } else g_motdShown = false;
