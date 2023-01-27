@@ -221,7 +221,9 @@ void SendInfoToClient(WiFiClient *client) {
   struct tm * ptrTimeinfo;
   time_t now;
   sensorData sensorDataSet;
-  
+  // Radius for mini pie charts
+  #define RADIUS 6
+
   // To simplify the table HTML table creation
   #define SIMPLETABLELINE(Label,Value) client->print("<tr><td>");client->print(Label);client->print("</td><td>");client->print(Value);client->println("</td></tr>");
   #define SIMPLETABLEHEADER(Capter) client->print("<div class=\"item\"><p>");client->print(Capter); client->println("</p><table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead><tbody>");
@@ -317,7 +319,8 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("Reset reason CPU0",rtc_get_reset_reason(0))
   SIMPLETABLELINE("Internal temperature",temperatureRead())
   SIMPLETABLELINE("Compile time",__DATE__ " " __TIME__)
-  SIMPLETABLELINE("Uptime seconds",esp_timer_get_time()/1000/1000)
+  snprintf(strData,MAXSTRDATALENGTH+1,"%i seconds (%i days)",esp_timer_get_time()/1000/1000,esp_timer_get_time()/1000/1000/SECS_PER_DAY);
+  SIMPLETABLELINE("Uptime",strData)
   SIMPLETABLEEND
 
   SIMPLETABLEHEADER("Variablen:");
@@ -345,7 +348,25 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("Channel",WiFi.channel());
   SIMPLETABLEEND
 
-  SIMPLETABLEHEADER("LittleFS:");
+  // Mini pie chart in svg format
+  snprintf(strData,MAXSTRDATALENGTH+1,"LittleFS <svg height=\"1em\" width=\"1em\" viewBox=\"0 0 %i %i\"><path d=\"M %i 1 a%i,%i 0 %i,1 %f %f L %i %i Z\" fill=\"%s\"/><circle r=\"%i\" cx=\"%i\" cy=\"%i\" fill=\"none\" stroke=\"white\" stroke-width=\"1\"/></svg> :",
+    RADIUS*2+2,
+    RADIUS*2+2,
+    RADIUS+1,
+    RADIUS,
+    RADIUS,
+    ((float) LittleFS.usedBytes()/LittleFS.totalBytes() > 0.5f ) ? 1 : 0,
+    RADIUS*sin(((float) LittleFS.usedBytes()/LittleFS.totalBytes())*(2*M_PI)),
+    RADIUS*(1-cos(((float) LittleFS.usedBytes()/LittleFS.totalBytes())*(2*M_PI))),
+    RADIUS+1,
+    RADIUS+1,
+    (LittleFS.usedBytes() < (float) LittleFS.totalBytes()*0.8f) ? "white" : "red", // Warning color, when <= 20% free space
+    RADIUS,
+    RADIUS+1, // center x
+    RADIUS+1 // center y
+  );
+
+  SIMPLETABLEHEADER(strData);
   SIMPLETABLELINE("Total bytes",LittleFS.totalBytes())
   SIMPLETABLELINE("Used bytes",LittleFS.usedBytes())
   SIMPLETABLELINE("Free bytes",LittleFS.totalBytes()-LittleFS.usedBytes())
