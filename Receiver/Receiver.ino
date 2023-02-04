@@ -22,7 +22,7 @@
  * - ILI9341 with XPT2046-Touch
  * - PIR sensor AM312 to wakeup display from screensaver
  * - Passive buzzer
- * - RXB6 433MHz receiver (At the beginning I used a MX-RM-5V, but this receiver was not good enough)
+ * - RXB6 433MHz receiver (At the beginning I used a  MX-RM-5V, but its reception was not good enough)
  * - BME280 sensor for pressure, temperature and humidity
  * - Lora SX1278 Ra-02
  * 
