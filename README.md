@@ -26,7 +26,7 @@ Hardware:
 * ILI9341 TFT with XPT2046-Touch
 * PIR sensor AM312 to wake up the display from screensaver (blank screen)
 * Passive buzzer
-* RXB6 433MHz receiver (At the beginning I used a MX-RM-5V, but this receiver was too bad)
+* RXB6 433MHz receiver (At the beginning I used a  MX-RM-5V, but its reception was not good enough)
 * BME280 sensor for pressure, temperature and humidity
 * Lora SX1278 Ra-02
 * LM2596 Step down voltage converter
