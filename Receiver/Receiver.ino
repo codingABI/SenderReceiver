@@ -38,6 +38,7 @@
  * 20230120, Initial public version
  * 20230122, Start Wifi every noon, if not already started as part ot the message of the day (for the case that the Wifi on signal was missed)
  * 20230127, Add mini pie chart on web page for LittleFS usage
+ * 20230205, Speedup info web page
  */
 
 #include "secrets.h"
