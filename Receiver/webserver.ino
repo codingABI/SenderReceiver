@@ -375,12 +375,19 @@ void SendInfoToClient(WiFiClient *client) {
     SIMPLETABLEHEADER(strData);
     SIMPLETABLELINE("Total bytes",totalBytes)
     SIMPLETABLELINE("Used bytes",usedBytes)
-    SIMPLETABLELINE("Free bytes",totalBytes-usedBytes)
+    SIMPLETABLELINE("Free bytes",totalBytes-usedBytes)  
     SIMPLETABLEEND
-  } else {
-   SERIALDEBUG.println("Skip displaying LittleFS information because could not get semaphore in 1 second");
+
+  } else { // Semaphore timeout
+    SERIALDEBUG.println("Skip displaying LittleFS information because could not get semaphore in 1 second");
+    
+    SIMPLETABLEHEADER("LittleFS");
+    SIMPLETABLELINE("Total bytes","timeout")
+    SIMPLETABLELINE("Used bytes","timeout")
+    SIMPLETABLELINE("Free bytes","timeout")  
+    SIMPLETABLEEND
   }
- 
+
   SIMPLETABLEHEADER("Zeit:");
   SIMPLETABLELINE("NTP-Server",NTPSERVER)
   SIMPLETABLELINE("Zeitzone",TIMEZONE)
