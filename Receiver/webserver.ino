@@ -348,35 +348,39 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("Channel",WiFi.channel());
   SIMPLETABLEEND
 
-  // Speedup multiple used data (LittleFS.usedBytes() seems to be time consuming)
-  unsigned long usedBytes = LittleFS.usedBytes();
-  unsigned long totalBytes = LittleFS.totalBytes();
+  if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
+    // Speedup multiple used data (LittleFS.usedBytes() seems to be time consuming)
+    unsigned long usedBytes = LittleFS.usedBytes();
+    unsigned long totalBytes = LittleFS.totalBytes();
+    xSemaphoreGive( g_semaphoreLittleFS );
+
+    // Mini pie chart in svg format
+    snprintf(strData,MAXSTRDATALENGTH+1,"LittleFS <svg height=\"1em\" width=\"1em\" viewBox=\"0 0 %i %i\"><path d=\"M %i 1 a%i,%i 0 %i,1 %f %f L %i %i Z\" fill=\"%s\"/><circle r=\"%i\" cx=\"%i\" cy=\"%i\" fill=\"none\" stroke=\"white\" stroke-width=\"1\"/></svg> :",
+      RADIUS*2+2,
+      RADIUS*2+2,
+      RADIUS+1,
+      RADIUS,
+      RADIUS,
+      ((float) usedBytes/totalBytes > 0.5f ) ? 1 : 0,
+      RADIUS*sin(((float) usedBytes/totalBytes)*(2*M_PI)),
+      RADIUS*(1-cos(((float) usedBytes/totalBytes)*(2*M_PI))),
+      RADIUS+1,
+      RADIUS+1,
+      (usedBytes < (float) totalBytes*0.8f) ? "white" : "red", // Warning color, when <= 20% free space
+      RADIUS,
+      RADIUS+1, // center x
+      RADIUS+1 // center y
+    );
   
-  // Mini pie chart in svg format
-  snprintf(strData,MAXSTRDATALENGTH+1,"LittleFS <svg height=\"1em\" width=\"1em\" viewBox=\"0 0 %i %i\"><path d=\"M %i 1 a%i,%i 0 %i,1 %f %f L %i %i Z\" fill=\"%s\"/><circle r=\"%i\" cx=\"%i\" cy=\"%i\" fill=\"none\" stroke=\"white\" stroke-width=\"1\"/></svg> :",
-    RADIUS*2+2,
-    RADIUS*2+2,
-    RADIUS+1,
-    RADIUS,
-    RADIUS,
-    ((float) usedBytes/totalBytes > 0.5f ) ? 1 : 0,
-    RADIUS*sin(((float) usedBytes/totalBytes)*(2*M_PI)),
-    RADIUS*(1-cos(((float) usedBytes/totalBytes)*(2*M_PI))),
-    RADIUS+1,
-    RADIUS+1,
-    (usedBytes < (float) totalBytes*0.8f) ? "white" : "red", // Warning color, when <= 20% free space
-    RADIUS,
-    RADIUS+1, // center x
-    RADIUS+1 // center y
-  );
-
-  SIMPLETABLEHEADER(strData);
-  SIMPLETABLELINE("Total bytes",totalBytes)
-  SIMPLETABLELINE("Used bytes",usedBytes)
-  SIMPLETABLELINE("Free bytes",totalBytes-usedBytes)
-
-  SIMPLETABLEEND
-
+    SIMPLETABLEHEADER(strData);
+    SIMPLETABLELINE("Total bytes",totalBytes)
+    SIMPLETABLELINE("Used bytes",usedBytes)
+    SIMPLETABLELINE("Free bytes",totalBytes-usedBytes)
+    SIMPLETABLEEND
+  } else {
+   SERIALDEBUG.println("Skip displaying LittleFS information because could not get semaphore in 1 second");
+  }
+ 
   SIMPLETABLEHEADER("Zeit:");
   SIMPLETABLELINE("NTP-Server",NTPSERVER)
   SIMPLETABLELINE("Zeitzone",TIMEZONE)
