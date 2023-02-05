@@ -348,6 +348,10 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("Channel",WiFi.channel());
   SIMPLETABLEEND
 
+  // Speedup multiple used data (LittleFS.usedBytes() seems to be time consuming)
+  unsigned long usedBytes = LittleFS.usedBytes();
+  unsigned long totalBytes = LittleFS.totalBytes();
+  
   // Mini pie chart in svg format
   snprintf(strData,MAXSTRDATALENGTH+1,"LittleFS <svg height=\"1em\" width=\"1em\" viewBox=\"0 0 %i %i\"><path d=\"M %i 1 a%i,%i 0 %i,1 %f %f L %i %i Z\" fill=\"%s\"/><circle r=\"%i\" cx=\"%i\" cy=\"%i\" fill=\"none\" stroke=\"white\" stroke-width=\"1\"/></svg> :",
     RADIUS*2+2,
@@ -355,21 +359,21 @@ void SendInfoToClient(WiFiClient *client) {
     RADIUS+1,
     RADIUS,
     RADIUS,
-    ((float) LittleFS.usedBytes()/LittleFS.totalBytes() > 0.5f ) ? 1 : 0,
-    RADIUS*sin(((float) LittleFS.usedBytes()/LittleFS.totalBytes())*(2*M_PI)),
-    RADIUS*(1-cos(((float) LittleFS.usedBytes()/LittleFS.totalBytes())*(2*M_PI))),
+    ((float) usedBytes/totalBytes > 0.5f ) ? 1 : 0,
+    RADIUS*sin(((float) usedBytes/totalBytes)*(2*M_PI)),
+    RADIUS*(1-cos(((float) usedBytes/totalBytes)*(2*M_PI))),
     RADIUS+1,
     RADIUS+1,
-    (LittleFS.usedBytes() < (float) LittleFS.totalBytes()*0.8f) ? "white" : "red", // Warning color, when <= 20% free space
+    (usedBytes < (float) totalBytes*0.8f) ? "white" : "red", // Warning color, when <= 20% free space
     RADIUS,
     RADIUS+1, // center x
     RADIUS+1 // center y
   );
 
   SIMPLETABLEHEADER(strData);
-  SIMPLETABLELINE("Total bytes",LittleFS.totalBytes())
-  SIMPLETABLELINE("Used bytes",LittleFS.usedBytes())
-  SIMPLETABLELINE("Free bytes",LittleFS.totalBytes()-LittleFS.usedBytes())
+  SIMPLETABLELINE("Total bytes",totalBytes)
+  SIMPLETABLELINE("Used bytes",usedBytes)
+  SIMPLETABLELINE("Free bytes",totalBytes-usedBytes)
 
   SIMPLETABLEEND
 
