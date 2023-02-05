@@ -38,7 +38,7 @@
  * 20230120, Initial public version
  * 20230122, Start Wifi every noon, if not already started as part ot the message of the day (for the case that the Wifi on signal was missed)
  * 20230127, Add mini pie chart on web page for LittleFS usage
- * 20230205, Speedup info web page
+ * 20230205, Speedup info web page, semaphore protection for LiffleFS in motd and info web page
  */
 
 #include "secrets.h"
@@ -597,15 +597,25 @@ void showMotD() {
     ptrTimeinfo = localtime ( &now );
 
     if (ptrTimeinfo->tm_hour == 12) { // Only at noon
+            
       if (g_motdShown == false) {
         msg.id = ID_INFO;
-        snprintf(msg.strData,MAXMSGLENGTH+1,"Uptime %d days",(now-g_firstNTPTime)/SECS_PER_DAY);
+        snprintf(msg.strData,MAXMSGLENGTH+1,"Uptime %lld days",esp_timer_get_time()/1000/1000/SECS_PER_DAY);
         xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-        if (LittleFS.totalBytes() != 0) {
-          snprintf(msg.strData,MAXMSGLENGTH+1,"%d%% disk used",100 *LittleFS.usedBytes()/LittleFS.totalBytes());
-          xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+          
+        if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
+          unsigned long usedBytes = LittleFS.usedBytes();
+          unsigned long totalBytes = LittleFS.totalBytes();
+          xSemaphoreGive( g_semaphoreLittleFS );
+
+          if (totalBytes != 0) {
+            snprintf(msg.strData,MAXMSGLENGTH+1,"%d%% disk used",100 *usedBytes/totalBytes);
+            xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+          }
+        } else {
+         SERIALDEBUG.println("Skip displaying LittleFS information because could not get semaphore in 1 second");
         }
-        
+
         // Start WiFi every noon, if not already started
         if ((WiFi.status() != WL_CONNECTED) && (g_nextWifiOn==0)) {
           SERIALDEBUG.println("It is noon and wifi is not enabled => enable");
@@ -616,7 +626,7 @@ void showMotD() {
           snprintf(msg.strData,MAXMSGLENGTH+1,"Wifi start at %02d:%02d",ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min);
           xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
         }
-
+        
         g_motdShown = true;
       }
     } else g_motdShown = false;
