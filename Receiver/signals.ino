@@ -104,6 +104,7 @@ void checkSignal(unsigned long received) {
       SERIALDEBUG.println("Bath OFF received");
       g_last433MhzBathOff = now;
       msg.id=ID_INFO;
+      snprintf(msg.strData,MAXMSGLENGTH+1,"Bath OFF received");
       xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );       
     }
   }
