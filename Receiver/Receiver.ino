@@ -39,6 +39,8 @@
  * 20230122, Start Wifi every noon, if not already started as part ot the message of the day (for the case that the Wifi on signal was missed)
  * 20230127, Add mini pie chart on web page for LittleFS usage
  * 20230205, Speedup info web page, semaphore protection for LiffleFS in motd and info web page
+ * 20230223, Update Blynk from 1.1 to 1.2
+ * 20230311, Add missing "Bath OFF received" in display message
  */
 
 #include "secrets.h"
