@@ -1,7 +1,7 @@
 /* ----------- Sensor data definitions ----------
- * License: 2-Clause BSD License
- * Copyright (c) 2023 codingABI
- */
+   License: 2-Clause BSD License
+   Copyright (c) 2023 codingABI
+*/
 
 // Invalid sensor values (to distinguish valid values)
 #define NOVALIDTEMPERATUREDATA 255
@@ -44,76 +44,92 @@ typedef struct {
   byte sensor5Vcc = NOVALIDVCCDATA;
   byte sensor5Switch1 = NOVALIDSWITCHDATA;
   byte sensor5PCI1 = NOVALIDPCI;
+  time_t sensor6LastDataTime = 0;
+  byte sensor6LowBattery = NOVALIDLOWBATTERY;
+  byte sensor6Vcc = NOVALIDVCCDATA;
 } sensorData;
 
 // Simple ringbuffer class for sensor data sets
 class SensorDataBuffer {
-  public : 
+  public :
     sensorData DataBuffer[sensorDataBufferSize];
     void show() {
       byte i;
-      #define MAXSTRLEN 127
-      char strData[MAXSTRLEN+1];
+#define MAXSTRLEN 127
+      char strData[MAXSTRLEN + 1];
       struct tm * ptrTimeinfo;
 
-      if (isEmpty()) { return; }
+      if (isEmpty()) {
+        return;
+      }
 
       i = DataBufferFirstElement;
       do {
         assert(i < sensorDataBufferSize);
         // UTC Zeit
         ptrTimeinfo = gmtime ( &(DataBuffer[i].time) );
-        snprintf(strData,MAXSTRLEN+1,"UTC %02d %02d.%02d.%04d;%02d:%02d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",i,
-          ptrTimeinfo->tm_mday,
-          ptrTimeinfo->tm_mon + 1,
-          ptrTimeinfo->tm_year + 1900,
-          ptrTimeinfo->tm_min,
-          ptrTimeinfo->tm_hour,
-          DataBuffer[i].sensor1LowBattery,
-          DataBuffer[i].sensor1Temperature,
-          DataBuffer[i].sensor1Humidity,
-          DataBuffer[i].sensor1Vcc,
-          DataBuffer[i].sensor2Temperature,
-          DataBuffer[i].sensor2Humidity,
-          DataBuffer[i].sensor2Pressure,
-          DataBuffer[i].sensor3LowBattery,
-          DataBuffer[i].sensor3Switch1,
-          DataBuffer[i].sensor3Switch2,
-          DataBuffer[i].sensor3Vcc,
-          DataBuffer[i].sensor3Temperature,
-          DataBuffer[i].sensor3Humidity,
-          DataBuffer[i].sensor4LowBattery,
-          DataBuffer[i].sensor4Vcc,
-          DataBuffer[i].sensor4Runtime,
-          DataBuffer[i].sensor5LowBattery,
-          DataBuffer[i].sensor5Vcc,
-          DataBuffer[i].sensor5Switch1,
-          DataBuffer[i].sensor5PCI1
-          );
+        snprintf(strData, MAXSTRLEN + 1, "UTC %02d %02d.%02d.%04d;%02d:%02d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d", i,
+                 ptrTimeinfo->tm_mday,
+                 ptrTimeinfo->tm_mon + 1,
+                 ptrTimeinfo->tm_year + 1900,
+                 ptrTimeinfo->tm_min,
+                 ptrTimeinfo->tm_hour,
+                 DataBuffer[i].sensor1LowBattery,
+                 DataBuffer[i].sensor1Temperature,
+                 DataBuffer[i].sensor1Humidity,
+                 DataBuffer[i].sensor1Vcc,
+                 DataBuffer[i].sensor2Temperature,
+                 DataBuffer[i].sensor2Humidity,
+                 DataBuffer[i].sensor2Pressure,
+                 DataBuffer[i].sensor3LowBattery,
+                 DataBuffer[i].sensor3Switch1,
+                 DataBuffer[i].sensor3Switch2,
+                 DataBuffer[i].sensor3Vcc,
+                 DataBuffer[i].sensor3Temperature,
+                 DataBuffer[i].sensor3Humidity,
+                 DataBuffer[i].sensor4LowBattery,
+                 DataBuffer[i].sensor4Vcc,
+                 DataBuffer[i].sensor4Runtime,
+                 DataBuffer[i].sensor5LowBattery,
+                 DataBuffer[i].sensor5Vcc,
+                 DataBuffer[i].sensor5Switch1,
+                 DataBuffer[i].sensor5PCI1,
+                 DataBuffer[i].sensor5LowBattery,
+                 DataBuffer[i].sensor6Vcc,
+                 DataBuffer[i].sensor6LowBattery
+                );
 
         Serial.println(strData);
         if (i == DataBufferLastElement) break;
         i++;
-        if (i >= sensorDataBufferSize) { i = 0; };
+        if (i >= sensorDataBufferSize) {
+          i = 0;
+        };
       } while (true);
     }
     bool addLast(sensorData newSensorData) {
       byte DataBufferNextElement;
 
-      if (isFull()) { return false; }
+      if (isFull()) {
+        return false;
+      }
 
       DataBufferNextElement = nextElement();
-      
-      if (isEmpty()) { DataBufferFirstElement = 0; }
+
+      if (isEmpty()) {
+        DataBufferFirstElement = 0;
+      }
 
       assert(DataBufferNextElement < sensorDataBufferSize);
       DataBuffer[DataBufferNextElement] = newSensorData;
-      
+
       DataBufferLastElement = DataBufferNextElement;
       return true;
     }
     bool removeFirst() {
-      if (isEmpty()) { return false; } // Empty
+      if (isEmpty()) {
+        return false;  // Empty
+      }
 
       assert(DataBufferFirstElement < sensorDataBufferSize);
       DataBuffer[DataBufferFirstElement].time = 0;
@@ -126,7 +142,7 @@ class SensorDataBuffer {
       DataBuffer[DataBufferFirstElement].sensor2Pressure = NOVALIDPRESSUREDATA;
       DataBuffer[DataBufferFirstElement].sensor3LowBattery = NOVALIDLOWBATTERY;
       DataBuffer[DataBufferFirstElement].sensor3Switch1 = NOVALIDSWITCHDATA;
-      DataBuffer[DataBufferFirstElement].sensor3Switch2 = NOVALIDSWITCHDATA; 
+      DataBuffer[DataBufferFirstElement].sensor3Switch2 = NOVALIDSWITCHDATA;
       DataBuffer[DataBufferFirstElement].sensor3Vcc = NOVALIDVCCDATA;
       DataBuffer[DataBufferFirstElement].sensor3Temperature = NOVALIDTEMPERATUREDATA;
       DataBuffer[DataBufferFirstElement].sensor3Humidity = NOVALIDHUMIDITYDATA;
@@ -137,10 +153,17 @@ class SensorDataBuffer {
       DataBuffer[DataBufferFirstElement].sensor5Vcc = NOVALIDVCCDATA;
       DataBuffer[DataBufferFirstElement].sensor5Switch1 = NOVALIDSWITCHDATA;
       DataBuffer[DataBufferFirstElement].sensor5PCI1 = NOVALIDPCI;
-       
-      if (DataBufferFirstElement == DataBufferLastElement) { DataBufferFirstElement = sensorDataBufferSize; return true; } // now empty
+      DataBuffer[DataBufferFirstElement].sensor6LowBattery = NOVALIDLOWBATTERY;
+      DataBuffer[DataBufferFirstElement].sensor6Vcc = NOVALIDVCCDATA;
+
+      if (DataBufferFirstElement == DataBufferLastElement) {
+        DataBufferFirstElement = sensorDataBufferSize;  // now empty
+        return true;
+      }
       DataBufferFirstElement ++;
-      if (DataBufferFirstElement >= sensorDataBufferSize) { DataBufferFirstElement = 0; };
+      if (DataBufferFirstElement >= sensorDataBufferSize) {
+        DataBufferFirstElement = 0;
+      };
       return true;
     }
     sensorData getByIndex(int i) {
@@ -154,19 +177,33 @@ class SensorDataBuffer {
       return DataBuffer[element];
     }
     bool isEmpty() {
-      if (DataBufferFirstElement == sensorDataBufferSize) { return true; } else { return false; }
+      if (DataBufferFirstElement == sensorDataBufferSize) {
+        return true;
+      } else {
+        return false;
+      }
     }
     bool isFull() {
-      if (isEmpty()) { return false; } // Empty
-      if (nextElement() == DataBufferFirstElement) { return true; } else { return false; }
+      if (isEmpty()) {
+        return false;  // Empty
+      }
+      if (nextElement() == DataBufferFirstElement) {
+        return true;
+      } else {
+        return false;
+      }
     }
     byte countElements() {
-      if (isEmpty()) { return 0; }
-      if (isFull()) { return sensorDataBufferSize; }
-      if (DataBufferLastElement >= DataBufferFirstElement) { 
-        return DataBufferLastElement - DataBufferFirstElement + 1; 
+      if (isEmpty()) {
+        return 0;
+      }
+      if (isFull()) {
+        return sensorDataBufferSize;
+      }
+      if (DataBufferLastElement >= DataBufferFirstElement) {
+        return DataBufferLastElement - DataBufferFirstElement + 1;
       } else {
-        return sensorDataBufferSize - DataBufferFirstElement + DataBufferLastElement + 1;         
+        return sensorDataBufferSize - DataBufferFirstElement + DataBufferLastElement + 1;
       }
     }
   private :
@@ -176,9 +213,13 @@ class SensorDataBuffer {
     byte nextElement() {
       byte DataBufferNextElement;
 
-      if (DataBufferFirstElement == sensorDataBufferSize) { return 0; } // Empty
+      if (DataBufferFirstElement == sensorDataBufferSize) {
+        return 0;  // Empty
+      }
       DataBufferNextElement = DataBufferLastElement + 1;
-      if (DataBufferNextElement >= sensorDataBufferSize) { DataBufferNextElement = 0; }
+      if (DataBufferNextElement >= sensorDataBufferSize) {
+        DataBufferNextElement = 0;
+      }
       return DataBufferNextElement;
     }
 };
