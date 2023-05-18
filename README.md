@@ -5,7 +5,7 @@ This project is not a "step-by-step"-guide. It is more a documentation of my dev
 ## ASK
 ASK (Amplitude-Shift Keying) is a simple signal modulation, which is used in cheap 433 MHz modules like the FS1000A.
 ## LoRa
-LoRa is more sophisticated then ASK and was needed in this project, because ASK signals from inside the metal mailbox were not received reliably by the Receiver in my environment.
+LoRa is more sophisticated then ASK and was needed in this project, because ASK signals from inside the metal mailbox were not received reliably by the Receiver in my environment. LoRa is also used to send signals from my washing machine in the basement to my livingroom in first floor. 
 
 ## License and copyright
 This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Receiver) is licensed under the terms of the 2-Clause BSD License [Copyright (c) 2023 codingABI](LICENSE). 
@@ -118,7 +118,7 @@ Hardware:
 * MPU6050 gyroscope sensor
 * SSD1306 OLED 128x32 pixel
 * KY-040 rotary encoder
-* SX1278 LoRa Ra-02
+* SX1278 LoRa Ra-02 (distance to receiver ~8m without line of sight from first floor to basement)
 * 3.7V 330mAh Li-Ion battery
 * Two resistors (47k, 100k) for a voltage divider
 * Self-made perfboard
