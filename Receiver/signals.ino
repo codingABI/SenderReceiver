@@ -63,6 +63,8 @@ void checkSignal(unsigned long received) {
   static byte sensor1LowBatteryThreshold = MAXLOWBATTERYNOTIFICATIONS;
   static byte sensor3LowBatteryThreshold = MAXLOWBATTERYNOTIFICATIONS;
   static byte sensor5LowBatteryThreshold = MAXLOWBATTERYNOTIFICATIONS;
+  static byte sensor6LowBatteryThreshold = MAXLOWBATTERYNOTIFICATIONS;
+  enum messageType { STARTMESSAGE, ENDMESSAGE, TESTMESSAGE };
   
   time(&now);
   unknownReceived = true;
@@ -84,9 +86,9 @@ void checkSignal(unsigned long received) {
   if (received==1315924) { // Wifi off signal
     unknownReceived = false;
     if (now - g_last433MhzWifiOff > SECS_PER_MIN) { // Accept only one signal per minute
-      SERIALDEBUG.println("WLAN OFF received");
+      SERIALDEBUG.println("Wifi OFF received");
       msg.id=ID_INFO;
-      snprintf(msg.strData,MAXMSGLENGTH+1,"WLAN OFF received");
+      snprintf(msg.strData,MAXMSGLENGTH+1,"Wifi OFF received");
       xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
       g_last433MhzWifiOff = now;
 
@@ -144,13 +146,13 @@ void checkSignal(unsigned long received) {
   if (received==1315921) { // Wifi on signal
     unknownReceived = false;
     if (now - g_last433MhzWifiOn > SECS_PER_MIN) { // Accept only one signal per minute
-      SERIALDEBUG.println("WLAN ON received");
+      SERIALDEBUG.println("Wifi ON received");
       g_nextWifiOn = now + SECS_PER_MIN * 5; // Power on wifi in 5 minutes to give access point enough time for booting
       g_last433MhzWifiOn = now;
 
       ptrTimeinfo = localtime(&g_nextWifiOn);
       msg.id=ID_INFO;
-      snprintf(msg.strData,MAXMSGLENGTH+1,"WLAN start at %02d:%02d",ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min);
+      snprintf(msg.strData,MAXMSGLENGTH+1,"Wifi start at %02d:%02d",ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min);
       xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
     }
   }
@@ -181,7 +183,7 @@ void checkSignal(unsigned long received) {
         Blynk.virtualWrite(V2, g_pendingSensorData.sensor1LowBattery);
         if (g_pendingSensorData.sensor1LowBattery == 1) {
           if (sensor1LowBatteryThreshold > 0) { // Battery warning
-            Blynk.logEvent("lowbattery","Sensor Treppenhaus");
+            Blynk.logEvent("alert","LowBat Sensor Treppenhaus");
             sensor1LowBatteryThreshold --;
           }
         } else sensor1LowBatteryThreshold = MAXLOWBATTERYNOTIFICATIONS;
@@ -241,7 +243,7 @@ void checkSignal(unsigned long received) {
         Blynk.virtualWrite(V9, g_pendingSensorData.sensor3LowBattery);
         if (g_pendingSensorData.sensor3LowBattery == 1) {
           if (sensor3LowBatteryThreshold > 0) { // Battery warning
-            Blynk.logEvent("lowbattery","Sensor Fenster");
+            Blynk.logEvent("alert","LowBat Sensor Fenster");
             sensor3LowBatteryThreshold --;
           }
         } else sensor3LowBatteryThreshold = MAXLOWBATTERYNOTIFICATIONS;
@@ -299,7 +301,7 @@ void checkSignal(unsigned long received) {
        * 7 bit: unused
        * 10 bit: Runtime
        */
-      if (now - g_pendingSensorData.sensor4LastDataTime > SECS_PER_MIN) { // Accept only one signal per minute
+      if (now - g_pendingSensorData.sensor4LastDataTime > 5*SECS_PER_MIN) { // Accept only one signal per five minutes
         SERIALDEBUG.println("Sensor 4 received");
 
         g_pendingSensorData.sensor4LowBattery = lowBattery;
@@ -328,6 +330,7 @@ void checkSignal(unsigned long received) {
 
         Blynk.virtualWrite(V4, g_pendingSensorData.sensor4LowBattery);
         Blynk.virtualWrite(V10, (float) (g_pendingSensorData.sensor4Vcc/10.0f));
+        sendToThingSpeak((float) (g_pendingSensorData.sensor4Vcc/10.0f),1);
         Blynk.virtualWrite(V11, g_pendingSensorData.sensor4Runtime);        
       } else SERIALDEBUG.println("Sensor 4 duplicate received");
     }
@@ -342,14 +345,14 @@ void checkSignal(unsigned long received) {
        * 1 bit: Pin change event (1 if signal was triggered by the mailbox slot; 0 if signal is the daily status signal)
        * 15 bit: unused
        */
-      if (now - g_pendingSensorData.sensor1LastDataTime > SECS_PER_MIN) { // Accept only one signal per minute
+      if (now - g_pendingSensorData.sensor5LastDataTime > SECS_PER_MIN) { // Accept only one signal per minute
         SERIALDEBUG.println("Sensor 5 received");
         
         g_pendingSensorData.sensor5LowBattery = lowBattery;
         Blynk.virtualWrite(V12, g_pendingSensorData.sensor5LowBattery);
         if (g_pendingSensorData.sensor5LowBattery == 1) {
           if (sensor5LowBatteryThreshold > 0) { // Low battery warning
-            Blynk.logEvent("lowbattery","Sensor Briefkasten");
+            Blynk.logEvent("alert","LowBat Sensor Briefkasten");
             sensor5LowBatteryThreshold --;
           }
         } else sensor5LowBatteryThreshold = MAXLOWBATTERYNOTIFICATIONS;
@@ -388,6 +391,56 @@ void checkSignal(unsigned long received) {
         xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
       } else SERIALDEBUG.println("Sensor 5 duplicate received");
     }
+    if (id == 6) { // Wash machine
+      /* Signal (32-bit):
+       * 5 bit: Signature
+       * 3 bit: ID
+       * 1 bit: Low battery
+       * 6 bit: Vcc (0-63)
+       * 9 bit: unused
+       * 8 bit: type of message (0=STARTMESSAGE, 1=FINISHMESSAGE, 2=TESTMESSAGE)
+       */
+      if (now - g_pendingSensorData.sensor6LastDataTime > 10) { // SECS_PER_MIN) { // Accept only one signal ever 10 secs        SERIALDEBUG.println("Sensor 6 received");
+
+        g_pendingSensorData.sensor6LowBattery = lowBattery;  
+        if (g_pendingSensorData.sensor6LowBattery == 1) {
+          if (sensor6LowBatteryThreshold > 0) { // Low battery warning
+            Blynk.logEvent("alert","LowBat Sensor Waschmaschine");
+            sensor6LowBatteryThreshold --;
+          }
+        } else sensor6LowBatteryThreshold = MAXLOWBATTERYNOTIFICATIONS;
+        
+        receivedInt = ((received >> 17) & 0b111111);
+        if (receivedInt != 0b111111) g_pendingSensorData.sensor6Vcc = receivedInt;
+
+        beep();
+
+        strData[0] = '\0';
+        switch (received & 255) {
+          case STARTMESSAGE:snprintf(strData,MAXSTRDATALENGTH+1,"Beginn der Wäsche... (Vcc=%.1fV)",g_pendingSensorData.sensor6Vcc/10.0f);break; // Wash maschine is started
+          case ENDMESSAGE:snprintf(strData,MAXSTRDATALENGTH+1,"Wäsche ist fertig... (Vcc=%.1fV)",g_pendingSensorData.sensor6Vcc/10.0f);break; // Wash maschine is finished
+          case TESTMESSAGE:snprintf(strData,MAXSTRDATALENGTH+1,"Testsignal Sensor6 (Vcc=%.1fV)",g_pendingSensorData.sensor6Vcc/10.0f);break;
+        }
+        if (strlen(strData) > 0) Blynk.logEvent("info",strData); // Send to Blynk
+  
+        g_pendingSensorData.sensor6LastDataTime = now;
+  
+        snprintf(strData,MAXSTRDATALENGTH+1,"UTC %02d.%02d.%04d;%02d:%02d;%d;%d",
+          ptrTimeinfo->tm_mday,
+          ptrTimeinfo->tm_mon + 1,
+          ptrTimeinfo->tm_year + 1900,
+          ptrTimeinfo->tm_hour,
+          ptrTimeinfo->tm_min,
+          g_pendingSensorData.sensor6LowBattery,
+          g_pendingSensorData.sensor6Vcc
+          );
+  
+        SERIALDEBUG.println(strData);
+        msg.id=ID_INFO;
+        snprintf(msg.strData,MAXMSGLENGTH+1,"Sensor 6 %i,%i,%i",g_pendingSensorData.sensor6LowBattery,g_pendingSensorData.sensor6Vcc,received & 255);
+        xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+      }
+    } else SERIALDEBUG.println("Sensor 6 duplicate received");
   } 
 
   if (unknownReceived) { // Foreign signal
@@ -430,7 +483,13 @@ void checkForLoRaSignals() {
       if (xSemaphoreTake( g_semaphoreSPIBus, 10000 / portTICK_PERIOD_MS) == pdTRUE) { // Take SPI semaphore to prevent problems with the TFT
   
         String LoRaData = LoRa.readString();
-        received = strtol (LoRaData.c_str(),&strPtr,10);
+        received = strtoul (LoRaData.c_str(),&strPtr,10);
+
+        // Send XOR response back to sender
+        LoRa.beginPacket();
+        LoRa.print(0xfffffffful^received);
+        LoRa.endPacket();
+        LoRa.receive();
 
         checkSignal(received);
 
