@@ -18,6 +18,7 @@ Description:
 * Receives sensor data by 433MHz ASK or LoRa signals
 * Saves some sensor data to local CSV files 
 * Forwards some sensor data to Blynk
+* Forwards some sensor data to ThingSpeak
 * Displays some sensor data on a touch display 
 * Provides a webserver to show sensor data in a browser 
 
