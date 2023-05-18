@@ -1,7 +1,7 @@
  /*
  * Project: Sender6 (Ding18)
  * Description:
- * - Send a message, when my washing machine is finished (when no shaking is detected for a longer period at my over 20 year old Gorenje WA1141 machine)
+ * - Send a message, when my wash machine is finished (when no shaking is detected for a longer period at my over 20 year old Gorenje WA1141 machine)
  *
  * License: 2-Clause BSD License
  * Copyright (c) 2023 codingABI
