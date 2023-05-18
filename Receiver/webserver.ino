@@ -253,6 +253,9 @@ void SendInfoToClient(WiFiClient *client) {
   client->println(";");
   client->println(R"html(        font-family:'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
       }
+      a:link, a:visited, a {
+        color: white;
+      }
       table {
         width: 20rem;
         margin-left:auto;
@@ -321,6 +324,23 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("Compile time",__DATE__ " " __TIME__)
   snprintf(strData,MAXSTRDATALENGTH+1,"%lld seconds (%lld days)",esp_timer_get_time()/1000/1000,esp_timer_get_time()/1000/1000/SECS_PER_DAY);
   SIMPLETABLELINE("Uptime",strData)
+
+  if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
+    bool logFileExists = LittleFS.exists(LOGFILE);
+    bool backupLogFileExists = LittleFS.exists(BACKUPLOGFILE);
+    xSemaphoreGive( g_semaphoreLittleFS );
+
+    if (logFileExists) {
+      snprintf(strData,MAXSTRDATALENGTH+1,"<a href=\"%s\">%s</a>",LOGFILE,LOGFILE);
+      SIMPLETABLELINE("Logfile",strData)
+    }
+    if (backupLogFileExists) {
+      snprintf(strData,MAXSTRDATALENGTH+1,"<a href=\"%s\">%s</a>",BACKUPLOGFILE,BACKUPLOGFILE);
+      SIMPLETABLELINE("Backup logfile",strData)
+    }
+  } else { // Semaphore timeout
+    SERIALDEBUG.println("Skip displaying logfile information because could not get semaphore in 1 second"); 
+  } 
   SIMPLETABLEEND
 
   SIMPLETABLEHEADER("Variablen:");
@@ -510,6 +530,20 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("sensor5Vcc",g_pendingSensorData.sensor5Vcc)
   SIMPLETABLEEND
 
+  SIMPLETABLEHEADER("Sensor6 \"Waschmaschine\":");
+  ptrTimeinfo = localtime ( &(g_pendingSensorData.sensor6LastDataTime) );
+  snprintf(strData,MAXSTRDATALENGTH+1,"%02d.%02d.%04d %02d:%02d:%02d",
+    ptrTimeinfo->tm_mday,
+    ptrTimeinfo->tm_mon + 1,
+    ptrTimeinfo->tm_year + 1900,
+    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_min,
+    ptrTimeinfo->tm_sec);
+  SIMPLETABLELINE("sensor6LastDataTime",strData)
+  SIMPLETABLELINE("sensor6LowBattery",g_pendingSensorData.sensor6LowBattery)
+  SIMPLETABLELINE("sensor6Vcc",g_pendingSensorData.sensor6Vcc)
+  SIMPLETABLEEND
+
   SIMPLETABLEHEADER("Ein/Aus-Schaltzeiten:");
   ptrTimeinfo = localtime ( &(g_last433MhzCafeOn) );
   snprintf(strData,MAXSTRDATALENGTH+1,"%02d.%02d.%04d %02d:%02d:%02d",
@@ -693,11 +727,11 @@ void SendConfigPageToClient(WiFiClient *client) {
     <div class="item1cols"><label for="a">SSID</label></div>
     <div class="item1cols"><input id="a" title="SSID/Wifi-Name" type="text" name="a" value=")html");
   client->print(g_wifiSSID);
-  client->print(R"html(" max-lenght=)html");
+  client->print(R"html(" maxlength=)html");
   client->print(MAXSSIDLENGTH);
   client->print(R"html( autofocus></div>
     <div class="item1cols"><label for="b">Kennwort</label></div>
-    <div class="item1cols"><input title="Kennwort/Preshared Key" type="password" name="b" max-lenght=)html");
+    <div class="item1cols"><input title="Kennwort/Preshared Key" type="password" name="b" maxlength=)html");
   client->print(MAXPASSWORDLENGTH);
   client->println(R"html(></div>
     <div class="item2cols"><input type="submit" class="button" value="Anwenden"></div>
