@@ -1,5 +1,5 @@
 # SenderReceiver
-Receiver and senders to monitor environmental data like temperature, humidity ... window and mailbox states.
+Receiver and senders to monitor environmental data like temperature, humidity ... window, mailbox and wash machine states.
 ![Overview](assets/images/Overview.png)
 This project is not a "step-by-step"-guide. It is more a documentation of my devices. 
 ## ASK
