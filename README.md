@@ -108,3 +108,25 @@ The sender is in a standard junction box
 ![Case closed](assets/images/Sender5/CaseClosed.jpg)
 The device is inside the mailbox
 ![Mailbox](assets/images/Sender5/Mailbox.jpg)
+
+### Sender 6 (433 MHz LoRa)
+Sensor for a wash machine. When the wash machine is finished (when no shaking is detected by a gyroscope sensor for a longer period at my over 20 year old Gorenje WA1141 machine) a LoRa signal is sent to the Receiver. 
+
+Hardware:
+* Microcontroller ESP32 LOLIN32
+* MPU6050 gyroscope sensor
+* SSD1306 OLED 128x32 pixel
+* KY-040 rotary encoder
+* SX1278 LoRa Ra-02
+* 3.7V 330mAh Li-Ion battery
+* Two resistors (47k, 100k) for a voltage divider
+* Self-made perfboard
+
+[Arduino-Sketch](/Sender6/Sender6.ino)
+
+![Schematic](assets/images/Sender6/Schematic.png)
+Wooden self-made case and perfboard
+![Case and perfboard](assets/images/Sender6/CaseAndPerfboard.jpg)
+![PerfboardBackside](assets/images/Sender6/PerfboardBackside.jpg)
+The device is on top of the wash machine during washing
+![Wash machine](assets/images/Sender6/WashMachine.jpg)
