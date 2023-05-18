@@ -24,7 +24,7 @@
  * c) 26 mA in maximal display mode while waiting for motions
  * d) 140 mA for the short time, while sending the LoRa signal 
  * e) In a), c) and d) +20mA, if Serial is enabled (because cpu clock must be higher)
- * => Runtime ~10h
+ * => Runtime on 330mAh battery ~10h
  * 
  * Buzzer-Codes
  * - 1xShort beep      = A button was pressed
@@ -876,7 +876,7 @@ void menu() {
         }
         case MENULORATEST: sendLoRaTest();break;
         case MENUBATTERY: batteryView();break;
-        case MENURESTART: resetRestTimeHistory();exitLoop = true;break;
+        case MENURESTART: resetIdleTimeHistory();exitLoop = true;break;
         default: exitLoop = true;
       }
       lastInteractMS = millis();
@@ -933,7 +933,7 @@ void checkMotion(bool passive=false) {
   if (g_mpu.getMotionInterruptStatus()) { // Detection
     if (!g_detectionActive) {
       unsigned long duration = getRunTimeS()-g_lastIdleStartTimeS;
-      if (!passive) addToRestTimeHistory(duration);
+      if (!passive) addToIdleTimeHistory(duration);
       SERIALDEBUG.print("Rest ends after ");
       SERIALDEBUG.print(duration);
       SERIALDEBUG.println("s");
@@ -1032,14 +1032,14 @@ void reset() {
 }
 
 // Reset list of longest idle time periods
-void resetRestTimeHistory() {
+void resetIdleTimeHistory() {
   for (int i=0;i<MAXTIMEHISTORY;i++) {
     g_idleTimeSHistory[i]=0;   
   }
 }
 
 // Add entry to sorted list of longest idle time periods
-void addToRestTimeHistory(unsigned long newValue) {
+void addToIdleTimeHistory(unsigned long newValue) {
   for (int i=0;i<MAXTIMEHISTORY;i++) {
     if (newValue > g_idleTimeSHistory[i]) {
       if (i < MAXTIMEHISTORY-1) {
@@ -1054,7 +1054,7 @@ void addToRestTimeHistory(unsigned long newValue) {
 }
 
 // Show list of longest idle time periods
-void showRestTimeHistory() {
+void showIdleTimeHistory() {
   SERIALDEBUG.println("History:");
   for (int i=0;i<MAXTIMEHISTORY;i++) {
     SERIALDEBUG.print(g_idleTimeSHistory[i]);
@@ -1251,7 +1251,7 @@ void setup() {
   if (!g_wakeUpByMPU) g_mpu.enableSleep(true);  
 
   // Reset list of longest idle times only on power on and not on wake up
-  if (g_firstBoot) resetRestTimeHistory();
+  if (g_firstBoot) resetIdleTimeHistory();
 
   esp_task_wdt_reset();
 
@@ -1302,7 +1302,7 @@ void loop() {
       ((unsigned long) (g_vBat <= LOWBATWARNING) << 23) +
       ((((unsigned long) round(g_vBat*10))&63) << 17) +
       ENDMESSAGE);
-    showRestTimeHistory();
+    showIdleTimeHistory();
 
     g_display.clearDisplay();
     if (confirmed) drawIcon(SCREEN_WIDTH-ICON_WIDTH-1-8,(SCREEN_HEIGHT-ICON_HEIGHT)/2, ICONOK);
