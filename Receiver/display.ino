@@ -335,12 +335,28 @@ void taskDisplay(void * parameter) {
   for (;;) {
     if (xSemaphoreTake( g_semaphoreSPIBus, 10000 / portTICK_PERIOD_MS) == pdTRUE) {
       
-      while( xQueueReceive( displayMsgQueue,&msg , 0 ) == pdPASS ) { // Process complete message queue
-        time(&now);
-        ptrTimeinfo = localtime ( &now );
-  
+      while( xQueueReceive( displayMsgQueue,&msg , 0 ) == pdPASS ) { // Process complete message queue 
         if ((msg.id == ID_INFO) || (msg.id == ID_ALERT)) {
+          // Log message to logfile
+          fs::File file = LittleFS.open(LOGFILE, "r");
+          if (file) {
+            // Create backup of logfile when logfile is to big and delete previous backup
+            if (file.size() > MAXLOGFILESIZE) {
+              file.close();
+              LittleFS.remove(BACKUPLOGFILE);
+              LittleFS.rename(LOGFILE,BACKUPLOGFILE);
+            } else file.close();
+          }
+          struct timeval tv;
+          gettimeofday(&tv, NULL);
+          ptrTimeinfo = gmtime ( &tv.tv_sec );
+          snprintf(strData,MAXSTRDATALENGTH+1,"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ;%s;%s",ptrTimeinfo->tm_year + 1900,ptrTimeinfo->tm_mon + 1,ptrTimeinfo->tm_mday,ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min,ptrTimeinfo->tm_sec,((tv.tv_usec / 1000) % 1000),(msg.id == ID_ALERT)?"ERR":"INF",msg.strData);
+          appendToFile(LOGFILE,strData,"UTC-Time;Type;Message");
+
+          time(&now);
+          ptrTimeinfo = localtime ( &now );
           snprintf(strData,MAXSTRDATALENGTH+1,"%02d:%02d:%02d %s",ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min,ptrTimeinfo->tm_sec,msg.strData);
+          
           #define MAXSCREENCHARS 40
           if (strlen(strData) > MAXSCREENCHARS) {
             strData[MAXSCREENCHARS]='\0';
