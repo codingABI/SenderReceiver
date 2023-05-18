@@ -24,7 +24,7 @@
  * c) 26 mA in maximal display mode while waiting for motions
  * d) 140 mA for the short time, while sending the LoRa signal 
  * e) In a), c) and d) +20mA, if Serial is enabled (because cpu clock must be higher)
- * => Runtime on 330mAh battery ~10h
+ * => Runtime on 3.7V/330mAh battery ~10h
  * 
  * Buzzer-Codes
  * - 1xShort beep      = A button was pressed
