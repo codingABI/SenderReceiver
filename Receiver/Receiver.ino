@@ -40,7 +40,13 @@
  * 20230127, Add mini pie chart on web page for LittleFS usage
  * 20230205, Speedup info web page, semaphore protection for LiffleFS in motd and info web page
  * 20230223, Update Blynk from 1.1 to 1.2
- * 20230311, Add missing "Bath OFF received" in display message
+ * 20230311, Add missing "Bath OFF received" in display messag
+ * 20230407, Update arduino-esp32 from 2.0.5 to 2.0.7 (IDF 4.4.4)
+ * 20230420, Add sensor 6 (wash maschine) for beeing notified, when washing has finished 
+ * 20230505, Consolidate/rename blynk events because blynk in free plan limits to 5 events per device 
+ * 20230508, Send LoRa XOR response back to sender
+ * 20230515, Add internal logfile on LittleFS partition
+ * 20230515, Add initial support for sending data to ThingSpeak
  */
 
 #include "secrets.h"
@@ -83,8 +89,9 @@
 #include <Adafruit_BME280.h>
 #include "sensordata.h"
 #include <BlynkSimpleEsp32.h>
+#include <HTTPClient.h>
 
-#define RCSIGNATURE 0b00111000000000000000000000000000UL // Signature for 433MHz signals (only the first 5 bits are the signature)
+#define RCSIGNATURE (0b00111UL << 27) // Signature for 32-bit 433MHz signals (only the first 5 bits are the signature)
 #define SECS_PER_MIN 60
 #define SECS_PER_HOUR 3600
 #define SECS_PER_DAY 86400
@@ -134,6 +141,11 @@
 
 #define FORMAT_LittleFS_IF_FAILED false // set to true if you want to format LitteFS on a new device
 
+// Internal logfile on LittleFS partition
+#define LOGFILE "/logfile.csv"
+#define BACKUPLOGFILE "/backuplogfile.csv"
+#define MAXLOGFILESIZE (32*1024)
+
 // Global variables
 RCSwitch g_433MHzRCSwitch = RCSwitch(); // 433MHz Receiver
 
@@ -142,7 +154,7 @@ volatile bool g_SoundDisabled = false; // Buzzer on/off
 volatile bool g_PIREnabled = true; // PIR sensor on/off
 bool g_wifiEnabled = false; // Current Wifi status
 bool g_wifiSwitch = true; // Wifi switch on/off
-bool g_demoModeEnabled = false; // Demo mode on/off
+bool g_demoModeEnabled = false; // Demo mode status
 bool g_demoModeSwitch = false; // Demo mode switch on/off
 bool g_mailAlert = false; // Alert from my mail box
 enum pengingStates { none, alert, clear };
@@ -151,7 +163,7 @@ pengingStates g_pendingBlynkMailAlert = none; // pending events
 time_t g_lastStorageTime = -SECS_PER_HOUR;
 unsigned long g_lastNTPSyncMS = -SECS_PER_HOUR * 1000;
 time_t g_lastNTPTime = 0; // Last NTP-Sync
-time_t g_firstNTPTime = 0; // ~ Boot timestamp
+time_t g_firstNTPTime = 0; // First NTP-Sync
 
 unsigned long g_lastPIRChangeMS = 0;
 unsigned long g_lastWIFICheckMS = -SECS_PER_MIN * 1000;
@@ -166,10 +178,10 @@ volatile bool v_touchedTFT = false; // Touch screen IRQ fired?
 Adafruit_BME280 bme; // BME280 I2C module
 bool g_BME280ready = false; // BME280 found?
 
-volatile bool v_loraReceived = false; // Lora IRQ?
+volatile bool v_loraReceived = false; // Lora IRQ triggered?
 bool g_LORAready = false;
 
-// WLAN credentials
+// Wifi credentials
 char g_wifiSSID[MAXSSIDLENGTH+1];
 char g_wifiPassword[MAXPASSWORDLENGTH+1];
 
@@ -231,6 +243,28 @@ void callbackLoraReceived(int packetSize) {
   if (packetSize == 0) return;
   v_loraReceived = true;
 }
+
+// Send data to ThingSpeak
+void sendToThingSpeak(float data,int field) {
+  #define THINGSPEAKBASEURL "http://api.thingspeak.com/update"
+  #define MAXSTRDATALENGTH 127
+  char strData[MAXSTRDATALENGTH+1];
+  HTTPClient http;
+  WiFiClient client;
+
+  if (!g_wifiEnabled) return;
+  
+  snprintf(strData,MAXSTRDATALENGTH+1,"api_key=%s&field%i=%.2f",THINGSPEAKAPIKEY,field,data);
+
+  http.begin(client, THINGSPEAKBASEURL);
+      
+  // Specify content-type header
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  // Send HTTP POST request
+  int httpResponseCode = http.POST(strData);
+  http.end();
+}
+
 
 // Read Wifi config from EEPROM
 void getWifiConnecitonDataFromEEPROM() {  
@@ -436,7 +470,7 @@ void WiFiOn() {
     // This line will never be reached, because the configuration waits for a reset by the webserver (exception would be a semaphore timeout for display or button)
   } else {
     msg.id= ID_INFO;
-    snprintf(msg.strData,MAXMSGLENGTH+1,"Startup WLAN to %s",g_wifiSSID);
+    snprintf(msg.strData,MAXMSGLENGTH+1,"Startup Wifi to %s",g_wifiSSID);
     xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
 
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);  // Fix to make setHostname working without delay
@@ -572,7 +606,7 @@ void WiFiOff() {
   DisplayMessage msg;
 
   msg.id=ID_INFO;
-  snprintf(msg.strData,MAXMSGLENGTH+1,"Shutdown WLAN");
+  snprintf(msg.strData,MAXMSGLENGTH+1,"Shutdown Wifi");
   xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
 
   Blynk.disconnect();
@@ -773,6 +807,8 @@ void setup() {
   emptySensorData.sensor5Vcc = NOVALIDVCCDATA;
   emptySensorData.sensor5Switch1 = NOVALIDSWITCHDATA;
   emptySensorData.sensor5PCI1 = NOVALIDPCI;
+  emptySensorData.sensor6LowBattery = NOVALIDLOWBATTERY;
+  emptySensorData.sensor6Vcc = NOVALIDVCCDATA;
 
   // Send empty data to display
   xQueueSend( displayDatQueue, ( void * ) &emptySensorData, portMAX_DELAY );
@@ -830,23 +866,24 @@ void loop() {
       if (Blynk.connected()) {
         switch (g_pendingBlynkMailAlert) {
           case none:break;
-          case clear:Blynk.resolveAllEvents("mailalert");break; // resolveAllEvents is only allowed every 15 minutes
+          // resolveAllEvents and resolveEvent from v1.2.0 (formerly clearEvent in 1.1.0) worked until ~02/2023 and stopped working (perhaps part of "Essential changes to FREE plan!")
+          // case clear:Blynk.resolveAllEvents("mailalert");break; // resolveAllEvents is only allowed every 15 minutes
           case alert:
             if (g_pendingSensorData.sensor5Vcc != NOVALIDVCCDATA) 
               snprintf(strData,MAXSTRDATALENGTH+1,"Du hast Post... (Vcc=%.1fV)",g_pendingSensorData.sensor5Vcc/10.0f);             
               else snprintf(strData,MAXSTRDATALENGTH+1,"Du hast Post...");
-            Blynk.logEvent("mailalert",strData); // Send to Blynk
+            Blynk.logEvent("info",strData); // Send to Blynk
             break;
         }
         g_pendingBlynkMailAlert = none;
       }
     } else {
-      if ((WiFi.status() == WL_CONNECTED) && g_timeSet) { // Connection to Blynk lost, but WLAN connected and time available => restart WLAN and thus Blynk
+      if ((WiFi.status() == WL_CONNECTED) && g_timeSet) { // Connection to Blynk lost, but Wifi connected and time available => restart Wifi and thus Blynk
         time(&now);
         msg.id = ID_INFO;
-        snprintf(msg.strData,MAXMSGLENGTH+1,"Blynk lost=>Reset WLAN");
+        snprintf(msg.strData,MAXMSGLENGTH+1,"Blynk lost=>Reset Wifi");
         xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-        SERIALDEBUG.println("Error: connection to Blynk lost=>Reset WLAN");
+        SERIALDEBUG.println("Error: connection to Blynk lost=>Reset Wifi");
         g_server.end();
         WiFiOff();
         WiFiOn(); 
@@ -870,9 +907,9 @@ void loop() {
       // When WIFI disconnected unexpectedly
       if (g_wifiEnabled && (WiFi.status() != WL_CONNECTED)) {
         msg.id = ID_INFO;
-        snprintf(msg.strData,MAXMSGLENGTH+1,"WLAN lost=>Reset WLAN");
+        snprintf(msg.strData,MAXMSGLENGTH+1,"Wifi lost=>Reset Wifi");
         xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-        SERIALDEBUG.println("Error: WLAN connection lost=>Reset WLAN");
+        SERIALDEBUG.println("Error: Wifi connection lost=>Reset Wifi");
         g_server.end();
         WiFiOff();
         WiFiOn(); 
@@ -1043,6 +1080,10 @@ void loop() {
       emptySensorData.sensor5Vcc = g_pendingSensorData.sensor5Vcc;
       emptySensorData.sensor5Switch1 = g_pendingSensorData.sensor5Switch1;
       emptySensorData.sensor5PCI1 = g_pendingSensorData.sensor5PCI1;
+
+      emptySensorData.sensor6LastDataTime = g_pendingSensorData.sensor6LastDataTime;
+      emptySensorData.sensor6LowBattery = g_pendingSensorData.sensor6LowBattery;
+      emptySensorData.sensor6Vcc = g_pendingSensorData.sensor6Vcc;
 
       // Reset pending sensor data
       g_pendingSensorData = emptySensorData;
