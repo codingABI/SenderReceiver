@@ -120,7 +120,7 @@ Hardware:
 * MPU6050 gyroscope sensor
 * SSD1306 OLED 128x32 pixel
 * KY-040 rotary encoder
-* SX1278 LoRa Ra-02 (distance to receiver ~8m without line of sight from basement to second floor)
+* SX1278 LoRa Ra-02 (distance to receiver ~8m without line of sight from basement to first floor)
 * 3.7V 330mAh Li-Ion battery
 * Two resistors (47k, 100k) for a voltage divider
 * Self-made perfboard
