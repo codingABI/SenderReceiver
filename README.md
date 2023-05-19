@@ -9,10 +9,10 @@ This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Rece
 The code in [externalCode.ino](/Receiver/externalCode.ino) is licensed under the terms of MIT/BSD/FreeBSD License [Written by Limor Fried/Ladyada for Adafruit Industries, Copyright (c) 2012 Adafruit Industries, Copyright (c) 2022 Bodmer (https://github.com/Bodmer)](LICENSE.TFT-eSPI).
 
 ## Appendix
-
-### ASK
+### Signals
+#### ASK
 ASK (Amplitude-Shift Keying) is a simple signal modulation, which is used in cheap 433 MHz modules like the FS1000A.
-### LoRa
+#### LoRa
 LoRa is more sophisticated then ASK and was needed in this project, because ASK signals from inside the metal mailbox were not received reliably by the Receiver in my environment. LoRa is also used to send signals from the washing machine in the basement to the Receiver. 
 
 ### Receiver (433 MHz ASK and LoRa)
