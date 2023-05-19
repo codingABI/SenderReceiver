@@ -24,7 +24,7 @@
  * c) 26 mA in maximal display mode while waiting for motions
  * d) 140 mA for the short time, while sending the LoRa signal 
  * e) In a), c) and d) +20mA, if Serial is enabled (because cpu clock must be higher)
- * => Runtime on 3.7V/330mAh battery ~10h
+ * => Runtime with 3.7V/330mAh battery ~10h
  * 
  * Buzzer-Codes
  * - 1xShort beep      = A button was pressed
@@ -36,6 +36,7 @@
  * 
  * History: 
  * 20230510, Initial version
+ * 20230519, Add language strings for EN
  */
 
 #include <NewEncoder.h>
@@ -61,7 +62,12 @@
  * 9 bit: unused
  * 8 bit: type of message (0=STARTMESSAGE, 1=ENDMESSAGE, 2=TESTMESSAGE)   
  */
- 
+
+// Set display language to DE or EN
+//#define DISPLAYLANGUAGE_DE
+#define DISPLAYLANGUAGE_EN
+#include "displayLanguage.h"
+
 #define EEPROM_SIGNATURE 18 // First byte at startaddress in EEPROM
 #define EEPROM_VERSION 2 // Second byte at startaddress in EEPROM
 #define EEPROM_STARTADDR 0 // Startaddress in EEPROM
@@ -341,7 +347,7 @@ void showTimeout() {
 
   g_display.setFont();
   g_display.setCursor(0,0);
-  g_display.print("Ruhezeit in Sekunden");
+  g_display.print(STR_IDLETIMEINSECONDS);
   g_display.setFont(&FreeSans12pt7b);
   snprintf(strData,MAXSTRDATALENGTH+1,"%lu",g_idleTimeTimeoutS); 
   g_display.setCursor(0,SCREEN_HEIGHT-2);
@@ -355,7 +361,7 @@ void showThreshold() {
 
   g_display.setFont();
   g_display.setCursor(0,0);
-  g_display.print("Sensorschwelle");
+  g_display.print(STR_SENSORTHRESHOLD);
   g_display.setFont(&FreeSans12pt7b);
   snprintf(strData,MAXSTRDATALENGTH+1,"%i",g_motionThreshold); 
   g_display.setCursor(0,SCREEN_HEIGHT-2);
@@ -544,7 +550,7 @@ bool sendLoRa(unsigned long data) {
   SERIALDEBUG.print("Sending ");
   SERIALDEBUG.println(data,BIN);
 
-  snprintf(strData,MAXSTRDATALENGTH+1,"LoRa-Paket"); 
+  snprintf(strData,MAXSTRDATALENGTH+1,STR_LORAPACKET); 
 
   for (int i=0;i < MAXRETRIES;i++){
     LoRa.beginPacket();
@@ -599,9 +605,9 @@ void sendLoRaTest() {
     ((unsigned long) (g_vBat <= LOWBATWARNING) << 23) +
     ((((unsigned long) round(g_vBat*10))&63) << 17) +
     TESTMESSAGE)) {
-    snprintf(strData,MAXSTRDATALENGTH+1,"Zugestellt"); 
+    snprintf(strData,MAXSTRDATALENGTH+1,STR_CONFIRMED); 
   } else {
-    snprintf(strData,MAXSTRDATALENGTH+1,"Gesendet"); 
+    snprintf(strData,MAXSTRDATALENGTH+1,STR_SENT); 
   }
   
   g_display.clearDisplay();
@@ -627,14 +633,14 @@ void batteryView() {
     g_display.clearDisplay();
     g_display.setFont();
     g_display.setCursor(0,0);
-    g_display.print("Akku-/Ladespannung");
+    g_display.print(STR_VBATLOADER);
     if (g_vBat <=LOWBATWARNING) {
-      g_display.setCursor(SCREEN_WIDTH-1-4*6,SCREEN_HEIGHT-1-8); 
-      g_display.print("Leer");      
+      g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_EMPTY)*6,SCREEN_HEIGHT-1-8); 
+      g_display.print(STR_EMPTY);      
     }
     if ((g_vBat < 4.1f) && (g_vBat > 4.0f)) {
-      g_display.setCursor(SCREEN_WIDTH-1-4*6,SCREEN_HEIGHT-1-8); 
-      g_display.print("Voll");     
+      g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_FULL)*6,SCREEN_HEIGHT-1-8); 
+      g_display.print(STR_FULL);     
     }
     g_display.setFont(&FreeSans12pt7b);
     g_display.setCursor(0,SCREEN_HEIGHT-1);
@@ -696,18 +702,18 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
     g_display.setCursor(0,0);
 
     switch(menuItem) {
-      case MENUDISPLAY:g_display.println("Anzeigemodus");break;
-      case MENUSERIAL:g_display.println("Serial.print aktiv");break;
-      case MENURESET:g_display.println("Werkseinstellungen");break;
-      case MENUSOUND:g_display.println("Sound");break;
+      case MENUDISPLAY:g_display.println(STR_DISPLAYMODE);break;
+      case MENUSERIAL:g_display.println(STR_SERIALPRINTENABLED);break;
+      case MENURESET:g_display.println(STR_FACTORYDEFAULT);break;
+      case MENUSOUND:g_display.println(STR_SOUND);break;
       case MENUINFOS:showInfos(currentOption);break;
     }
 
     switch(menuItem) {
       case MENUDISPLAY: {
         switch(currentOption) {
-          case OPTIONLEFT:snprintf(strData,MAXSTRDATALENGTH+1,"Minimal");break;
-          case OPTIONRIGHT:snprintf(strData,MAXSTRDATALENGTH+1,"Maximal");break;
+          case OPTIONLEFT:snprintf(strData,MAXSTRDATALENGTH+1,STR_MINIMAL);break;
+          case OPTIONRIGHT:snprintf(strData,MAXSTRDATALENGTH+1,STR_MAXIMAL);break;
         }
         g_display.setFont(&FreeSans9pt7b);
         centerText(strData,2);
@@ -717,12 +723,12 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
         switch(currentOption) {
           case OPTIONLEFT: {
             drawIcon(SCREEN_WIDTH-50,(SCREEN_HEIGHT-ICON_HEIGHT)/2, ICONAUDIOOFF);
-            snprintf(strData,MAXSTRDATALENGTH+1,"Aus");
+            snprintf(strData,MAXSTRDATALENGTH+1,STR_OFF);
             break;
           }
           case OPTIONRIGHT: {
             drawIcon(SCREEN_WIDTH-50,(SCREEN_HEIGHT-ICON_HEIGHT)/2, ICONAUDIOON);
-            snprintf(strData,MAXSTRDATALENGTH+1,"Ein");
+            snprintf(strData,MAXSTRDATALENGTH+1,STR_ON);
             break;
           }
         }
@@ -733,8 +739,8 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
       case MENUSERIAL:
       case MENURESET: {
         switch(currentOption) {
-          case OPTIONLEFT:snprintf(strData,MAXSTRDATALENGTH+1,"Nein");break;
-          case OPTIONRIGHT:snprintf(strData,MAXSTRDATALENGTH+1,"Ja");break;
+          case OPTIONLEFT:snprintf(strData,MAXSTRDATALENGTH+1,STR_NO);break;
+          case OPTIONRIGHT:snprintf(strData,MAXSTRDATALENGTH+1,STR_YES);break;
         }
         g_display.setFont(&FreeSans9pt7b);
         centerText(strData,2);
@@ -806,7 +812,7 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
 // Device menu
 void menu() {
   #define MENUITEMLENGHT 80
-  char menuItem[MAXMENUITEMS][MENUITEMLENGHT] = {"Start","Batterie","Ruhezeit", "Schwelle", "Display","Sound","Serial","LoRa-Test", "Info", "Reset","Neustart"};
+  char menuItem[MAXMENUITEMS][MENUITEMLENGHT] = {STR_START,STR_BATTERY,STR_IDLETIME,STR_THRESHOLD,STR_DISPLAY,STR_SOUND,STR_SERIAL,STR_LORATEST,STR_INFO,STR_RESET,STR_RESTART};
   int currentMenuItem = 0;
   int16_t  x, y;
   uint16_t w, h;
@@ -825,7 +831,7 @@ void menu() {
     g_display.clearDisplay();
     g_display.setFont();
     g_display.setCursor(0,0);
-    g_display.print("Rotary Encoder konnte nicht gestartet werden!");
+    g_display.print(STR_COULDNOTSTARTROTARYENCODER);
     g_display.display();
     delay(5000);
     esp_task_wdt_reset();
@@ -875,7 +881,12 @@ void menu() {
           break;
         }
         case MENULORATEST: sendLoRaTest();break;
-        case MENUBATTERY: batteryView();break;
+        case MENUBATTERY: {
+          batteryView();
+          // Restore encoder settings for the menu
+          encoder.newSettings(-1,MAXMENUITEMS, currentMenuItem,currentEncoderState); 
+          break;
+        }
         case MENURESTART: resetIdleTimeHistory();exitLoop = true;break;
         default: exitLoop = true;
       }
@@ -1206,7 +1217,7 @@ void setup() {
 
   if (g_firstBoot) { // Show init only on normal startup
     g_display.clearDisplay();
-    g_display.print("Init...");
+    g_display.print(STR_INIT);
     g_display.display();
   }
 
@@ -1216,7 +1227,7 @@ void setup() {
     SERIALDEBUG.println("Failed to find LoRa module");
     g_display.clearDisplay();
     g_display.setCursor(0,0);
-    g_display.print("LoRa-Modul\nnicht gefunden!");
+    g_display.print(STR_COULDNOTFINDLORA);
     g_display.display();
     delay(5000);
     esp_task_wdt_reset();
@@ -1233,7 +1244,7 @@ void setup() {
     SERIALDEBUG.println("Failed to find MPU6050 chip");
     g_display.clearDisplay();
     g_display.setCursor(0,0);
-    g_display.print("MPU6050 nicht gefunden!");
+    g_display.print(STR_COULDNOTFINDMPU);
     g_display.display();
     delay(5000);
     esp_task_wdt_reset();
@@ -1307,7 +1318,7 @@ void loop() {
     g_display.clearDisplay();
     if (confirmed) drawIcon(SCREEN_WIDTH-ICON_WIDTH-1-8,(SCREEN_HEIGHT-ICON_HEIGHT)/2, ICONOK);
     g_display.setFont(&FreeSans12pt7b);
-    centerText("Fertig");
+    centerText(STR_FIN);
     drawIcon(SCREEN_WIDTH-ICON_WIDTH-1-8,(SCREEN_HEIGHT-ICON_HEIGHT)/2, ICONOK);
     g_display.display();
 
