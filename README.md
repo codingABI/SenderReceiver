@@ -113,11 +113,11 @@ The device is inside the mailbox
 ![Mailbox](assets/images/Sender5/Mailbox.jpg)
 
 ### Sender 6 (433 MHz LoRa)
-Sensor for a wash machine. When the wash machine is finished (when no shaking is detected by a gyroscope sensor for a longer period at my over 20 year old Gorenje WA1141 machine) a LoRa signal is sent to the Receiver. 
+Sensor for a washing machine. When the washing machine is finished (when no shaking is detected by an accelerator sensor for a longer period at my over 20 year old Gorenje WA1141 machine) a LoRa signal is sent to the Receiver. 
 
 Hardware:
 * Microcontroller ESP32 LOLIN32
-* MPU6050 gyroscope sensor
+* MPU6050 accelerometer and gyroscope
 * SSD1306 OLED 128x32 pixel
 * KY-040 rotary encoder
 * SX1278 LoRa Ra-02 (distance to receiver ~8m without line of sight from basement to first floor)
@@ -125,11 +125,13 @@ Hardware:
 * Two resistors (47k, 100k) for a voltage divider
 * Self-made perfboard
 
+[Youtube](https://studio.youtube.com/video/jKJW8NRaETU)
+
 [Arduino-Sketch](/Sender6/Sender6.ino)
 
 ![Schematic](assets/images/Sender6/Schematic.png)
 Wooden self-made case and perfboard
 ![Case and perfboard](assets/images/Sender6/CaseAndPerfboard.jpg)
 ![PerfboardBackside](assets/images/Sender6/PerfboardBackside.jpg)
-The device is on top of the wash machine during washing
+The device is on top of the washing machine during washing
 ![Wash machine](assets/images/Sender6/WashMachine.jpg)
