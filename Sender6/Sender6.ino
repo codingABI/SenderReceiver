@@ -7,7 +7,7 @@
  * Copyright (c) 2023 codingABI
  * For details see: License.txt
  * 
- * created by codingABI https://github.com/codingABI/SenderReceiver
+ * created by codingABI https://github.com/codingABI/SenderReceiver/#sender-6-433-mhz-lora
  * 
  * Hardware:
  * - Microcontroller ESP32 LOLIN32
@@ -65,8 +65,8 @@
  */
 
 // Set display language to DE or EN
-#define DISPLAYLANGUAGE_DE
-//#define DISPLAYLANGUAGE_EN
+//#define DISPLAYLANGUAGE_DE
+#define DISPLAYLANGUAGE_EN
 #include "displayLanguage.h"
 
 #define EEPROM_SIGNATURE 18 // First byte at startaddress in EEPROM
