@@ -1,7 +1,7 @@
  /*
  * Project: Sender6 (Ding18)
  * Description:
- * - Send a message, when my wash machine is finished (when no shaking is detected for a longer period at my over 20 year old Gorenje WA1141 machine)
+ * - Send a message, when my washing machine is finished (when no shaking is detected for a longer period at my over 20 year old Gorenje WA1141 machine)
  *
  * License: 2-Clause BSD License
  * Copyright (c) 2023 codingABI
@@ -11,7 +11,7 @@
  * 
  * Hardware:
  * - Microcontroller ESP32 LOLIN32
- * - MPU6050 gyroscope sensor
+ * - MPU6050 accelerometer and gyroscope
  * - SSD1306 OLED 128x32 pixel
  * - KY-040 rotary encoder
  * - SX1278 LoRa Ra-02
@@ -182,14 +182,14 @@ const byte g_icon[MAXICONS][ICON_WIDTH*2] = {
   0x00, 0x30, 0x00, 0x60, 0x18, 0x60, 0x0c, 0xc0, 0x06, 0xc0, 0x03, 0x80, 0x01, 0x80, 0x00, 0x00}
 };
 
-Adafruit_MPU6050 g_mpu; // Gyroscope
+Adafruit_MPU6050 g_mpu; // MPU6050 accelerometer and gyroscope
 byte g_motionThreshold; // Threshold for motion detection (1 = very sensible, 255 is minimal sensible)
-unsigned long g_idleTimeTimeoutS; // Timeout in seconds after that the LoRa message will be sent, when no motion is detected
+unsigned long g_idleTimeTimeoutS; // Timeout in seconds after that the LoRa message will be sent, when no acceleration/motion is detected
 byte g_displayMode; // 0 = Minimal/Default, 1 = Maximal/Debug
 bool g_soundEnabled; // Enables the buzzer sound
 bool g_serialEnabled; // Enables Serial... but need more power due higher cpu frequence
 #define SERIALDEBUG if (g_serialEnabled) Serial
-bool g_detectionActive = false; // Show detection of a motion on screen
+bool g_detectionActive = false; // Show detection of a acceleration/motion on screen
 RTC_DATA_ATTR unsigned long g_lastIdleStartTimeS = 0; // Time of last idle time begin 
 bool g_wakeUpByButton = false; // Deep sleep wake up by button?
 bool g_wakeUpByMPU = false; // Deep sleep wake up by mpu?
@@ -199,7 +199,7 @@ RTC_DATA_ATTR bool g_firstBoot = true; // Used to distinguish between a normal d
 
 // List of longest idle times
 #define MAXTIMEHISTORY 4
-RTC_DATA_ATTR unsigned long g_idleTimeSHistory[MAXTIMEHISTORY]; // List of longest time in seconds without a motion
+RTC_DATA_ATTR unsigned long g_idleTimeSHistory[MAXTIMEHISTORY]; // List of longest time in seconds without an acceleration
 
 enum beepTypes { DEFAULTBEEP, SHORTBEEP, LONGBEEP, HIGHSHORTBEEP, LASER };
 enum messageTypes { STARTMESSAGE, ENDMESSAGE, TESTMESSAGE };
@@ -939,21 +939,21 @@ void menu() {
     STARTMESSAGE);
 }
 
-// Check, if motion was detected (passive = without updating history and timestamp)
+// Check, if acceleration was detected (passive = without updating history and timestamp)
 void checkMotion(bool passive=false) {
   if (g_mpu.getMotionInterruptStatus()) { // Detection
     if (!g_detectionActive) {
       unsigned long duration = getRunTimeS()-g_lastIdleStartTimeS;
       if (!passive) addToIdleTimeHistory(duration);
-      SERIALDEBUG.print("Rest ends after ");
+      SERIALDEBUG.print("Idle ends after ");
       SERIALDEBUG.print(duration);
       SERIALDEBUG.println("s");
     }
     g_detectionActive = true;
-  } else { // Rest
+  } else { // Idle
     if (g_detectionActive) {
       if (!passive) g_lastIdleStartTimeS = getRunTimeS();
-      SERIALDEBUG.println("Rest starts");
+      SERIALDEBUG.println("Idle starts");
     }
     g_detectionActive = false;
   }
@@ -1239,7 +1239,7 @@ void setup() {
     LoRa.sleep();
   }
   
-  // Init gyroscope MPU6050
+  // Init MPU6050 accelerometer and gyroscope
   if (!g_mpu.begin(0x68, &Wire, 0)) {
     SERIALDEBUG.println("Failed to find MPU6050 chip");
     g_display.clearDisplay();
@@ -1361,13 +1361,19 @@ void loop() {
   // Draw sprite, when motion was detected 
   if (g_detectionActive) {
     if (g_displayMode == MODEMINIMAL) { // Delayed sprite and display clear in minimal mode to reduce power consumption
-      unsigned long lastMS = millis();
-      while (millis()-lastMS < 200) { // Delay 200 ms
-        g_display.clearDisplay();
-        drawSprite(SCREEN_WIDTH-SPRITE_WIDTH-1,(SCREEN_HEIGHT-SPRITE_HEIGHT)/2-1,100);
-        if (digitalRead(ROTARY_SW_PIN) == LOW) return; // When button was pressed
-        g_display.display();
-      }
+      do {
+        esp_task_wdt_reset();
+        unsigned long lastMS = millis();
+        while (millis()-lastMS < 200) { // Delay 200 ms
+          g_display.clearDisplay();
+          drawSprite(SCREEN_WIDTH-SPRITE_WIDTH-1,(SCREEN_HEIGHT-SPRITE_HEIGHT)/2-1,100);
+          if (digitalRead(ROTARY_SW_PIN) == LOW) return; // When button was pressed
+          g_display.display();
+        }
+  
+        g_detectionActive = false;
+        checkMotion();
+      } while (g_detectionActive); // Wait for idle time (do not goto deep sleep when contious shaking)
       g_display.clearDisplay();
     }
   }
