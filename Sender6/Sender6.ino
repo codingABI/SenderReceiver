@@ -37,6 +37,7 @@
  * History: 
  * 20230510, Initial version
  * 20230519, Add language strings for EN
+ * 20230521, Do not goto deep sleep, if motions are continuous
  */
 
 #include <NewEncoder.h>
@@ -64,8 +65,8 @@
  */
 
 // Set display language to DE or EN
-//#define DISPLAYLANGUAGE_DE
-#define DISPLAYLANGUAGE_EN
+#define DISPLAYLANGUAGE_DE
+//#define DISPLAYLANGUAGE_EN
 #include "displayLanguage.h"
 
 #define EEPROM_SIGNATURE 18 // First byte at startaddress in EEPROM
@@ -1361,20 +1362,16 @@ void loop() {
   // Draw sprite, when motion was detected 
   if (g_detectionActive) {
     if (g_displayMode == MODEMINIMAL) { // Delayed sprite and display clear in minimal mode to reduce power consumption
-      do {
-        esp_task_wdt_reset();
-        unsigned long lastMS = millis();
-        while (millis()-lastMS < 200) { // Delay 200 ms
-          g_display.clearDisplay();
-          drawSprite(SCREEN_WIDTH-SPRITE_WIDTH-1,(SCREEN_HEIGHT-SPRITE_HEIGHT)/2-1,100);
-          if (digitalRead(ROTARY_SW_PIN) == LOW) return; // When button was pressed
-          g_display.display();
-        }
-  
-        g_detectionActive = false;
-        checkMotion();
-      } while (g_detectionActive); // Wait for idle time (do not goto deep sleep when contious shaking)
-      g_display.clearDisplay();
+      unsigned long lastMS = millis();
+      while (millis()-lastMS < 200) { // Delay 200 ms
+        g_display.clearDisplay();
+        drawSprite(SCREEN_WIDTH-SPRITE_WIDTH-1,(SCREEN_HEIGHT-SPRITE_HEIGHT)/2-1,100);
+        if (digitalRead(ROTARY_SW_PIN) == LOW) return; // When button was pressed
+        g_display.display();
+      }
+      g_detectionActive = false;
+      g_wakeUpByMPU = false;
+      return; // Exit loop to check motion and button again (and do not goto deep sleep, if motions are continuous) 
     }
   }
   
