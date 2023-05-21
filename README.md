@@ -125,7 +125,7 @@ Hardware:
 * Two resistors (47k, 100k) for a voltage divider
 * Self-made perfboard
 
-[Youtube](https://youtu.be/jKJW8NRaETU)
+[Youtube](https://youtu.be/sHEgI06fphE)
 
 [Arduino-Sketch](/Sender6/Sender6.ino)
 
