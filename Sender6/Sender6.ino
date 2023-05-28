@@ -619,7 +619,7 @@ void sendLoRaTest() {
   esp_task_wdt_reset();
 }
 
-// Show battery/loader voltage with input timeout
+// Show battery/loader voltage without input timeout
 void batteryView() {
   #define MAXSTRDATALENGTH 80
   char strData[MAXSTRDATALENGTH+1];
