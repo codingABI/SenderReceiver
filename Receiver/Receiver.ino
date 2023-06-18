@@ -47,6 +47,7 @@
  * 20230508, Send LoRa XOR response back to sender
  * 20230515, Add internal logfile on LittleFS partition
  * 20230515, Add initial support for sending data to ThingSpeak
+ * 20230618, Remove unused column in CSV header
  */
 
 #include "secrets.h"
@@ -1049,7 +1050,7 @@ void loop() {
 
       SERIALDEBUG.println(strData);
       // Append string to csv file
-      RC=appendToFile(strFile,strData,"Time;Lowbat_stairs;T_stairs;H_stairs;T_room;H_room;P_room;Lowbat_window;S1_window;S2_window;T_window;H_window;Lowbat_mail");
+      RC=appendToFile(strFile,strData,"Time;Lowbat_stairs;T_stairs;H_stairs;T_room;H_room;P_room;Lowbat_window;S1_window;S2_window;T_window;H_window");
       if (RC != 0) {
         SERIALDEBUG.print("Error: file write error: ");
         SERIALDEBUG.println(RC);
