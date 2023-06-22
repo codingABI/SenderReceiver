@@ -38,6 +38,7 @@
  * 20230510, Initial version
  * 20230519, Add language strings for EN
  * 20230521, Do not goto deep sleep, if motions are continuous
+ * 20230622, Fix wrong timeout caused by 20230521
  */
 
 #include <NewEncoder.h>
@@ -65,8 +66,8 @@
  */
 
 // Set display language to DE or EN
-//#define DISPLAYLANGUAGE_DE
-#define DISPLAYLANGUAGE_EN
+#define DISPLAYLANGUAGE_DE
+//#define DISPLAYLANGUAGE_EN
 #include "displayLanguage.h"
 
 #define EEPROM_SIGNATURE 18 // First byte at startaddress in EEPROM
@@ -1323,7 +1324,7 @@ void loop() {
     drawIcon(SCREEN_WIDTH-ICON_WIDTH-1-8,(SCREEN_HEIGHT-ICON_HEIGHT)/2, ICONOK);
     g_display.display();
 
-    SERIALDEBUG.print("Sleep for button press");
+    SERIALDEBUG.println("Sleep for button press");
     SERIALDEBUG.flush();
 
     // Set mpu to sleep mode
@@ -1369,7 +1370,6 @@ void loop() {
         if (digitalRead(ROTARY_SW_PIN) == LOW) return; // When button was pressed
         g_display.display();
       }
-      g_detectionActive = false;
       g_wakeUpByMPU = false;
       return; // Exit loop to check motion and button again (and do not goto deep sleep, if motions are continuous) 
     }
