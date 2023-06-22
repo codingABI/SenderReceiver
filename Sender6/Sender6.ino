@@ -66,8 +66,8 @@
  */
 
 // Set display language to DE or EN
-#define DISPLAYLANGUAGE_DE
-//#define DISPLAYLANGUAGE_EN
+//#define DISPLAYLANGUAGE_DE
+#define DISPLAYLANGUAGE_EN
 #include "displayLanguage.h"
 
 #define EEPROM_SIGNATURE 18 // First byte at startaddress in EEPROM
