@@ -39,6 +39,7 @@
  * 20230519, Add language strings for EN
  * 20230521, Do not goto deep sleep, if motions are continuous
  * 20230622, Fix wrong timeout caused by 20230521
+ * 20230706, Fix bug where device does not store threshold and timeout in EEPROM
  */
 
 #include <NewEncoder.h>
@@ -1033,7 +1034,7 @@ void changeValue(NewEncoder *encoder, byte menuItem) {
     }
   } while (!exitLoop); // Until button was pressed or timeout
 
-  if (menuItem != MENUINFOS) saveSettings;  
+  if (menuItem != MENUINFOS) saveSettings();  
 }
 
 // Reset device in case of a problem
