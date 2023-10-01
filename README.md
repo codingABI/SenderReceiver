@@ -33,7 +33,7 @@ Description:
 * Provides a webserver to show sensor data in a browser 
 
 Hardware: 
-* ESP-WROOM-32 NodeMCU (Board manager: ESP32 Dev Model, Baud 115200)
+* ESP-WROOM-32 NodeMCU (Board manager: ESP32 Dev Model)
 * ILI9341 TFT with XPT2046-Touch
 * PIR sensor AM312 to wake up the display from screensaver (blank screen)
 * Passive buzzer
