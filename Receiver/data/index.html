@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -154,6 +153,7 @@
   <footer>
     <p align="right">&copy; codingABI 2022</p>
   </footer>
+<script language="javascript" type="text/javascript" src="files.js"></script>
 <script>
 
 // Global variables
@@ -894,7 +894,7 @@ function makePrevChart() {
   datasetMonth.setUTCDate(1);
   fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
   resetStats();
-  d3.dsv(';',fileName).then(makeChart).then(showStats); // Load month to charts
+  d3.dsv(';',fileName).then(makeChart,error => { alert(fileName + " " + error);makeChart([])}).then(showStats,showStats); // Load month to charts
   document.getElementById("linkDownload").href=fileName; // Set download link for csv file
   document.getElementById("labelMonth").innerHTML=months[datasetMonth.getUTCMonth()] + " " + datasetMonth.getUTCFullYear() // Set label in top row
 }
@@ -916,19 +916,19 @@ function makeNextChart() {
   resetStats();
   if ((nextMonth.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (nextMonth.getUTCMonth()==datasetMonth.getUTCMonth())) { // Make summary view with all months, if displayed month would be the beyond the current month 
     let filesList = [];
-
     let iterationDate = new Date('2021-08-01T12:00:00'); // First day of my data recordings
     while (iterationDate <= today) { // Create list of all needed csv files
       filesList.push( 'sn' + iterationDate.getUTCFullYear() + (iterationDate.getUTCMonth()+1).pad()  + '.csv');
-      iterationDate.setUTCMonth(iterationDate.getUTCMonth()+1);      
+      iterationDate.setUTCMonth(iterationDate.getUTCMonth()+1); 
+     
     }
     document.getElementById("labelMonth").innerHTML="Gesamt" // Set label in top row in summary view
     document.getElementById("linkDownload").href="javascript:downloadFiles(\"" + filesList + "\")"; // Set download function for all csv files
-    Promise.all(filesList.map(url => d3.dsv(";",url))).then(function(allData) { makeChart(d3.merge(allData))}).then(showStats); // Load all months to chart
+    Promise.all(csvFiles.map(url => d3.dsv(";",url))).then(function(allData) { makeChart(d3.merge(allData))},error => { alert(error);makeChart([])}).then(showStats,showStats); // Load all months to chart
   } else {
     // Load next month
     fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
-    d3.dsv(';',fileName).then(makeChart).then(showStats); // Load month to charts
+    d3.dsv(';',fileName).then(makeChart,error => { alert(fileName + " " + error);makeChart([])}).then(showStats,showStats); // Load month to charts 
     document.getElementById("linkDownload").href=fileName; // Set download link for csv file
     document.getElementById("labelMonth").innerHTML=months[datasetMonth.getUTCMonth()] + " " + datasetMonth.getUTCFullYear() // Set label in top row to displayed month
   }

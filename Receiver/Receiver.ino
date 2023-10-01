@@ -16,10 +16,18 @@
  *   Copyright Limor Fried/Ladyada for Adafruit Industries, The MIT License (MIT)
  *   Copyright (c) 2012 Adafruit Industries, BSD License
  *   For details see externalCode.ino and License TFT-eSPI.txt
+ *   
+ * Used external libraries from Arduino IDE Library Manager
+ * - RCSwitch (by sui77,fingolfin) 
+ * - LoRa (by Sandeep Mistry)
+ * - TFT_eSPI (by Bodmer)
+ * - Blynk (by Volodymyr Shymanskyy)
+ * - Adafruit Unified Sensor (by Adafuit)
+ * - Adafruit BME280 Library (by Adafuit) 
  *
  * Hardware: 
- * - ESP-WROOM-32 NodeMCU (Board manager: ESP32 Dev Model, Baud 115200)
- * - ILI9341 with XPT2046-Touch
+ * - ESP-WROOM-32 NodeMCU (Arduino IDE Board manager: "ESP32 Dev Model")
+ * - ILI9341 TFT with XPT2046-Touch
  * - PIR sensor AM312 to wakeup display from screensaver
  * - Passive buzzer
  * - RXB6 433MHz receiver (At the beginning I used a  MX-RM-5V, but its reception was not good enough)
@@ -48,6 +56,9 @@
  * 20230515, Add internal logfile on LittleFS partition
  * 20230515, Add initial support for sending data to ThingSpeak
  * 20230618, Remove unused column in CSV header
+ * 20230827, Delete oldest sn*.csv file when LittleFS has to less free space
+ * 20230906, Update code for Blynk 1.3.0
+ * 20230926, Add support for Emil Lux 315606 power outlets
  */
 
 #include "secrets.h"
@@ -66,7 +77,7 @@
 #include <esp_log.h>
 #include <core_version.h>
 #include <ESPmDNS.h>
-#include <RCSwitch.h>
+#include <RCSwitch.h> // Without setting "const unsigned int RCSwitch::nSeparationLimit = 1500;" in RCSwitch.cpp the signal for  my Emil Lux 315606 power outlets are not or wrongly detected as "32bit Protocol: 2". 
 #include <WiFi.h>
 #include <EEPROM.h>
 #include <ArduinoOTA.h>
@@ -141,6 +152,7 @@
 #endif
 
 #define FORMAT_LittleFS_IF_FAILED false // set to true if you want to format LitteFS on a new device
+#define MINFREESPACE_LittleFS (200*1024)
 
 // Internal logfile on LittleFS partition
 #define LOGFILE "/logfile.csv"
@@ -451,6 +463,69 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
 }
 
+// Check free space and delete oldest CSV file, if free space is too low
+void checkFreeSpace() {
+  DisplayMessage msg;
+  String filename, oldestFilename;
+  fs::File dir;
+  #define MAXSTRDATALENGTH 80
+  char strData[MAXSTRDATALENGTH+1];
+
+  if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
+    unsigned long usedBytes = LittleFS.usedBytes();
+    unsigned long totalBytes = LittleFS.totalBytes();
+    
+    if (LittleFS.totalBytes() == 0) {
+      SERIALDEBUG.println("Alert: 0 bytes total LittleFS");
+      xSemaphoreGive( g_semaphoreLittleFS ); 
+      return;
+    }
+
+    snprintf(msg.strData,MAXMSGLENGTH+1,"%d%% disk used",100 *usedBytes/totalBytes);
+    msg.id= ID_INFO;
+    xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+
+    if (totalBytes - usedBytes >=  MINFREESPACE_LittleFS) { // Nothing to do
+      SERIALDEBUG.println("Freespace is OK");      
+      xSemaphoreGive( g_semaphoreLittleFS );
+      return;
+    }
+    
+    dir = LittleFS.open("/");
+    if(!dir){
+      SERIALDEBUG.println("Alert: Failed to open / directory");
+      xSemaphoreGive( g_semaphoreLittleFS );
+      return;
+    }
+    if(!dir.isDirectory()){
+      SERIALDEBUG.println("Alert: / not a directory");
+      xSemaphoreGive( g_semaphoreLittleFS );
+      return;
+    }
+
+    oldestFilename = "/sn999999.csv";
+    filename = dir.getNextFileName();
+    while (filename != "") {
+      if ((filename.length() > 4) && (filename.substring(0,3).equalsIgnoreCase("/sn")) && (filename.substring(filename.length() -4).equalsIgnoreCase(".csv"))){
+        if (filename < oldestFilename) { // Older file found?
+          oldestFilename = filename;
+        }
+      }
+      filename = dir.getNextFileName();
+    }            
+
+    if (oldestFilename != "/sn999999.csv") { // At least one matching CSV file found?
+      msg.id= ID_INFO;
+      snprintf(msg.strData,MAXMSGLENGTH+1,"Remove %s",oldestFilename.c_str());        
+      xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+      LittleFS.remove(oldestFilename); // Delete file
+    }
+    xSemaphoreGive( g_semaphoreLittleFS );
+  } else {
+    SERIALDEBUG.println("Skip checking free space because could not get semaphore in 1 second");
+  }
+}
+         
 // Enable Wifi
 void WiFiOn() {
   byte wifiRetry=0;
@@ -639,19 +714,9 @@ void showMotD() {
         msg.id = ID_INFO;
         snprintf(msg.strData,MAXMSGLENGTH+1,"Uptime %lld days",esp_timer_get_time()/1000/1000/SECS_PER_DAY);
         xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-          
-        if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
-          unsigned long usedBytes = LittleFS.usedBytes();
-          unsigned long totalBytes = LittleFS.totalBytes();
-          xSemaphoreGive( g_semaphoreLittleFS );
 
-          if (totalBytes != 0) {
-            snprintf(msg.strData,MAXMSGLENGTH+1,"%d%% disk used",100 *usedBytes/totalBytes);
-            xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-          }
-        } else {
-         SERIALDEBUG.println("Skip displaying LittleFS information because could not get semaphore in 1 second");
-        }
+        // Check free space
+        checkFreeSpace();
 
         // Start WiFi every noon, if not already started
         if ((WiFi.status() != WL_CONNECTED) && (g_nextWifiOn==0)) {
@@ -817,6 +882,7 @@ void setup() {
   msg.id = ID_INFO;
   snprintf(msg.strData,MAXMSGLENGTH+1,"Setup finished");
   xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+
 }
 
 void loop() {

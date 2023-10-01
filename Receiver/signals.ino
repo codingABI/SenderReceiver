@@ -83,7 +83,7 @@ void checkSignal(unsigned long received) {
     beep();
   }
 
-  if (received==1315924) { // Wifi off signal
+  if (received==14766972) { // Wifi off signal
     unknownReceived = false;
     if (now - g_last433MhzWifiOff > SECS_PER_MIN) { // Accept only one signal per minute
       SERIALDEBUG.println("Wifi OFF received");
@@ -122,7 +122,7 @@ void checkSignal(unsigned long received) {
     }
   }
 
-  if (received==1315153) { // Cafe on signal
+  if (received==14729269) { // Cafe on signal
     unknownReceived = false;
     if (now - g_last433MhzCafeOn > SECS_PER_MIN) { // Accept only one signal per minute
       SERIALDEBUG.println("Cafe ON received");
@@ -132,7 +132,7 @@ void checkSignal(unsigned long received) {
       xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );               
     }
   }
-  if (received==1315156) { // Cafe off signal
+  if (received==14969669) { // Cafe off signal
     unknownReceived = false;
     if (now - g_last433MhzCafeOff > SECS_PER_MIN) { // Accept only one signal per minute
       SERIALDEBUG.println("Cafe OFF received");
@@ -143,7 +143,7 @@ void checkSignal(unsigned long received) {
     }
   }
 
-  if (received==1315921) { // Wifi on signal
+  if (received==15267436) { // Wifi on signal
     unknownReceived = false;
     if (now - g_last433MhzWifiOn > SECS_PER_MIN) { // Accept only one signal per minute
       SERIALDEBUG.println("Wifi ON received");
@@ -301,6 +301,8 @@ void checkSignal(unsigned long received) {
        * 7 bit: unused
        * 10 bit: Runtime
        */
+    beep();
+
       if (now - g_pendingSensorData.sensor4LastDataTime > 5*SECS_PER_MIN) { // Accept only one signal per five minutes
         SERIALDEBUG.println("Sensor 4 received");
 

@@ -8,6 +8,14 @@ This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Rece
 
 The code in [externalCode.ino](/Receiver/externalCode.ino) is licensed under the terms of MIT/BSD/FreeBSD License [Written by Limor Fried/Ladyada for Adafruit Industries, Copyright (c) 2012 Adafruit Industries, Copyright (c) 2022 Bodmer (https://github.com/Bodmer)](LICENSE.TFT-eSPI).
 
+Used external libraries from Arduino IDE Library Manager:
+* RCSwitch (by sui77,fingolfin) 
+* LoRa (by Sandeep Mistry)
+* TFT_eSPI (by Bodmer)
+* Blynk (by Volodymyr Shymanskyy)
+* Adafruit Unified Sensor (by Adafuit)
+* Adafruit BME280 Library (by Adafuit)
+
 ## Appendix
 ### Signals
 #### ASK
