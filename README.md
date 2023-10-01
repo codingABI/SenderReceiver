@@ -15,6 +15,10 @@ Used external libraries from Arduino IDE Library Manager:
 * Blynk (by Volodymyr Shymanskyy)
 * Adafruit Unified Sensor (by Adafuit)
 * Adafruit BME280 Library (by Adafuit)
+* Adafruit MPU6050 (by Adafruit)
+* Adafruit SSD1306 (by Adafruit)
+* NewEncoder (by GFVALVO)
+* DHT sensor library (by Adafruit)
 
 ## Appendix
 ### Signals
@@ -33,7 +37,7 @@ Description:
 * Provides a webserver to show sensor data in a browser 
 
 Hardware: 
-* ESP-WROOM-32 NodeMCU (Board manager: ESP32 Dev Model, Baud 115200)
+* ESP-WROOM-32 NodeMCU (Board manager: ESP32 Dev Model)
 * ILI9341 TFT with XPT2046-Touch
 * PIR sensor AM312 to wake up the display from screensaver (blank screen)
 * Passive buzzer
