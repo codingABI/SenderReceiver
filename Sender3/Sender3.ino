@@ -50,8 +50,8 @@
  * 3 bit: ID
  * 1 bit: Low battery
  * 6 bit: Vcc (0-63)
- * 1 Bit: Switch1
- * 1 Bit: Switch2
+ * 1 Bit: Switch1 "Reed1/Tilted" (Switch2==0 and Switch1==1=>Tilted)
+ * 1 Bit: Switch2 "Reed2/Open" (Switch2==1=>Open)
  * 1 bit: unused
  * 7 bit: Humidity (127 marks invalid value)
  * 7 bit: Temperature with +50 degree shift to provide a range of -50 to +76 degree Celsius (77 marks an invalid value)
