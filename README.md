@@ -15,6 +15,10 @@ Used external libraries from Arduino IDE Library Manager:
 * Blynk (by Volodymyr Shymanskyy)
 * Adafruit Unified Sensor (by Adafuit)
 * Adafruit BME280 Library (by Adafuit)
+* Adafruit MPU6050 (by Adafruit)
+* Adafruit SSD1306 (by Adafruit)
+* NewEncoder (by GFVALVO)
+* DHT sensor library (by Adafruit)
 
 ## Appendix
 ### Signals
