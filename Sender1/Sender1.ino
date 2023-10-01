@@ -14,6 +14,10 @@
  * getBandgap() from https://forum.arduino.cc/t/measuring-battery-voltage-conditionally/319327/5
  * For details see externalCode.ino
  *
+ * Used external libraries from Arduino IDE Library Manager
+ * - RCSwitch (by sui77,fingolfin) 
+ * - DHT sensor library (by Adafruit)
+ *
  * Hardware:
  * - Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
  * - DHT22 sensor
