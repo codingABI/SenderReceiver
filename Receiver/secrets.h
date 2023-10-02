@@ -10,5 +10,8 @@ const char g_eepromenc[] = "yourdata"; // Key for encrypting sensible data in ee
 
 // Blynk
 #define BLYNK_TEMPLATE_ID           "yourdata"
-#define BLYNK_DEVICE_NAME           "yourdata"
+#define BLYNK_TEMPLATE_NAME         "yourdata"
 #define BLYNK_AUTH_TOKEN            "yourdata"
+
+// Thingspeak
+#define THINGSPEAKAPIKEY "yourdata"

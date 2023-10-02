@@ -292,7 +292,7 @@ void checkSignal(unsigned long received) {
       } else SERIALDEBUG.println("Sensor 3 duplicate received");
     }
     
-    if (id == 4) { // SolarPoweredRev2
+    if (id == 4) { // SolarPoweredSender
       /* Signal (32-bit):
        * 5 bit: Signature
        * 3 bit: ID

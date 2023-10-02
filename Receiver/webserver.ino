@@ -499,7 +499,7 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("sensor3Vcc",g_pendingSensorData.sensor3Vcc)
   SIMPLETABLEEND
 
-  SIMPLETABLEHEADER("Sensor4 \"SolarPoweredRev2\":");
+  SIMPLETABLEHEADER("Sensor4 \"SolarPoweredSender\":");
   ptrTimeinfo = localtime ( &(g_pendingSensorData.sensor4LastDataTime) );
   snprintf(strData,MAXSTRDATALENGTH+1,"%02d.%02d.%04d %02d:%02d:%02d",
     ptrTimeinfo->tm_mday,
