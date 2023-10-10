@@ -48,7 +48,7 @@
  * 20230127, Add mini pie chart on web page for LittleFS usage
  * 20230205, Speedup info web page, semaphore protection for LiffleFS in motd and info web page
  * 20230223, Update Blynk from 1.1 to 1.2
- * 20230311, Add missing "Bath OFF received" in display messag
+ * 20230311, Add missing "Bath OFF received" in display message
  * 20230407, Update arduino-esp32 from 2.0.5 to 2.0.7 (IDF 4.4.4)
  * 20230420, Add sensor 6 (wash maschine) for beeing notified, when washing has finished 
  * 20230505, Consolidate/rename Blynk events because Blynk in free plan limits to 5 events per device since 28.02.2023 (and reduces datastreams per template from 25 to 10)
