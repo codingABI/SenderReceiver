@@ -810,7 +810,7 @@ void SendConfigChangeToClient(WiFiClient *client) {
   </body>
 </html>)html");
     client->stop();
-    storeWifiConnecitonDataToEEPROM();
+    storeWifiConnectionDataToEEPROM();
     delay(1000);
     reset();
   } else { // Empty SSID

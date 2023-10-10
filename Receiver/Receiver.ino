@@ -3,7 +3,7 @@
  * Description:
  *   - receives sensor data by 433MHz ASK or LoRa signals
  *   - saves them to local csv files 
- *   - forwards some sensor data to Blynk
+ *   - forwards some sensor data to Blynk and ThingSpeak
  *   - displays some sensor data on a touch display 
  *   - provides a webserver to show sensor data in a browser 
  *
@@ -51,7 +51,7 @@
  * 20230311, Add missing "Bath OFF received" in display messag
  * 20230407, Update arduino-esp32 from 2.0.5 to 2.0.7 (IDF 4.4.4)
  * 20230420, Add sensor 6 (wash maschine) for beeing notified, when washing has finished 
- * 20230505, Consolidate/rename blynk events because blynk in free plan limits to 5 events per device 
+ * 20230505, Consolidate/rename Blynk events because Blynk in free plan limits to 5 events per device since 28.02.2023 (and reduces datastreams per template from 25 to 10)
  * 20230508, Send LoRa XOR response back to sender
  * 20230515, Add internal logfile on LittleFS partition
  * 20230515, Add initial support for sending data to ThingSpeak
@@ -59,6 +59,9 @@
  * 20230827, Delete oldest sn*.csv file when LittleFS has to less free space
  * 20230906, Update code for Blynk 1.3.0
  * 20230926, Add support for Emil Lux 315606 power outlets
+ * 20231007, Prevent delays while checking 433Mhz signals to avoid missed signals
+ * 20231007, Remove Blynk for SolarPoweredSender sensor because Blynk in free plan reduces datastreams per template from 10 to 5 at 16.10.2023 (Second reduction in 2023, not nice)
+ * 
  */
 
 #include "secrets.h"
@@ -77,7 +80,7 @@
 #include <esp_log.h>
 #include <core_version.h>
 #include <ESPmDNS.h>
-#include <RCSwitch.h> // Without setting "const unsigned int RCSwitch::nSeparationLimit = 1500;" in RCSwitch.cpp the signal for  my Emil Lux 315606 power outlets are not or wrongly detected as "32bit Protocol: 2". 
+#include <RCSwitch.h> // Without setting "const unsigned int RCSwitch::nSeparationLimit = 1500;" in RCSwitch.cpp the signal for my Emil Lux 315606 power outlets are not or wrongly detected as "32bit Protocol: 2". 
 #include <WiFi.h>
 #include <EEPROM.h>
 #include <ArduinoOTA.h>
@@ -137,6 +140,7 @@
 #define ID_DISPLAYON 3 // Power on display
 #define ID_REFESHBUTTONS 4 // Refresh button display
 #define ID_RESET 5 // Reset graph, battery states, min/max values
+#define ID_BEEP 6 // Beep 
 
 // Time in MS, after the display will be blanked because of inactivity
 #define SCREENSAVERMS 20000 
@@ -170,8 +174,8 @@ bool g_wifiSwitch = true; // Wifi switch on/off
 bool g_demoModeEnabled = false; // Demo mode status
 bool g_demoModeSwitch = false; // Demo mode switch on/off
 bool g_mailAlert = false; // Alert from my mail box
-enum pengingStates { none, alert, clear };
-pengingStates g_pendingBlynkMailAlert = none; // pending events
+enum pendingStates { none, alert, clear };
+pendingStates g_pendingBlynkMailAlert = none; // pending events
 
 time_t g_lastStorageTime = -SECS_PER_HOUR;
 unsigned long g_lastNTPSyncMS = -SECS_PER_HOUR * 1000;
@@ -297,7 +301,7 @@ void getWifiConnecitonDataFromEEPROM() {
 }
 
 // Write Wifi config to EEPROM
-void storeWifiConnecitonDataToEEPROM() {  
+void storeWifiConnectionDataToEEPROM() {  
   EEPROM.write(EEPROMADDR,15);
   EEPROM.write(EEPROMADDR+1,43);
 
@@ -310,7 +314,7 @@ void storeWifiConnecitonDataToEEPROM() {
   EEPROM.commit();
 }
 
-// callback when blynk established a connection
+// callback when Blynk established a connection
 BLYNK_CONNECTED() {
   DisplayMessage msg;
   

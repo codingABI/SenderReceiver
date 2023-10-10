@@ -385,6 +385,7 @@ void taskDisplay(void * parameter) {
           drawBatteryStates(NOVALIDLOWBATTERY,NOVALIDLOWBATTERY,NOVALIDLOWBATTERY,true);
           resetLastMinMaxData(&datLast,&datMin,&datMax);
         }
+        if (msg.id == ID_BEEP) beep(LONGBEEP);
       }
 
       if( xQueueReceive( displayDatQueue,&dat , 0 ) == pdPASS ) { // Process next data queue entry

@@ -70,18 +70,6 @@ void checkSignal(unsigned long received) {
   unknownReceived = true;
 
   SERIALDEBUG.println(received);
-  if (received==1316116) { // Test signal
-    unknownReceived = false;
-    SERIALDEBUG.println("TestSensor received");
-    msg.id=ID_INFO;
-    snprintf(msg.strData,MAXMSGLENGTH+1,"TestSensor received");
-    xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-    g_mailAlert = true;
-    msg.id = ID_REFESHBUTTONS;
-    msg.strData[0]='\0';
-    xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-    beep();
-  }
 
   if (received==14766972) { // Wifi off signal
     unknownReceived = false;
@@ -155,6 +143,13 @@ void checkSignal(unsigned long received) {
       snprintf(msg.strData,MAXMSGLENGTH+1,"Wifi start at %02d:%02d",ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min);
       xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
     }
+  }
+
+  if (received==15267777) { // Test outlet
+    msg.id=ID_INFO;
+    snprintf(msg.strData,MAXMSGLENGTH+1,"Test outlet");
+    xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+    unknownReceived = false;
   }
 
   if ((received & (0b11111 << 27)) == RCSIGNATURE) { // ASK Sensor with my signature received
@@ -301,8 +296,6 @@ void checkSignal(unsigned long received) {
        * 7 bit: unused
        * 10 bit: Runtime
        */
-    beep();
-
       if (now - g_pendingSensorData.sensor4LastDataTime > 5*SECS_PER_MIN) { // Accept only one signal per five minutes
         SERIALDEBUG.println("Sensor 4 received");
 
@@ -330,10 +323,7 @@ void checkSignal(unsigned long received) {
         snprintf(msg.strData,MAXMSGLENGTH+1,"Sensor 4 %i,%i,%i",g_pendingSensorData.sensor4LowBattery,g_pendingSensorData.sensor4Vcc,g_pendingSensorData.sensor4Runtime);
         xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );   
 
-        Blynk.virtualWrite(V4, g_pendingSensorData.sensor4LowBattery);
-        Blynk.virtualWrite(V10, (float) (g_pendingSensorData.sensor4Vcc/10.0f));
         sendToThingSpeak((float) (g_pendingSensorData.sensor4Vcc/10.0f),1);
-        Blynk.virtualWrite(V11, g_pendingSensorData.sensor4Runtime);        
       } else SERIALDEBUG.println("Sensor 4 duplicate received");
     }
 
@@ -367,10 +357,12 @@ void checkSignal(unsigned long received) {
         if ((!g_mailAlert) && ((g_pendingSensorData.sensor5PCI1 == 1) || (g_pendingSensorData.sensor5Switch1 == 1))) { // If alert is not already enabled => enable alert
           g_pendingBlynkMailAlert = alert; // Wifi is not alway available => Send to when connected
           g_mailAlert = true;
+          msg.id = ID_BEEP;
+          msg.strData[0]='\0';
+          xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );          
           msg.id = ID_REFESHBUTTONS;
           msg.strData[0]='\0';
           xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-          beep();
         }
   
         g_pendingSensorData.sensor5LastDataTime = now;
@@ -402,8 +394,8 @@ void checkSignal(unsigned long received) {
        * 9 bit: unused
        * 8 bit: type of message (0=STARTMESSAGE, 1=FINISHMESSAGE, 2=TESTMESSAGE)
        */
-      if (now - g_pendingSensorData.sensor6LastDataTime > 10) { // SECS_PER_MIN) { // Accept only one signal ever 10 secs        SERIALDEBUG.println("Sensor 6 received");
-
+      if (now - g_pendingSensorData.sensor6LastDataTime > 10) { // Accept only one signal ever 10 secs        
+        SERIALDEBUG.println("Sensor 6 received");
         g_pendingSensorData.sensor6LowBattery = lowBattery;  
         if (g_pendingSensorData.sensor6LowBattery == 1) {
           if (sensor6LowBatteryThreshold > 0) { // Low battery warning
@@ -415,7 +407,9 @@ void checkSignal(unsigned long received) {
         receivedInt = ((received >> 17) & 0b111111);
         if (receivedInt != 0b111111) g_pendingSensorData.sensor6Vcc = receivedInt;
 
-        beep();
+        msg.id = ID_BEEP;
+        msg.strData[0]='\0';
+        xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
 
         strData[0] = '\0';
         switch (received & 255) {
@@ -443,6 +437,16 @@ void checkSignal(unsigned long received) {
         xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
       }
     } else SERIALDEBUG.println("Sensor 6 duplicate received");
+
+    if (id == 7) { // Test sensor
+        receivedInt = ((received >> 17) & 0b111111);
+        msg.id=ID_INFO;
+        snprintf(msg.strData,MAXMSGLENGTH+1,"Test sensor");
+        xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+        msg.id=ID_BEEP;
+        msg.strData[0] = '\0';
+        xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
+    }
   } 
 
   if (unknownReceived) { // Foreign signal
@@ -467,10 +471,10 @@ void checkSignal(unsigned long received) {
 void checkForASKSignals() {
   unsigned long received;
   // Process 433Mhz receiver signals
-  if (g_433MHzRCSwitch.available()) {
+  while (g_433MHzRCSwitch.available()) {
     received = g_433MHzRCSwitch.getReceivedValue();
-    checkSignal(received);
     g_433MHzRCSwitch.resetAvailable();
+    checkSignal(received);
   }
 }
 
