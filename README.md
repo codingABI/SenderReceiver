@@ -3,6 +3,13 @@ Receiver and senders to monitor environmental data like temperature, humidity ..
 ![Overview](assets/images/Overview.png)
 This project is not a "step-by-step"-guide. It is more a documentation of my devices. 
 
+Devices:
+- [Receiver](#receiver-433-mhz-ask-and-lora)
+- [Sender 1](#receiver-433-mhz-ask-and-lora)
+- [Sender 3](#sender-3-433-mhz-ask)
+- [Sender 5](#sender-5-433-mhz-lora)
+- [Sender 6](#sender-6-433-mhz-lora)
+
 ## License and copyright
 This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Receiver) is licensed under the terms of the 2-Clause BSD License [Copyright (c) 2023 codingABI](LICENSE). 
 
