@@ -32,7 +32,12 @@
  * c) 26 mA in maximal display mode while waiting for motions
  * d) 140 mA for the short time, while sending the LoRa signal 
  * e) In a), c) and d) +20mA, if Serial is enabled (because cpu clock must be higher)
- * => Runtime with 3.7V/330mAh battery ~10h
+ * 
+ * Keep in mind: The ESP32 LOLIN32 (at least mine) has
+ * - no overdischarge protection! Charge battery or switch off the device when battery is low 
+ *   or use a battery with builtin overdischarge protection
+ * - no voltage step up converter and only a 3.3V linear voltage regulator => Only the battery voltage ~3.4-4.1V can be used
+ * => Runtime with 3.7V/330mAh battery ~5-10h
  * 
  * Buzzer-Codes
  * - 1xShort beep      = A button was pressed
@@ -48,6 +53,8 @@
  * 20230521, Do not goto deep sleep, if motions are continuous
  * 20230622, Fix wrong timeout caused by 20230521
  * 20230706, Fix bug where device does not store threshold and timeout in EEPROM
+ * 20231030, Adjust low battery warning level and improve full charge detection
+ * 20231102, Use spare pin 27 to detect switched off battery
  */
 
 #include <NewEncoder.h>
@@ -84,7 +91,12 @@
 #define EEPROM_STARTADDR 0 // Startaddress in EEPROM
 #define EEPROM_SIZE 64 // Size of EEPROM area
 
-#define LOWBATWARNING 3.0f // Send low battery warning, when voltage <= this value
+/* Send low battery warning, when voltage <= this value
+ * Note: My ESP32 LOLIN32 has no battery overdischarge protection and 
+ * only a 3.3V linear voltage regulator (Dropout voltage ~0.12V)
+ */
+#define LOWBATWARNING 3.6f 
+#define LOWBATWARNINGHYSTERESIS 0.02f
 
 // I2C for OLED display and gyroscope 
 #define SDA_PIN 32
@@ -96,8 +108,8 @@
 // Pin for passive buzzer
 #define BUZZER_PIN 25
 
-// Reserved for future use 
-#define SPARE_PIN 27
+// Battery powerswitch pin (LOW if powerswitch is OFF, Floating if ON)  
+#define POWERSWITCH_PIN 27
 
 // Rotary encoder
 #define ROTARY_DT_PIN 17 // rotary DT
@@ -606,6 +618,77 @@ bool sendLoRa(unsigned long data) {
   return(responseOK);
 }
 
+// Low battery detection
+bool isBatteryLow() {
+  static bool lowBat = false;
+  if (g_vBat <=LOWBATWARNING) lowBat = true;
+  if (g_vBat > LOWBATWARNING + LOWBATWARNINGHYSTERESIS) lowBat = false;
+  return lowBat;
+}
+
+/* Full battery detection
+ * This is not easy and 100% reliable because my ESP32 LOLIN32 
+ * has no way to communicate with the battery loader 
+ * => Try to detect full charge via voltage history  
+ * My ESP32 LOLIN32 increases the charging voltage to 4.13V 
+ * and when the battery is full the voltage drops down to ~4.08V
+ * Addtionally assume full battery when voltage is ]4.0V,4.1V[ 
+ * for a longer period without significant changes
+ */
+bool isBatteryFull(bool reset=false) {
+  #define SAMPLEINTERVALMS 60000
+  #define MAXSAMPLES 5
+  static float samples[MAXSAMPLES]; // FIFO
+  static int currentSample = 0;
+  static unsigned long lastSampleMS = 0;
+  static float peakVoltage = 0.0f;
+  float maxSample;
+  float minSample;
+
+  if (reset) { // Reset voltage statistics 
+    for (int i=0;i<MAXSAMPLES;i++) samples[i] = 0.0f;
+    currentSample = 0;
+    lastSampleMS = millis()-SAMPLEINTERVALMS-1;
+    peakVoltage = 0.0f;
+  }
+
+  if (g_vBat < 4.0f) peakVoltage = 0.0f;
+  if (g_vBat > peakVoltage) peakVoltage = g_vBat;
+
+  // While charging the voltage increased up to 4.13V 
+  // and when the battery is full the voltage drops down to ~4.08V
+  if ((peakVoltage >= 4.1f) && (g_vBat < 4.1f) && (g_vBat > 4.0f)) return true;
+
+  if (millis()-lastSampleMS > SAMPLEINTERVALMS) {
+    // Fill FIFO voltage history
+    samples[currentSample] = g_vBat;
+    if (currentSample < MAXSAMPLES-1) currentSample++; else currentSample=0;
+    lastSampleMS = millis();
+  }
+
+  // Get min/max voltage values
+  #define INIT 99
+  maxSample = -INIT;
+  minSample = INIT;
+  for (int i=0;i<MAXSAMPLES;i++) {
+    if (samples[i] > maxSample) maxSample = samples[i];
+    if (samples[i] < minSample) minSample = samples[i];
+  }
+  if ((minSample != -INIT) && (maxSample != INIT)
+    && (maxSample >= minSample)) {
+    // Assume full battery when voltage is ]4.0V,4.1V[ for a longer period without significant changes
+    if ((minSample > 4.0f) && (minSample < 4.1f) && (maxSample - minSample < 0.01f)) {
+      return true;
+    }
+  }
+  return false;  
+}
+
+// Reset statistics for rough full battery detection
+void resetBatteryFullStatistics() {
+  isBatteryFull(true);  
+}
+
 // Send LoRa testsignal
 void sendLoRaTest() {
   #define MAXSTRDATALENGTH 80
@@ -634,24 +717,45 @@ void batteryView() {
   #define MAXSTRDATALENGTH 80
   char strData[MAXSTRDATALENGTH+1];
   bool exitLoop = false;
+  bool lowBatBeepDone = false;
 
+  // Enable powerswitch pin
+  pinMode(POWERSWITCH_PIN,INPUT_PULLUP);
+
+  updateVbat();
+  resetBatteryFullStatistics(); // Reset voltage statistics
+  
   do {
     esp_task_wdt_reset();
 
     updateVbat();
+
     snprintf(strData,MAXSTRDATALENGTH+1,"%.2fV",g_vBat); 
 
     g_display.clearDisplay();
     g_display.setFont();
     g_display.setCursor(0,0);
     g_display.print(STR_VBATLOADER);
-    if (g_vBat <=LOWBATWARNING) {
-      g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_EMPTY)*6,SCREEN_HEIGHT-1-8); 
-      g_display.print(STR_EMPTY);      
-    }
-    if ((g_vBat < 4.1f) && (g_vBat > 4.0f)) {
-      g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_FULL)*6,SCREEN_HEIGHT-1-8); 
-      g_display.print(STR_FULL);     
+
+    if (digitalRead(POWERSWITCH_PIN)) { // Battery powerswitch: On
+      // Low battery warning
+      if (isBatteryLow()) {
+        if ((millis()/1000) & 1) { // Blinking text
+          g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_EMPTY)*6,SCREEN_HEIGHT-1-8); 
+          g_display.print(STR_EMPTY);
+        }
+        if (!lowBatBeepDone) { // Beep only once
+          beep(LONGBEEP);      
+          lowBatBeepDone = true;
+        }
+      }
+      // Full battery
+      if (isBatteryFull()) {
+        g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_FULL)*6,SCREEN_HEIGHT-1-8); 
+        g_display.print(STR_FULL);
+      }
+    } else { // Battery powerswitch: Off
+      snprintf(strData,MAXSTRDATALENGTH+1,"%s",STR_OFF); 
     }
     g_display.setFont(&FreeSans12pt7b);
     g_display.setCursor(0,SCREEN_HEIGHT-1);
@@ -666,6 +770,9 @@ void batteryView() {
       exitLoop = true;
     }
   } while (!exitLoop);
+
+  // Disable powerswitch pin
+  pinMode(POWERSWITCH_PIN,INPUT);
 }
 
  // Change dualstate option
@@ -756,8 +863,7 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
         g_display.setFont(&FreeSans9pt7b);
         centerText(strData,2);
         break;
-      }
-      
+      }  
     }
     // Overview dots
     for (int i=0;i<currentMaxOptions;i++) {
@@ -923,10 +1029,10 @@ void menu() {
       }
       g_display.drawFastHLine(SCREEN_WIDTH/2-1-(OVERVIEWGAP*(MAXMENUITEMS-1))/2 + OVERVIEWGAP*i,SCREEN_HEIGHT-1,2,WHITE);
     }
-    // Batterywarning
+    // Low battery warning
     #define BATTERY_WIDTH 14
     #define BATTERY_HEIGHT 6
-    if (((millis()/1000) & 1) & (g_vBat <= LOWBATWARNING)) {
+    if (((millis()/1000) & 1) && isBatteryLow()) { // Blinking symbol
       g_display.drawRect(1,0,BATTERY_WIDTH-1,BATTERY_HEIGHT,WHITE);
       g_display.drawFastVLine(0,1,BATTERY_HEIGHT-2,WHITE);
     }
@@ -945,7 +1051,7 @@ void menu() {
   // Send LoRa message
   sendLoRa(RCSIGNATURE + 
     (((unsigned long) ID & 7) << 24) +
-    ((unsigned long) (g_vBat <= LOWBATWARNING) << 23) +
+    ((unsigned long) (isBatteryLow()) << 23) +
     ((((unsigned long) round(g_vBat*10))&63) << 17) +
     STARTMESSAGE);
 }
@@ -1138,7 +1244,7 @@ void setup() {
 
   // Analog input connected to a voltage divider (47k/100k resistors) for measure of the battery/loader voltage
   pinMode(VBAT_PIN,INPUT);
-
+  
   // Init device settings
   initSettings();
 
@@ -1321,7 +1427,7 @@ void loop() {
     // Send LoRa message
     bool confirmed = sendLoRa(RCSIGNATURE + 
       (((unsigned long) ID & 7) << 24) +
-      ((unsigned long) (g_vBat <= LOWBATWARNING) << 23) +
+      ((unsigned long) (isBatteryLow()) << 23) +
       ((((unsigned long) round(g_vBat*10))&63) << 17) +
       ENDMESSAGE);
     showIdleTimeHistory();
