@@ -14,7 +14,7 @@
  * - NewEncoder (by GFVALVO)
  * - Adafruit MPU6050 (by Adafruit)
  * - Adafruit SSD1306 (by Adafruit)
- * - Adafruit Unified Sensor (by Adafuit)
+ * - Adafruit Unified Sensor (by Adafruit)
  * - TFT_eSPI (by Bodmer) for fonts
  * 
  * Hardware:
