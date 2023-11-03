@@ -5,7 +5,7 @@ This project is not a "step-by-step"-guide. It is more a documentation of my dev
 
 Devices:
 - [Receiver](#receiver-433-mhz-ask-and-lora)
-- [Sender 1](#receiver-433-mhz-ask-and-lora)
+- [Sender 1](#sender-1-433-mhz-ask)
 - [Sender 3](#sender-3-433-mhz-ask)
 - [Sender 5](#sender-5-433-mhz-lora)
 - [Sender 6](#sender-6-433-mhz-lora)
