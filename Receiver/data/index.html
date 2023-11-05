@@ -151,9 +151,8 @@
     </div>
   </main>
   <footer>
-    <p align="right">&copy; codingABI 2022</p>
+    <p align="right">&copy; codingABI 2023</p>
   </footer>
-<script language="javascript" type="text/javascript" src="files.js"></script>
 <script>
 
 // Global variables
@@ -440,7 +439,7 @@ function makeChart(sensors) {
               }   
             },
             ticks: {
-              callback: function(value, index, values) { // This callback prevents the 1000-seperator "."
+              callback: function(value, index, values) { // This callback prevents the 1000-separator "."
                 return value;
               },
               color: 'green',
@@ -886,8 +885,13 @@ function showStats() {
 
 // Goto previous month
 function makePrevChart() {
-  if ((datasetMonth.getUTCFullYear() == 2021) && (datasetMonth.getUTCMonth()==8)) document.getElementById("linkPrev").className="inactiveA"; // Disable previous button if displayed month is the second month
-  if ((datasetMonth.getUTCFullYear() == 2021) && (datasetMonth.getUTCMonth()==7)) return; // Exit if displayed month is the first month
+
+  let firstDate = new Date(); // Allow only 12 month back
+  firstDate.setUTCMonth(firstDate.getUTCMonth()-12);
+  firstDate.setUTCDate(1);
+
+  if ((datasetMonth.getUTCFullYear() == firstDate.getUTCFullYear()) && (datasetMonth.getUTCMonth()==firstDate.getUTCMonth()+1)) document.getElementById("linkPrev").className="inactiveA"; // Disable previous button if displayed month is the second month
+  if ((datasetMonth.getUTCFullYear() == firstDate.getUTCFullYear()) && (datasetMonth.getUTCMonth()==firstDate.getUTCMonth())) return; // Exit if displayed month is the first month
   document.getElementById("linkNext").className="activeA"; // Enable next button 
   // Set dataset timestamp to last month
   datasetMonth.setUTCMonth(datasetMonth.getUTCMonth()-1);
@@ -914,17 +918,20 @@ function makeNextChart() {
   datasetMonth.setUTCMonth(datasetMonth.getUTCMonth()+1);
   datasetMonth.setUTCDate(1);
   resetStats();
-  if ((nextMonth.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (nextMonth.getUTCMonth()==datasetMonth.getUTCMonth())) { // Make summary view with all months, if displayed month would be the beyond the current month 
+  if ((nextMonth.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (nextMonth.getUTCMonth()==datasetMonth.getUTCMonth())) { // Make summary view with 12 months, if displayed month would be the beyond the current month 
     let filesList = [];
-    let iterationDate = new Date('2021-08-01T12:00:00'); // First day of my data recordings
+    let iterationDate = new Date(); // First month to display (12 month ago)
+    iterationDate.setUTCMonth(iterationDate.getUTCMonth()-12);
+    iterationDate.setUTCDate(1);
+ 
     while (iterationDate <= today) { // Create list of all needed csv files
       filesList.push( 'sn' + iterationDate.getUTCFullYear() + (iterationDate.getUTCMonth()+1).pad()  + '.csv');
       iterationDate.setUTCMonth(iterationDate.getUTCMonth()+1); 
      
     }
-    document.getElementById("labelMonth").innerHTML="Gesamt" // Set label in top row in summary view
+    document.getElementById("labelMonth").innerHTML="Letzte 12 Monate" // Set label in top row in summary view
     document.getElementById("linkDownload").href="javascript:downloadFiles(\"" + filesList + "\")"; // Set download function for all csv files
-    Promise.all(csvFiles.map(url => d3.dsv(";",url))).then(function(allData) { makeChart(d3.merge(allData))},error => { alert(error);makeChart([])}).then(showStats,showStats); // Load all months to chart
+    Promise.all(filesList.map(url => d3.dsv(";",url))).then(function(allData) { makeChart(d3.merge(allData))},error => { alert(error);makeChart([])}).then(showStats,showStats); // Load all months to chart
   } else {
     // Load next month
     fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
