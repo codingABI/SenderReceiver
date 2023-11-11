@@ -116,11 +116,14 @@ void taskWebServer(void * parameter) {
               SendFileToClient(&client, strFile, "Content-Type: text/csv; charset=utf-8");              
               break;
             }
+            if (strcmp(strFile, "/files.json") == 0) {
+              SendFilesJsonToClient(&client);
+              break;
+            }
             if (strcmp(strFile, "/info.html") == 0) {
               SendInfoToClient(&client);
               break;
             }
-            
             if (g_wifiAPMode && strcmp(strFile, "/cfg") == 0) { // Wifi config page is only allowed in AP mode
               SendConfigPageToClient(&client);
               break;
@@ -631,6 +634,56 @@ void SendInfoToClient(WiFiClient *client) {
     }
   }
   client->println("</tbody></table><p align=\"right\">&copy; codingABI 2023</p></div></div></body></html>");    
+}
+
+// Send existing data csv files names as json file
+void SendFilesJsonToClient(WiFiClient *client) {
+  #define MAXSTRDATALENGTH 50
+  char strData[MAXSTRDATALENGTH+1];
+  fs::File file, root;
+  String filename;
+  bool firstFile = true;
+  #define BASEFOLDER "/"
+  #define FILEPREFIX "sn"
+
+  if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
+    root = LittleFS.open(BASEFOLDER);
+    if (root) {
+      client->println("HTTP/1.1 200 OK");
+      client->println("Content-Type: application/json");
+      client->println("Cache-Control: no-cache");
+      client->println("X-Content-Type-Options: nosniff");
+      client->println("Connection: close"); 
+      client->println();
+      client->print("[");
+
+      filename = root.getNextFileName();
+      while (filename != "") {
+        if (filename.substring(filename.length() -4).equalsIgnoreCase(".csv") && 
+          filename.substring(String(BASEFOLDER).length(),String(FILEPREFIX).length()).equalsIgnoreCase(FILEPREFIX)) {
+          if (firstFile) { // First file
+            snprintf(strData,MAXSTRDATALENGTH+1,"\"%s\"",filename.substring(String(BASEFOLDER).length()).c_str());
+          } else { // Add comma after first file
+            snprintf(strData,MAXSTRDATALENGTH+1,",\"%s\"",filename.substring(String(BASEFOLDER).length()).c_str());
+          }
+          firstFile = false; 
+          client->print(strData);
+        }
+        filename = root.getNextFileName();
+      }    
+      root.close();
+      xSemaphoreGive( g_semaphoreLittleFS );
+      client->println("]");
+    } else {
+      client->println("HTTP/1.1 404 Not Found\r\n");
+    }
+  } else { // Semaphore timeout
+    SERIALDEBUG.println("Error: LittleFS Semaphore Timeout");
+    client->println("HTTP/1.1 504 Gateway Timeout\r\n");
+    beep();
+    beep(SHORTBEEP);
+    beep();
+  }  
 }
 
 // Send Wifi config page

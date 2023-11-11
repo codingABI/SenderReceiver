@@ -114,13 +114,13 @@
 <body>
   <header>
     <nav>
-      <a href="javascript:void(0)" id="linkPrev" onclick="javascript:makePrevChart()" class="activeA">&#9668;</a>
+      <a href="javascript:void(0)" id="linkPrevious" onclick="javascript:makePreviousChart()" class="activeA">&#9668;</a>
       <a href="javascript:void(0)" id="linkNext" onclick="javascript:makeNextChart()" class="activeA">&#9658;</a>
 
       <a href="info.html" class="activeA">&#128161;Info</a>
       <a href="javascript:void(0)" id="linkDownload" class="activeA">&#128229;Download</a>
 
-      <span id="labelMonth"></span>
+      <span id="labelDateRange"></span>
     </nav>
   </header>
   <main>
@@ -159,8 +159,7 @@
 var mainChart = null;
 var distributionTemperatureStairsChart = null;
 var distributionHumidityStairsChart = null;
-// Current dataset timestamp
-let datasetMonth 
+var chartNumber = 0;
 // statistics data
 let temperatureRoomMin
 let temperatureRoomMax
@@ -194,6 +193,8 @@ let distributionHumidityStairs
 let distributionTemperatureStairs
 // Full names for month
 var months = ['Januar', 'Februar', 'M&auml;rz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+// Array for csv files
+var dataFile = [];
 
 // Create/update all charts
 function makeChart(sensors) {
@@ -884,81 +885,123 @@ function showStats() {
 }
 
 // Goto previous month
-function makePrevChart() {
-
-  let firstDate = new Date(); // Allow only 12 month back
-  firstDate.setUTCMonth(firstDate.getUTCMonth()-12);
-  firstDate.setUTCDate(1);
-
-  if ((datasetMonth.getUTCFullYear() == firstDate.getUTCFullYear()) && (datasetMonth.getUTCMonth()==firstDate.getUTCMonth()+1)) document.getElementById("linkPrev").className="inactiveA"; // Disable previous button if displayed month is the second month
-  if ((datasetMonth.getUTCFullYear() == firstDate.getUTCFullYear()) && (datasetMonth.getUTCMonth()==firstDate.getUTCMonth())) return; // Exit if displayed month is the first month
-  document.getElementById("linkNext").className="activeA"; // Enable next button 
-  // Set dataset timestamp to last month
-  datasetMonth.setUTCMonth(datasetMonth.getUTCMonth()-1);
-  datasetMonth.setUTCDate(1);
-  fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
+function makePreviousChart() {
+  if (chartNumber<=0) return; // Exit if displayed month is already the first month
+  chartNumber--;
+  if (chartNumber<=0) disablePreviousButton(); // Disable previous button if displayed month is the first month
+  enableNextButton();
   resetStats();
-  d3.dsv(';',fileName).then(makeChart,error => { alert(fileName + " " + error);makeChart([])}).then(showStats,showStats); // Load month to charts
-  document.getElementById("linkDownload").href=fileName; // Set download link for csv file
-  document.getElementById("labelMonth").innerHTML=months[datasetMonth.getUTCMonth()] + " " + datasetMonth.getUTCFullYear() // Set label in top row
+  d3.dsv(';',dataFiles[chartNumber]).then(makeChart,error => { alert(dataFiles[chartNumber] + " " + error);makeChart([])}).then(showStats,showStats); // Load month to charts
+  document.getElementById("linkDownload").href=dataFiles[chartNumber]; // Set download link for csv file
+  updateLabelDateRange();
 }
 
 // Goto next month or summary view
 function makeNextChart() {
-  var today = new Date();
-  var nextMonth = new Date();
-
-  nextMonth.setUTCMonth(today.getUTCMonth()+1);
-  nextMonth.setUTCDate(1);
-
-  if ((today.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (today.getUTCMonth()==datasetMonth.getUTCMonth())) document.getElementById("linkNext").className="inactiveA"; // Disable next button if displayed month is the current month
-  if ((nextMonth.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (nextMonth.getUTCMonth()==datasetMonth.getUTCMonth())) return; // Exit if we are already in summary view
-  document.getElementById("linkPrev").className="activeA"; // Enable previous button
-  // Set dataset timestamp to next month
-  datasetMonth.setUTCMonth(datasetMonth.getUTCMonth()+1);
-  datasetMonth.setUTCDate(1);
+  if ((chartNumber>=dataFiles.length) ||(dataFiles.length == 1)) return; // Exit if displayed month is already the overview or only one csv exists
+  chartNumber++;
+  if (chartNumber>=dataFiles.length) disableNextButton();
+  enablePreviousButton();
   resetStats();
-  if ((nextMonth.getUTCFullYear() == datasetMonth.getUTCFullYear()) && (nextMonth.getUTCMonth()==datasetMonth.getUTCMonth())) { // Make summary view with 12 months, if displayed month would be the beyond the current month 
-    let filesList = [];
-    let iterationDate = new Date(); // First month to display (12 month ago)
-    iterationDate.setUTCMonth(iterationDate.getUTCMonth()-12);
-    iterationDate.setUTCDate(1);
- 
-    while (iterationDate <= today) { // Create list of all needed csv files
-      filesList.push( 'sn' + iterationDate.getUTCFullYear() + (iterationDate.getUTCMonth()+1).pad()  + '.csv');
-      iterationDate.setUTCMonth(iterationDate.getUTCMonth()+1); 
-     
-    }
-    document.getElementById("labelMonth").innerHTML="Letzte 12 Monate" // Set label in top row in summary view
-    document.getElementById("linkDownload").href="javascript:downloadFiles(\"" + filesList + "\")"; // Set download function for all csv files
-    Promise.all(filesList.map(url => d3.dsv(";",url))).then(function(allData) { makeChart(d3.merge(allData))},error => { alert(error);makeChart([])}).then(showStats,showStats); // Load all months to chart
+  if (chartNumber >= dataFiles.length) { // Make summary view with 12 months, if displayed month would be the beyond the current month 
+    updateLabelDateRange();
+    document.getElementById("linkDownload").href="javascript:downloadAllFiles()"; // Set download function for all csv files
+    Promise.all(dataFiles.map(url => d3.dsv(";",url))).then(function(allData) { makeChart(d3.merge(allData))},error => { alert(error);makeChart([])}).then(showStats,showStats); // Load all months to chart
   } else {
     // Load next month
-    fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
-    d3.dsv(';',fileName).then(makeChart,error => { alert(fileName + " " + error);makeChart([])}).then(showStats,showStats); // Load month to charts 
-    document.getElementById("linkDownload").href=fileName; // Set download link for csv file
-    document.getElementById("labelMonth").innerHTML=months[datasetMonth.getUTCMonth()] + " " + datasetMonth.getUTCFullYear() // Set label in top row to displayed month
+    d3.dsv(';',dataFiles[chartNumber]).then(makeChart,error => { alert(dataFiles[chartNumber] + " " + error);makeChart([])}).then(showStats,showStats); // Load month to charts 
+    document.getElementById("linkDownload").href=dataFiles[chartNumber]; // Set download link for csv 
+    updateLabelDateRange();
   }
 }
 
-// Simple download for a list of files (could trigger popup blocker)
-function downloadFiles(filesString) {
-  var filesList = filesString.split(",");
-  for (var i = 0; i < filesList.length; i++) {
-    setTimeout(window.open('/' + filesList[i]), 2000*i);
+// Simple download all files (could trigger popup blocker and console message "Uncaught SyntaxError: Unexpected identifier 'Window'")
+function downloadAllFiles() {
+  for (var i = 0; i < dataFiles.length; i++) {
+    setTimeout(window.open('/' + dataFiles[i]), 2000*i);
   }
 }
 
-datasetMonth = new Date() // Set dataset timestamp to current date
+// Enable "next" button 
+function enableNextButton() {
+  document.getElementById("linkNext").className="activeA";
+}
 
-// Create csv file name from current date
-let fileName = 'sn' + datasetMonth.getUTCFullYear() + (datasetMonth.getUTCMonth()+1).pad()  + '.csv';
+// Disable "next" button
+function disableNextButton() {
+  document.getElementById("linkNext").className="inactiveA"; 
+}
+
+// Enable "previous" button 
+function enablePreviousButton() {
+  document.getElementById("linkPrevious").className="activeA";
+}
+
+// Disable "previous" button 
+function disablePreviousButton() {
+  document.getElementById("linkPrevious").className="inactiveA"; 
+}
+
+// Get year from csv filename
+function getYearFromFilename(fileName) {
+  const regex = new RegExp('sn(\\d{4})(\\d{2})\\.csv');
+  array = regex.exec(fileName);
+  if (array != null) {
+    return(array[1])
+  }
+  return filename; // Unknown
+}
+
+// Get month from csv filename
+function getMonthFromFilename(fileName) {
+  const regex = new RegExp('sn(\\d{4})(\\d{2})\\.csv');
+  array = regex.exec(fileName);
+  if (array != null) {
+    return(months[array[2]-1])
+  }
+  return fileName; // Unknown
+}
+
+// Update label for displayed time range 
+function updateLabelDateRange() {
+  if (chartNumber < dataFiles.length) {
+    // Set label in top row to displayed month
+    document.getElementById("labelDateRange").innerHTML=getMonthFromFilename(dataFiles[chartNumber])+ " " + getYearFromFilename(dataFiles[chartNumber]) // Set label in top row to displayed month
+  } else {
+    // Set label in top row in summary view
+    document.getElementById("labelDateRange").innerHTML="Letzte " + dataFiles.length + " Monate"
+  }
+}
+
 // Reset statistics
 resetStats();
-
-d3.dsv(';',fileName).then(makeChart).then(showStats); // Load month to charts
-document.getElementById("linkDownload").href=fileName; // Set download link for csv file
-document.getElementById("labelMonth").innerHTML=months[datasetMonth.getUTCMonth()] + " " + datasetMonth.getUTCFullYear() // Set label in top row to displayed month
+fetch('./files.json') // Get files with csv file names
+  .then((response) => {
+    if (response.ok) {
+      return response.json();
+    }
+    // Json download failed
+    alert("CSV-Dateien konnten nicht ermittelt werden")
+    return [];
+   } )
+  .then((json) => {
+    dataFiles =  json.sort();
+    chartNumber = -1;
+    if (dataFiles.length>0) { // At least one csv file
+      if (dataFiles.length==1) { // Only one csv file
+        disablePreviousButton();
+        disableNextButton();
+      }
+      chartNumber = dataFiles.length-1;
+      if (chartNumber > -1) { 
+        d3.dsv(';',dataFiles[chartNumber]).then(makeChart).then(showStats); // Load month to charts
+        document.getElementById("linkDownload").href=dataFiles[chartNumber]; // Set download link for csv file
+        updateLabelDateRange();
+      } else {
+        alert("No csv files found");
+      }
+    }
+  });
 
 </script>
 </body>

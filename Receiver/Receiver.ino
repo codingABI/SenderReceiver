@@ -43,69 +43,6 @@
  *   1x long = When an error message is displayed
  *   
  * History: 
- * 20210829, Initial version
- * 20211028, Basics for new sensor 4, Blynk integration
- * 20211101, Change sensors to 32-Bit data length and reduce sensors. Resort remaining three sensors 
- * 20211102, Display current time and reset Wifi, if connection to Blynk is lost
- * 20211127, Fix bug processing RCSIGNATURE
- * 20211201, Send battery warning only three times per sensor to Blynk
- * 20211213, Assign foreign signals (as much as possible): Bad-Signal
- * 20211214, Assign signals for Cafe machine
- * 20211217, Add EEPROM.commit
- * 20211221, Changed GRAPHDATAMAXITEMS from 25 to 49
- * 20211226, Changed GRAPHDATAMAXITEMS from 49 to 48 and fix bug in scaling
- * 20211226, Fix bug when limiting LowBattery notifications to Blynk
- * 20220205, Replaced Sender2 by local BME280 sensor
- * 20220207, More logging for BME280 sensor
- * 20220225, Add AP mode for Wifi configuration
- * 20220226, Change Wifi configuration in AP modus to HTTP-POST instead of GET
- * 20220305, Add Sensor 4
- * 20220308, Change temperature from byte to int (because auf minus degrees)
- * 20220309, Suppression of identical, short successive 433MHz signals
- * 20220313, Fix bug in timestamp for Sensor 4
- * 20220406, Store Wifi status in global variable g_wifiEnabled, to detect unexpected Wifi disconnections => Thus the Blynk check should detect the wifi abort 
- * 20220414,20220429,20220501 Fix bug when round(bme.readTemperature()-1) returns 2147483647 (because of NAN).
- * 20220925, Fix bug when saving Wifi credentials
- * 20221005, Delete internal memory for Wifi credential after connection
- * 20221006, Update IDF to v4.4.2, store Wifi credentials encrypted in EEPROM
- * 20221008, Add "Spamfilter" for foreign signals
- * 20221014, Replace all strcpy and sprintf with snprintf 
- *           Workaround for all snprintf(strData,...,"%s...",strData,...), because this is according https://pubs.opengroup.org/onlinepubs/9699919799/functions/sprintf.html not defined
- * 20221018, Guru Meditation
-
-2022-10-18T17:00:00.000Z;0;20;65;21;54;1027;0;0;0;1666112400;1666108800
-Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
-
-Core  1 register dump:
-PC      : 0x400d617b  PS      : 0x00060730  A0      : 0x800e62a0  A1      : 0x3ffb21b0  
-A2      : 0x3ffc40c4  A3      : 0x00000017  A4      : 0x00000500  A5      : 0x0000076c  
-A6      : 0x00000000  A7      : 0x3ffc33b0  A8      : 0x3ffc33a0  A9      : 0x00000000  
-A10     : 0x3ffc3380  A11     : 0x00000018  A12     : 0xffffffff  A13     : 0x00000000  
-A14     : 0x3ffb9634  A15     : 0x00000000  SAR     : 0x0000001a  EXCCAUSE: 0x0000001c  
-EXCVADDR: 0x000005a0  LBEG    : 0x40089f74  LEND    : 0x40089f8a  LCOUNT  : 0x00000000  
-
-Backtrace:0x400d6178:0x3ffb21b00x400e629d:0x3ffb2820 
-
-Backtrace ergab Zeile "if (DataBufferFirstElement == sensorDataBufferSize) { return 0; } // Empty" in nextElement, was aber für mich keinen Sinn ergibt => Warte auf weitere gurus
- *  Dann lief das Gerät 7 Tage mit unverändertem Stand Receiver-221026.zip ohne weiterem Guru :-( 
- * 20221026, Prettify HTML (cfg)
- * 20221026, Prettify HTML (info)
- * 20221031, Change HTML to grids/divs instead of tables, change background pattern to my own SVG
- * 20221102, prettify SVG background pattern, Change Wifi to WiFi.persistent(false)
- * 20221107, Add \r\n to all HTTP errors
- * 20221202, Add display button to enable/disable Wifi and start of demo mode
- * 20221203, Extend demo mode, Add Sensor5 "Briefkasten"
- * 20221205, Allow switching from demo mode to normal mode without reset
- * 20221207, Hide grid line in Graph, when no data is available; code improvements/simplifications for display.ino
- * 20221209, Translate comments to english
- * 20221211, Fix bug when displaying wrong month
- * 20221217, Prepare future use of ESPNOW
- * 20221223, Prettify HTML (more responsive)
- * 20221226, Prepare temperare and humidity for sensor 3 (sensor 5 will be only for the switch in the future)
- * 20221230, Change from perfboard to PCB, add LoRa-Receiver for my mailbox sender sensor 5
- * 20230103, Delay mailAlert events to Blynk, if Blynk is not connected 
- * 20230105, Add Blynk.resolveAllEvents for cleared mailAlerts
- * 20230113, Fix storing invalid temperature and humidity CSV values for sensor 3
  * 20230120, Initial public version
  * 20230122, Start Wifi every noon, if not already started as part ot the message of the day (for the case that the Wifi on signal was missed)
  * 20230127, Add mini pie chart on web page for LittleFS usage
@@ -124,7 +61,10 @@ Backtrace ergab Zeile "if (DataBufferFirstElement == sensorDataBufferSize) { ret
  * 20230926, Add support for Emil Lux 315606 power outlets
  * 20231007, Prevent delays while checking 433Mhz signals to avoid missed signals
  * 20231007, Remove Blynk for SolarPoweredSender sensor because Blynk in free plan reduces datastreams per template from 10 to 5 at 16.10.2023 (Second reduction in 2023, not nice)
+ * 20231007, Prevent delays while checking 433Mhz signals to avoid missed signals
+ * 20231007, Remove Blynk for SolarPoweredSender sensor because Blynk in free plan reduces datastreams per template from 10 to 5 at 16.10.2023 (Second reduction in 2023, not nice)
  * 20231014, Add ISR for pir sensor
+ * 20231110, Improve web page to show only existing csv files
  */
 
 #include "secrets.h"
