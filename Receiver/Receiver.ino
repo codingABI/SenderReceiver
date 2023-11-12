@@ -43,6 +43,7 @@
  *   1x long = When an error message is displayed
  *   
  * History: 
+ * 20210829, Initial version
  * 20230120, Initial public version
  * 20230122, Start Wifi every noon, if not already started as part ot the message of the day (for the case that the Wifi on signal was missed)
  * 20230127, Add mini pie chart on web page for LittleFS usage
@@ -61,10 +62,9 @@
  * 20230926, Add support for Emil Lux 315606 power outlets
  * 20231007, Prevent delays while checking 433Mhz signals to avoid missed signals
  * 20231007, Remove Blynk for SolarPoweredSender sensor because Blynk in free plan reduces datastreams per template from 10 to 5 at 16.10.2023 (Second reduction in 2023, not nice)
- * 20231007, Prevent delays while checking 433Mhz signals to avoid missed signals
- * 20231007, Remove Blynk for SolarPoweredSender sensor because Blynk in free plan reduces datastreams per template from 10 to 5 at 16.10.2023 (Second reduction in 2023, not nice)
  * 20231014, Add ISR for pir sensor
  * 20231110, Improve web page to show only existing csv files
+ * 20231111, Update arduino-esp32 from 2.0.7 to 2.0.14 (IDF 4.4.6), Update Blynk from 1.3.0 to 1.3.2
  */
 
 #include "secrets.h"
@@ -165,6 +165,11 @@
 #define LOGFILE "/logfile.csv"
 #define BACKUPLOGFILE "/backuplogfile.csv"
 #define MAXLOGFILESIZE (32*1024)
+
+// CSV data files
+#define CSVBASEFOLDER "/"
+#define CSVFILEPREFIX "sn"
+#define CSVLASTFILE  "/sn999999.csv"
 
 // Global variables
 RCSwitch g_433MHzRCSwitch = RCSwitch(); // 433MHz Receiver
@@ -456,6 +461,44 @@ byte appendToFile(char strFile[], char strData[], char strHeader[]) {
   return RC;
 }
 
+// Check if filename is valid for a CSV data file 
+bool isValidCSVFilename(const char *filename) {
+  #define MAXSTRDATALENGTH 50
+  char strData[MAXSTRDATALENGTH+1];
+  int pos, i;
+  
+  // Check basics
+  if (filename == NULL) return false;
+  if (strlen(filename) != strlen(CSVLASTFILE)) return false;
+
+  // Check root
+  snprintf(strData,MAXSTRDATALENGTH+1,"%s",CSVBASEFOLDER);
+  for (i=0;i<strlen(strData);i++) {
+    if (toupper(filename[i]) != toupper(strData[i])) return false;
+  }
+  pos = i;
+
+  // Check prefix
+  snprintf(strData,MAXSTRDATALENGTH+1,"%s",CSVFILEPREFIX);
+  for (i=0;i<strlen(strData);i++) {
+    if (toupper(filename[pos+i]) != toupper(strData[i])) return false;
+  }
+  pos +=i;
+
+  // Check numbers
+  snprintf(strData,MAXSTRDATALENGTH+1,"%s",CSVLASTFILE);
+  for (i=0;i<strlen(CSVLASTFILE)-strlen(CSVFILEPREFIX)-strlen(CSVBASEFOLDER)-4;i++) {
+    if (filename[pos+i] < '0') return false;
+    if (filename[pos+i] > '9') return false;
+  }
+
+  // Check extension
+  for (i=strlen(strData)-4;i<strlen(strData);i++) {
+    if (toupper(filename[i]) != toupper(strData[i])) return false;
+  }
+  return true;  
+}
+
 // Reset ESP
 void reset() {  
   SERIALDEBUG.println("Reset...");
@@ -503,23 +546,23 @@ void checkFreeSpace() {
       xSemaphoreGive( g_semaphoreLittleFS );
       return;
     }
-    
-    dir = LittleFS.open("/");
+
+    dir = LittleFS.open(CSVBASEFOLDER);
     if(!dir){
-      SERIALDEBUG.println("Alert: Failed to open / directory");
+      SERIALDEBUG.println("Alert: Failed to open root directory");
       xSemaphoreGive( g_semaphoreLittleFS );
       return;
     }
     if(!dir.isDirectory()){
-      SERIALDEBUG.println("Alert: / not a directory");
+      SERIALDEBUG.println("Alert: root is not a directory");
       xSemaphoreGive( g_semaphoreLittleFS );
       return;
     }
 
-    oldestFilename = "/sn999999.csv";
+    oldestFilename = CSVLASTFILE;
     filename = dir.getNextFileName();
     while (filename != "") {
-      if ((filename.length() > 4) && (filename.substring(0,3).equalsIgnoreCase("/sn")) && (filename.substring(filename.length() -4).equalsIgnoreCase(".csv"))){
+      if (isValidCSVFilename(filename.c_str())) {
         if (filename < oldestFilename) { // Older file found?
           oldestFilename = filename;
         }
@@ -527,7 +570,7 @@ void checkFreeSpace() {
       filename = dir.getNextFileName();
     }            
 
-    if (oldestFilename != "/sn999999.csv") { // At least one matching CSV file found?
+    if (oldestFilename != CSVLASTFILE) { // At least one matching CSV file found?
       msg.id= ID_INFO;
       snprintf(msg.strData,MAXMSGLENGTH+1,"Remove %s",oldestFilename.c_str());        
       xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
@@ -1071,7 +1114,7 @@ void loop() {
         
       // UTC time to create file name for csv
       ptrTimeinfo = gmtime ( &now );
-      snprintf(strFile,MAXFILENAMELENGHT+1,"/sn%04d%02d.csv", ptrTimeinfo->tm_year + 1900,ptrTimeinfo->tm_mon + 1);
+      snprintf(strFile,MAXFILENAMELENGHT+1,"%s%s%04d%02d.csv",CSVBASEFOLDER,CSVFILEPREFIX,ptrTimeinfo->tm_year + 1900,ptrTimeinfo->tm_mon + 1);
 
       // Timestamp string
       snprintf(strData,MAXSTRDATALENGTH+1,"%04d-%02d-%02dT%02d:%02d:00.000Z",

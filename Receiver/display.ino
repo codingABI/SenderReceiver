@@ -553,7 +553,7 @@ void taskDisplay(void * parameter) {
       if (digitalRead(TFT_LED) == LOW) { // Is display powered off/screensaver active?
         if (v_touchedTFT) { // touch IRQ?
           lastScreensaverMS = millis();
-          detachInterrupt(TIRQ_PIN);  // g_tft.getTouch pulls IRQ pin to LOW and would cause next interrupt
+          detachInterrupt(TIRQ_PIN); // g_tft.getTouch pulls IRQ pin to LOW and would cause next interrupt
           v_touchedTFT = false; 
         }
       } else { 
@@ -584,6 +584,7 @@ void taskDisplay(void * parameter) {
               }
               if ((touchX > 80+80) && (touchY > y) && (touchY < y+32)) {
                 g_PIREnabled = !g_PIREnabled;
+                v_detectedPIR = false;
                 drawSwitches();
                 lastTouchMS = millis();
                 beep(SHORTBEEP);

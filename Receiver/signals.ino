@@ -6,6 +6,7 @@
 // setup PIR sensor
 void setupPIR() {
   pinMode(PIR_PIN,INPUT);
+  attachInterrupt(PIR_PIN, PirISR, RISING); // Enable touch IRQ
 }
 
 // setup BME280 sensor
@@ -48,7 +49,7 @@ void setupASKReceiver() {
 }
 
 // parse received signal
-void checkSignal(unsigned long received) {
+void checkSignal(unsigned long received, unsigned int bitlength, unsigned int protocol) {
   DisplayMessage msg;
   int id, lowBattery;
   static unsigned long lastUnknownReceived = 0;
@@ -452,7 +453,7 @@ void checkSignal(unsigned long received) {
   if (unknownReceived) { // Foreign signal
     if ((lastUnknownReceived == 0) || (lastUnknownReceived != received)) { // Spam filter
       msg.id=ID_INFO;
-      snprintf(msg.strData,MAXMSGLENGTH+1,"Received %lu",received);
+      snprintf(msg.strData,MAXMSGLENGTH+1,"Received %lu,%u,%u",received,bitlength,protocol);
       xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
       lastUnknownReceived = received;
       duplicateWarned = false;
@@ -470,11 +471,15 @@ void checkSignal(unsigned long received) {
 // Check for ASK 433Mhz receiver signals
 void checkForASKSignals() {
   unsigned long received;
+  unsigned int bitlenth;
+  unsigned int protocol;
   // Process 433Mhz receiver signals
   while (g_433MHzRCSwitch.available()) {
     received = g_433MHzRCSwitch.getReceivedValue();
+    bitlenth = g_433MHzRCSwitch.getReceivedBitlength();
+    protocol = g_433MHzRCSwitch.getReceivedProtocol();
     g_433MHzRCSwitch.resetAvailable();
-    checkSignal(received);
+    checkSignal(received,bitlenth,protocol);
   }
 }
 
@@ -497,7 +502,7 @@ void checkForLoRaSignals() {
         LoRa.endPacket();
         LoRa.receive();
 
-        checkSignal(received);
+        checkSignal(received,32,99);
 
         xSemaphoreGive( g_semaphoreSPIBus );
       } else {
@@ -617,12 +622,13 @@ void readBME280() {
 void readPIR(){
   DisplayMessage msg;
 
-  if ((digitalRead(PIR_PIN) == HIGH) && (g_PIREnabled)) {
+  if ((v_detectedPIR) && (g_PIREnabled)) {
     if (millis() - g_lastPIRChangeMS > 1000) {
       msg.id = ID_DISPLAYON;
       msg.strData[0]='\0';
       xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
       g_lastPIRChangeMS = millis();
-    } 
+    }
+    v_detectedPIR = false;
   }
 }

@@ -636,18 +636,16 @@ void SendInfoToClient(WiFiClient *client) {
   client->println("</tbody></table><p align=\"right\">&copy; codingABI 2023</p></div></div></body></html>");    
 }
 
-// Send existing data csv files names as json file
+// Send existing data CSV files names as json file
 void SendFilesJsonToClient(WiFiClient *client) {
   #define MAXSTRDATALENGTH 50
   char strData[MAXSTRDATALENGTH+1];
   fs::File file, root;
   String filename;
   bool firstFile = true;
-  #define BASEFOLDER "/"
-  #define FILEPREFIX "sn"
 
   if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
-    root = LittleFS.open(BASEFOLDER);
+    root = LittleFS.open(CSVBASEFOLDER);
     if (root) {
       client->println("HTTP/1.1 200 OK");
       client->println("Content-Type: application/json");
@@ -659,18 +657,18 @@ void SendFilesJsonToClient(WiFiClient *client) {
 
       filename = root.getNextFileName();
       while (filename != "") {
-        if (filename.substring(filename.length() -4).equalsIgnoreCase(".csv") && 
-          filename.substring(String(BASEFOLDER).length(),String(FILEPREFIX).length()).equalsIgnoreCase(FILEPREFIX)) {
+        if (isValidCSVFilename(filename.c_str())) {
           if (firstFile) { // First file
-            snprintf(strData,MAXSTRDATALENGTH+1,"\"%s\"",filename.substring(String(BASEFOLDER).length()).c_str());
+            snprintf(strData,MAXSTRDATALENGTH+1,"\"%s\"",filename.substring(String(CSVBASEFOLDER).length()).c_str());
           } else { // Add comma after first file
-            snprintf(strData,MAXSTRDATALENGTH+1,",\"%s\"",filename.substring(String(BASEFOLDER).length()).c_str());
+            snprintf(strData,MAXSTRDATALENGTH+1,",\"%s\"",filename.substring(String(CSVBASEFOLDER).length()).c_str());
           }
           firstFile = false; 
           client->print(strData);
         }
         filename = root.getNextFileName();
       }    
+
       root.close();
       xSemaphoreGive( g_semaphoreLittleFS );
       client->println("]");
