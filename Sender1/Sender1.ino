@@ -5,7 +5,7 @@
  * via a 433MHz-ASK 32-bit signal to a receiver
  *
  * License: 2-Clause BSD License
- * Copyright (c) 2023 codingABI
+ * Copyright (c) 2024 codingABI
  * For details see: License.txt
  * 
  * created by codingABI https://github.com/codingABI/SenderReceiver
@@ -22,7 +22,7 @@
  * - Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
  * - DHT22 sensor
  * - 433MHz FS1000A sender
- * - 3x AA-Batteries without voltage regulation (runtime >8 months, dependent on usage of rechargeable or normal batteries)
+ * - 3x AA-Batteries without voltage regulation (runtime >9 months, dependent on usage of rechargeable or normal batteries)
  * - Control LED (blinks every 8 seconds) which can be enabled by a physical jumper
  *
  * History: 

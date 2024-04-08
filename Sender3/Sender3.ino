@@ -24,14 +24,12 @@
  * - Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
  * - DHT22 sensor
  * - 433MHz FS1000A sender
- * - 3x AA-Batteries without voltage regulation (runtime >12 months, dependent on usage of rechargeable or normal batteries)
+ * - 3x AA-Batteries without voltage regulation (runtime >9 months, dependent on usage of rechargeable or normal batteries)
  * - Control LED (blinks every 8 seconds) which can be enabled by a physical jumper
  * - Two magnetic reed switches "normally closed" to detect open windows
  *
  * History: 
  * 20230106, Initial version with PCB
- * 20230305, First low battery warning since device start 03.12.2021 (Two AA had 1.3V and one only 0.6V) => ~14 month runtime
- * 20240407, First low battery warning since device start 06.03.2023 (Two AAs Nr2&Nr3 had 1.2V and Nr1 only 0.8V) => ~13 month runtime
  */
 #include <avr/sleep.h> 
 #include <avr/wdt.h> 

@@ -11,7 +11,7 @@ Devices:
 - [Sender 6](#sender-6-433-mhz-lora)
 
 ## License and copyright
-This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Receiver) is licensed under the terms of the 2-Clause BSD License [Copyright (c) 2023 codingABI](LICENSE). 
+This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Receiver) is licensed under the terms of the 2-Clause BSD License [Copyright (c) 2024 codingABI](LICENSE). 
 
 The code in [externalCode.ino](/Receiver/externalCode.ino) is licensed under the terms of MIT/BSD/FreeBSD License [Written by Limor Fried/Ladyada for Adafruit Industries, Copyright (c) 2012 Adafruit Industries, Copyright (c) 2022 Bodmer (https://github.com/Bodmer)](LICENSE.TFT-eSPI).
 
@@ -74,7 +74,7 @@ Hardware:
 * Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
 * DHT22 sensor
 * 433MHz FS1000A sender (distance to receiver ~3m without line of sight with one wall between)
-* 3x AA-Batteries without voltage regulation (I use rechargeable AAs and the runtime is ~8 month)
+* 3x AA-Batteries without voltage regulation (I use rechargeable AAs and the runtime is ~9 month)
 * Control LED (blinks every 8 seconds) which can be enabled/disabled on demand with physical jumper SW2
 * Self-designed PCB
 
