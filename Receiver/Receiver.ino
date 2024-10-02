@@ -8,7 +8,7 @@
  *   - provides a webserver to show sensor data in a browser 
  *
  * License: 2-Clause BSD License
- * Copyright (c) 2023 codingABI
+ * Copyright (c) 2024 codingABI
  * For details see: License.txt
  * 
  * External code parts of TFT_eSPI: 
@@ -63,13 +63,15 @@
  * 20231007, Prevent delays while checking 433Mhz signals to avoid missed signals
  * 20231007, Remove Blynk for SolarPoweredSender sensor because Blynk in free plan reduces datastreams per template from 10 to 5 at 16.10.2023 (Second reduction in 2023, not nice)
  * 20231014, Add ISR for pir sensor
- * 20231110, Improve web page to show only existing csv files
+ * 20231110, Improve web page to show only existing CSV files
  * 20231111, Update arduino-esp32 from 2.0.7 to 2.0.14 (IDF 4.4.6), Update Blynk from 1.3.0 to 1.3.2
+ * 20240517, Update arduino-esp32 from 2.0.14 to 2.0.16 (IDF 4.4.7), Fix wrong "Sensor 6 duplicate received" debug message
+ * 20241002, Update arduino-esp32 from 2.0.16 to 3.0.5 (IDF 5.1.4), Changes for espnow&ledc, Update TFT_eSPI from 2.5.33
  */
 
 #include "secrets.h"
 
-#define DEBUG false  // true for Serial.print
+#define DEBUG true  // true for Serial.print
 #define SERIALDEBUG if (DEBUG) Serial
 
 // Blynk defines (must be defined before #include <BlynkSimpleEsp32.h>)
@@ -113,6 +115,7 @@
 #define SECS_PER_MIN 60
 #define SECS_PER_HOUR 3600
 #define SECS_PER_DAY 86400
+#define LORAPROTOCOL 99 // Marks a signal as LoRa signal in checkSignal()
 
 #define EEPROMADDR 10 // Startaddress in EEPROM
 
@@ -396,28 +399,25 @@ void beep(int type=0) {
     if (xSemaphoreTake( g_semaphoreBeep, 10000 / portTICK_PERIOD_MS) == pdTRUE) {
       switch(type) {
         case 0: // 500 Hz for 200ms
-          ledcSetup(0, 500, 8);
-          ledcAttachPin(BEEPER_PIN, 0);
-          ledcWrite(0, 128);
+          ledcAttach(BEEPER_PIN,500,8);
+          ledcWrite(BEEPER_PIN, 128);
           delay(200);
-          ledcWrite(0, 0);
-          ledcDetachPin(BEEPER_PIN);          
+          ledcWrite(BEEPER_PIN, 0);
+          ledcDetach(BEEPER_PIN);          
           break;
         case SHORTBEEP: // 1 kHz for 100ms
-          ledcSetup(0, 1000, 8);
-          ledcAttachPin(BEEPER_PIN, 0);
-          ledcWrite(0, 128);
+          ledcAttach(BEEPER_PIN,1000,8);
+          ledcWrite(BEEPER_PIN, 128);
           delay(100);
-          ledcWrite(0, 0);
-          ledcDetachPin(BEEPER_PIN);          
+          ledcWrite(BEEPER_PIN, 0);
+          ledcDetach(BEEPER_PIN);          
           break;
         case LONGBEEP: // 250 Hz for 400ms
-          ledcSetup(0, 250, 8);
-          ledcAttachPin(BEEPER_PIN, 0);
-          ledcWrite(0, 128);
+          ledcAttach(BEEPER_PIN,250,8);
+          ledcWrite(BEEPER_PIN, 128);
           delay(400);
-          ledcWrite(0, 0);
-          ledcDetachPin(BEEPER_PIN);          
+          ledcWrite(BEEPER_PIN, 0);
+          ledcDetach(BEEPER_PIN);          
           break;
       }
     }
@@ -508,11 +508,12 @@ void reset() {
 }
 
 // callback function for reveived ESPNOW packages
-void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) { 
+void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
   #define MAXMACLENGTH 17
   char strMac[MAXMACLENGTH+1];
   DisplayMessage msg;
 
+  const uint8_t* mac_addr = info->src_addr;
   snprintf(strMac, MAXMACLENGTH+1, "%02x:%02x:%02x:%02x:%02x:%02x",mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);  
   msg.id= ID_INFO;
   snprintf(msg.strData,MAXMSGLENGTH+1,"ESPNOW from %s",strMac);
@@ -984,7 +985,7 @@ void loop() {
     g_lastMotDCheckMS = millis();
   }
   if (!g_demoModeEnabled) {
-    if(Blynk.connected()){ // Blynk, if ony if connected, because the connection phase can block loop for several seconds
+    if(Blynk.connected()){ // Blynk, if only if connected, because the connection phase can block loop for several seconds
       Blynk.run();
       if (Blynk.connected()) {
         switch (g_pendingBlynkMailAlert) {

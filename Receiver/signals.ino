@@ -1,6 +1,6 @@
 /* ----------- Stuff for receiving signals and and sensor data ----------
  * License: 2-Clause BSD License
- * Copyright (c) 2023 codingABI
+ * Copyright (c) 2024 codingABI
  */
 
 // setup PIR sensor
@@ -70,6 +70,7 @@ void checkSignal(unsigned long received, unsigned int bitlength, unsigned int pr
   time(&now);
   unknownReceived = true;
 
+  SERIALDEBUG.println("Received ");
   SERIALDEBUG.println(received);
 
   if (received==14766972) { // Wifi off signal
@@ -153,9 +154,9 @@ void checkSignal(unsigned long received, unsigned int bitlength, unsigned int pr
     unknownReceived = false;
   }
 
-  if ((received & (0b11111 << 27)) == RCSIGNATURE) { // ASK Sensor with my signature received
+  if ((received & (0b11111 << 27)) == RCSIGNATURE) { // ASK or lora signal with my signature received
     unknownReceived = false;
-    SERIALDEBUG.println("433Mhz received");
+    if (protocol != LORAPROTOCOL) SERIALDEBUG.println("Lora received"); else SERIALDEBUG.println("433Mhz received");
     id = ((received >> 24) & 7);
     lowBattery = (received >> 23) & 1;
 
@@ -355,8 +356,9 @@ void checkSignal(unsigned long received, unsigned int bitlength, unsigned int pr
   
         g_pendingSensorData.sensor5Switch1 = ((received >> 16) & 1);
         g_pendingSensorData.sensor5PCI1 = ((received >> 15) & 1);
-        if ((!g_mailAlert) && ((g_pendingSensorData.sensor5PCI1 == 1) || (g_pendingSensorData.sensor5Switch1 == 1))) { // If alert is not already enabled => enable alert
-          g_pendingBlynkMailAlert = alert; // Wifi is not alway available => Send to when connected
+        if ((!g_mailAlert) && ((g_pendingSensorData.sensor5PCI1 == 1) || 
+          (g_pendingSensorData.sensor5Switch1 == 1))) { // If alert is not already enabled => enable alert
+          g_pendingBlynkMailAlert = alert; // Wifi is not always available => Send when connected
           g_mailAlert = true;
           msg.id = ID_BEEP;
           msg.strData[0]='\0';
@@ -436,9 +438,8 @@ void checkSignal(unsigned long received, unsigned int bitlength, unsigned int pr
         msg.id=ID_INFO;
         snprintf(msg.strData,MAXMSGLENGTH+1,"Sensor 6 %i,%i,%i",g_pendingSensorData.sensor6LowBattery,g_pendingSensorData.sensor6Vcc,received & 255);
         xQueueSend( displayMsgQueue, ( void * ) &msg, portMAX_DELAY );
-      }
-    } else SERIALDEBUG.println("Sensor 6 duplicate received");
-
+      } else SERIALDEBUG.println("Sensor 6 duplicate received");
+    }
     if (id == 7) { // Test sensor
         receivedInt = ((received >> 17) & 0b111111);
         msg.id=ID_INFO;
@@ -495,14 +496,14 @@ void checkForLoRaSignals() {
   
         String LoRaData = LoRa.readString();
         received = strtoul (LoRaData.c_str(),&strPtr,10);
-
+        
         // Send XOR response back to sender
         LoRa.beginPacket();
         LoRa.print(0xfffffffful^received);
         LoRa.endPacket();
         LoRa.receive();
 
-        checkSignal(received,32,99);
+        checkSignal(received,32,LORAPROTOCOL);
 
         xSemaphoreGive( g_semaphoreSPIBus );
       } else {

@@ -1,6 +1,6 @@
 /* ----------- Stuff for the webserver ----------
  * License: 2-Clause BSD License
- * Copyright (c) 2023 codingABI
+ * Copyright (c) 2024 codingABI
  */
  
 // Inline background pattern for webpages (My first svg background pattern :-) )
@@ -633,7 +633,7 @@ void SendInfoToClient(WiFiClient *client) {
       client->println(strData);
     }
   }
-  client->println("</tbody></table><p align=\"right\">&copy; codingABI 2023</p></div></div></body></html>");    
+  client->println("</tbody></table><p align=\"right\">&copy; codingABI 2024</p></div></div></body></html>");    
 }
 
 // Send existing data CSV files names as json file
@@ -786,7 +786,7 @@ void SendConfigPageToClient(WiFiClient *client) {
   client->print(MAXPASSWORDLENGTH);
   client->println(R"html(></div>
     <div class="item2cols"><input type="submit" class="button" value="Anwenden"></div>
-    <div class="item2cols"><p align="right">&copy; codingABI 2023</p></div>
+    <div class="item2cols"><p align="right">&copy; codingABI 2024</p></div>
     </form>
   </body>
 </html>)html");
@@ -856,7 +856,7 @@ void SendConfigChangeToClient(WiFiClient *client) {
   if (strlen(g_wifiSSID) > 0) {
     client->println(R"html(      <div class="item"><h1>&Auml;nderung wurde angenommen</h1></div>
       <div class="item"><p>Das Ger&auml;t wird in wenigen Sekunden mit den &Auml;nderungen neu gestartet...</p><p>Dieses Fenster kann nun geschlossen werden.</p></div>
-      <div class="item"><p align="right">&copy; codingABI 2023</p></div>
+      <div class="item"><p align="right">&copy; codingABI 2024</p></div>
     </div>
   </body>
 </html>)html");
@@ -868,7 +868,7 @@ void SendConfigChangeToClient(WiFiClient *client) {
     client->println(R"html(      <div class="item"><h1>Die &Auml;nderungen sind ung&uuml;ltig und werden nicht gespeichert</h1></div>
       <div class="item"><p>Eine leere SSID ist nicht erlaubt.</p></div>
       <div class="item"><form><input type="button" class="button" value="Zur&uuml;ck" onclick="history.back()"></form></div>
-      <div class="item"><p align="right">&copy; codingABI 2023</p></div>
+      <div class="item"><p align="right">&copy; codingABI 2024</p></div>
     </div>
   </body>
 </html>)html");
