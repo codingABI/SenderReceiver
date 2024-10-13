@@ -4,19 +4,20 @@
  * - Send a message, when my washing machine is finished (when no shaking is detected for a longer period at my over 20 year old Gorenje WA1141 machine)
  *
  * License: 2-Clause BSD License
- * Copyright (c) 2023 codingABI
+ * Copyright (c) 2024 codingABI
  * For details see: License.txt
- * 
+ *
  * created by codingABI https://github.com/codingABI/SenderReceiver/#sender-6-433-mhz-lora
  *
  * Used external libraries from Arduino IDE Library Manager
  * - LoRa (by Sandeep Mistry)
- * - NewEncoder (by GFVALVO)
  * - Adafruit MPU6050 (by Adafruit)
  * - Adafruit SSD1306 (by Adafruit)
  * - Adafruit Unified Sensor (by Adafruit)
  * - TFT_eSPI (by Bodmer) for fonts
- * 
+ * Used external libraries from GitHub
+ * - KY040 (https://github.com/codingABI/KY040 by codingABI)
+ *
  * Hardware:
  * - Microcontroller ESP32 LOLIN32
  * - MPU6050 accelerometer and gyroscope
@@ -25,20 +26,20 @@
  * - SX1278 LoRa Ra-02
  * - 3.7V 330mAh Li-Ion battery
  * - Two resistors (47k, 100k) for a voltage divider
- * 
- * Current consumption (measured on battery, LED from gyro sensor was removed): 
+ *
+ * Current consumption (measured on battery, LED from gyro sensor was removed):
  * a) 21 mA in menu selection
  * b) 4mA in minimal display mode while waiting for motions
  * c) 26 mA in maximal display mode while waiting for motions
- * d) 140 mA for the short time, while sending the LoRa signal 
+ * d) 140 mA for the short time, while sending the LoRa signal
  * e) In a), c) and d) +20mA, if Serial is enabled (because cpu clock must be higher)
- * 
+ *
  * Keep in mind: The ESP32 LOLIN32 (at least mine) has
- * - no overdischarge protection! Charge battery or switch off the device when battery is low 
+ * - no overdischarge protection! Charge battery or switch off the device when battery is low
  *   or use a battery with builtin overdischarge protection
  * - no voltage step up converter and only a 3.3V linear voltage regulator => Only the battery voltage ~3.4-4.1V can be used
  * => Runtime with 3.7V/330mAh battery ~5-10h
- * 
+ *
  * Buzzer-Codes
  * - 1xShort beep      = A button was pressed
  * - 1xStandard beep   = User input timed out
@@ -46,8 +47,8 @@
  * - 1xLong beep       = Error (If critical, the device will be reset)
  * - 2xLong beep       = A previous WDT reset was detected
  * - 1xHigh short beep = LoRa-Signal sent, but no response from receiver
- * 
- * History: 
+ *
+ * History:
  * 20230510, Initial version
  * 20230519, Add language strings for EN
  * 20230521, Do not goto deep sleep, if motions are continuous
@@ -55,12 +56,14 @@
  * 20230706, Fix bug where device does not store threshold and timeout in EEPROM
  * 20231030, Adjust low battery warning level and improve full charge detection
  * 20231102, Use spare pin 27 to detect switched off battery
+ * 20241013, Update arduino-esp32 from 2.0.16 to 3.0.5 (IDF 5.1.4) => Changes needed for WDT and ledc
+ * 20241013, Replace NewEncoder-Library with KY040
  */
 
-#include <NewEncoder.h>
+#include <KY040.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_SSD1306.h> 
+#include <Adafruit_SSD1306.h>
 #include <Wire.h>
 #include <Fonts/FreeSans18pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
@@ -78,12 +81,12 @@
  * 1 bit: Low battery
  * 6 bit: Vcc (0-63)
  * 9 bit: unused
- * 8 bit: type of message (0=STARTMESSAGE, 1=ENDMESSAGE, 2=TESTMESSAGE)   
+ * 8 bit: type of message (0=STARTMESSAGE, 1=ENDMESSAGE, 2=TESTMESSAGE)
  */
 
 // Set display language to DE or EN
-#define DISPLAYLANGUAGE_DE
-//#define DISPLAYLANGUAGE_EN
+//#define DISPLAYLANGUAGE_DE
+#define DISPLAYLANGUAGE_EN
 #include "displayLanguage.h"
 
 #define EEPROM_SIGNATURE 18 // First byte at startaddress in EEPROM
@@ -92,13 +95,13 @@
 #define EEPROM_SIZE 64 // Size of EEPROM area
 
 /* Send low battery warning, when voltage <= this value
- * Note: My ESP32 LOLIN32 has no battery overdischarge protection and 
+ * Note: My ESP32 LOLIN32 has no battery overdischarge protection and
  * only a 3.3V linear voltage regulator (Dropout voltage ~0.12V)
  */
-#define LOWBATWARNING 3.6f 
+#define LOWBATWARNING 3.6f
 #define LOWBATWARNINGHYSTERESIS 0.02f
 
-// I2C for OLED display and gyroscope 
+// I2C for OLED display and gyroscope
 #define SDA_PIN 32
 #define SCL_PIN 33
 
@@ -108,18 +111,18 @@
 // Pin for passive buzzer
 #define BUZZER_PIN 25
 
-// Battery powerswitch pin (LOW if powerswitch is OFF, Floating if ON)  
+// Battery powerswitch pin (LOW if powerswitch is OFF, Floating if ON)
 #define POWERSWITCH_PIN 27
 
 // Rotary encoder
 #define ROTARY_DT_PIN 17 // rotary DT
 #define ROTARY_CLK_PIN 5 // rotary CLK
 #define ROTARY_SW_PIN GPIO_NUM_39 // rotary button
-// I use pollings for button pin 39 and no interrupt handling, because operatins like analogRead or interrupts on pins 36 and 34 makes interrupt troubles 
+// I use pollings for button pin 39 and no interrupt handling, because operations like analogRead or interrupts on pins 36 and 34 makes interrupt troubles
 // (perhaps related "When the power switch which controls the temperature sensor, SARADC1 sensor, SARADC2 sensor, AMP sensor, or HALL sensor, is turned on, the inputs of GPIO36 and GPIO39 will be pulled down for about 80 ns" or https://esp32.com/viewtopic.php?t=14087)
 
 // Analog pin to measure the battery/loader voltage
-#define VBAT_PIN 34 
+#define VBAT_PIN 34
 
 // LoRa
 #define MOSI_PIN 23 // SPI MOSI
@@ -145,8 +148,8 @@ Adafruit_SSD1306 g_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 enum menuItems { MENUSTART, MENUBATTERY, MENUTIMEOUT, MENUTHRESHOLD, MENUDISPLAY, MENUSOUND, MENUSERIAL, MENULORATEST, MENUINFOS, MENURESET, MENURESTART, MAXMENUITEMS};
 // Display modes
 enum displayModes { MODEMINIMAL, MODEMAXIMAL, MAXDISPLAYMODES};
-// Pages for the information menu item 
-enum infoPages { 
+// Pages for the information menu item
+enum infoPages {
   PAGEAPP,
   PAGEMAC,
   PAGECHIP,
@@ -161,7 +164,7 @@ enum infoPages {
   MAXINFOPAGES
 };
 
-/* 
+/*
  *  Simple sprite to show waiting state or detecting a motion
  *  made with https://www.piskelapp.com/p/create/sprite
  *  and converted by https://javl.github.io/image2cpp/
@@ -171,24 +174,24 @@ enum infoPages {
 #define MAXFRAMES 8
 RTC_DATA_ATTR byte g_currentSpriteFrame = 0;
 const byte g_sprite[MAXFRAMES][SPRITE_WIDTH*2] = {
-{ 0x00, 0x00, 0x07, 0x00, 0x0f, 0x00, 0x18, 0x00, 0x30, 0x00, 0x60, 0x00, 0x60, 0x00, 0x60, 0x00, 
+{ 0x00, 0x00, 0x07, 0x00, 0x0f, 0x00, 0x18, 0x00, 0x30, 0x00, 0x60, 0x00, 0x60, 0x00, 0x60, 0x00,
   0x60, 0x00, 0x60, 0x00, 0x60, 0x00, 0x30, 0x00, 0x10, 0x00, 0x08, 0x40, 0x05, 0x00, 0x00, 0x00},
-{ 0x00, 0x00, 0x07, 0xe0, 0x0f, 0xf0, 0x18, 0x10, 0x30, 0x00, 0x60, 0x00, 0x60, 0x00, 0x60, 0x00, 
+{ 0x00, 0x00, 0x07, 0xe0, 0x0f, 0xf0, 0x18, 0x10, 0x30, 0x00, 0x60, 0x00, 0x60, 0x00, 0x60, 0x00,
   0x20, 0x00, 0x20, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00},
-{ 0x00, 0x00, 0x07, 0xe0, 0x0f, 0xf0, 0x18, 0x18, 0x20, 0x0c, 0x40, 0x06, 0x00, 0x06, 0x40, 0x06, 
+{ 0x00, 0x00, 0x07, 0xe0, 0x0f, 0xf0, 0x18, 0x18, 0x20, 0x0c, 0x40, 0x06, 0x00, 0x06, 0x40, 0x06,
   0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{ 0x00, 0x00, 0x00, 0xe0, 0x03, 0xf0, 0x08, 0x18, 0x00, 0x0c, 0x20, 0x06, 0x00, 0x06, 0x00, 0x06, 
+{ 0x00, 0x00, 0x00, 0xe0, 0x03, 0xf0, 0x08, 0x18, 0x00, 0x0c, 0x20, 0x06, 0x00, 0x06, 0x00, 0x06,
   0x00, 0x06, 0x00, 0x06, 0x00, 0x06, 0x00, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-{ 0x00, 0x00, 0x00, 0xa0, 0x02, 0x10, 0x00, 0x08, 0x00, 0x0c, 0x00, 0x06, 0x00, 0x06, 0x00, 0x06, 
+{ 0x00, 0x00, 0x00, 0xa0, 0x02, 0x10, 0x00, 0x08, 0x00, 0x0c, 0x00, 0x06, 0x00, 0x06, 0x00, 0x06,
   0x00, 0x06, 0x00, 0x06, 0x00, 0x06, 0x00, 0x0c, 0x00, 0x18, 0x00, 0xf0, 0x00, 0xe0, 0x00, 0x00},
-{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x04, 0x00, 0x04, 
-  0x00, 0x06, 0x00, 0x06, 0x00, 0x06, 0x00, 0x0c, 0x08, 0x18, 0x0f, 0xf0, 0x07, 0xe0, 0x00, 0x00}, 
-{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 
-  0x60, 0x02, 0x60, 0x00, 0x60, 0x02, 0x30, 0x04, 0x18, 0x18, 0x0f, 0xf0, 0x07, 0xe0, 0x00, 0x00}, 
-{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x00, 0x60, 0x00, 0x60, 0x00, 0x60, 0x00, 
+{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x04, 0x00, 0x04,
+  0x00, 0x06, 0x00, 0x06, 0x00, 0x06, 0x00, 0x0c, 0x08, 0x18, 0x0f, 0xf0, 0x07, 0xe0, 0x00, 0x00},
+{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00,
+  0x60, 0x02, 0x60, 0x00, 0x60, 0x02, 0x30, 0x04, 0x18, 0x18, 0x0f, 0xf0, 0x07, 0xe0, 0x00, 0x00},
+{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x00, 0x60, 0x00, 0x60, 0x00, 0x60, 0x00,
   0x60, 0x00, 0x60, 0x00, 0x60, 0x04, 0x30, 0x00, 0x18, 0x10, 0x0f, 0xc0, 0x07, 0x00, 0x00, 0x00}};
 
-/* 
+/*
  *  Simple icons
  *  made with https://www.piskelapp.com/p/create/sprite
  *  and converted by https://javl.github.io/image2cpp/
@@ -197,11 +200,11 @@ const byte g_sprite[MAXFRAMES][SPRITE_WIDTH*2] = {
 #define ICON_HEIGHT 16
 enum icons { ICONAUDIOON, ICONAUDIOOFF, ICONOK, MAXICONS};
 const byte g_icon[MAXICONS][ICON_WIDTH*2] = {
-{ 0x00, 0x00, 0x00, 0x30, 0x00, 0x70, 0x00, 0xf0, 0x01, 0xf0, 0x0f, 0xb0, 0x1f, 0x30, 0x18, 0x30, 
-  0x18, 0x30, 0x1f, 0x30, 0x0f, 0xb0, 0x01, 0xf0, 0x00, 0xf0, 0x00, 0x70, 0x00, 0x30, 0x00, 0x00}, 
-{ 0xc0, 0x01, 0x60, 0x33, 0x30, 0x76, 0x18, 0xec, 0x0d, 0xd8, 0x06, 0xb0, 0x1b, 0x60, 0x19, 0xd0, 
-  0x19, 0xd0, 0x1b, 0x60, 0x06, 0xb0, 0x0d, 0xd8, 0x18, 0xec, 0x30, 0x76, 0x60, 0x33, 0xc0, 0x01}, 
-{ 0x00, 0x00, 0x00, 0x06, 0x00, 0x06, 0x00, 0x0c, 0x00, 0x0c, 0x00, 0x18, 0x00, 0x18, 0x00, 0x30, 
+{ 0x00, 0x00, 0x00, 0x30, 0x00, 0x70, 0x00, 0xf0, 0x01, 0xf0, 0x0f, 0xb0, 0x1f, 0x30, 0x18, 0x30,
+  0x18, 0x30, 0x1f, 0x30, 0x0f, 0xb0, 0x01, 0xf0, 0x00, 0xf0, 0x00, 0x70, 0x00, 0x30, 0x00, 0x00},
+{ 0xc0, 0x01, 0x60, 0x33, 0x30, 0x76, 0x18, 0xec, 0x0d, 0xd8, 0x06, 0xb0, 0x1b, 0x60, 0x19, 0xd0,
+  0x19, 0xd0, 0x1b, 0x60, 0x06, 0xb0, 0x0d, 0xd8, 0x18, 0xec, 0x30, 0x76, 0x60, 0x33, 0xc0, 0x01},
+{ 0x00, 0x00, 0x00, 0x06, 0x00, 0x06, 0x00, 0x0c, 0x00, 0x0c, 0x00, 0x18, 0x00, 0x18, 0x00, 0x30,
   0x00, 0x30, 0x00, 0x60, 0x18, 0x60, 0x0c, 0xc0, 0x06, 0xc0, 0x03, 0x80, 0x01, 0x80, 0x00, 0x00}
 };
 
@@ -210,15 +213,17 @@ byte g_motionThreshold; // Threshold for motion detection (1 = very sensible, 25
 unsigned long g_idleTimeTimeoutS; // Timeout in seconds after that the LoRa message will be sent, when no acceleration/motion is detected
 byte g_displayMode; // 0 = Minimal/Default, 1 = Maximal/Debug
 bool g_soundEnabled; // Enables the buzzer sound
-bool g_serialEnabled; // Enables Serial... but need more power due higher cpu frequence
+bool g_serialEnabled; // Enables Serial... but need more power due higher cpu frequency
 #define SERIALDEBUG if (g_serialEnabled) Serial
 bool g_detectionActive = false; // Show detection of a acceleration/motion on screen
-RTC_DATA_ATTR unsigned long g_lastIdleStartTimeS = 0; // Time of last idle time begin 
+RTC_DATA_ATTR unsigned long g_lastIdleStartTimeS = 0; // Time of last idle time begin
 bool g_wakeUpByButton = false; // Deep sleep wake up by button?
 bool g_wakeUpByMPU = false; // Deep sleep wake up by mpu?
 volatile bool v_loraReceived = false; // Lora IRQ triggered?
 float g_vBat; // Current battery/loader voltage
-RTC_DATA_ATTR bool g_firstBoot = true; // Used to distinguish between a normal device startup and deep sleep wake ups 
+RTC_DATA_ATTR bool g_firstBoot = true; // Used to distinguish between a normal device startup and deep sleep wake ups
+KY040 g_rotaryEncoder(ROTARY_CLK_PIN,ROTARY_DT_PIN); // Rotary encoder
+volatile int v_rotaryValue=0; // Rotary encoder value (will be set in ISR)
 
 // List of longest idle times
 #define MAXTIMEHISTORY 4
@@ -227,8 +232,21 @@ RTC_DATA_ATTR unsigned long g_idleTimeSHistory[MAXTIMEHISTORY]; // List of longe
 enum beepTypes { DEFAULTBEEP, SHORTBEEP, LONGBEEP, HIGHSHORTBEEP, LASER };
 enum messageTypes { STARTMESSAGE, ENDMESSAGE, TESTMESSAGE };
 
-// Draw current frame of sprite 
-void drawSprite(int x, int y, int speedDelayMS=50) {  
+// ISR for rotary encoder to handle the interrupts for CLK and DT
+void ISR_rotaryEncoder() {
+  // Process pin states for CLK and DT
+  switch (g_rotaryEncoder.getRotation()) {
+    case KY040::CLOCKWISE:
+      v_rotaryValue++;
+      break;
+    case KY040::COUNTERCLOCKWISE:
+      v_rotaryValue--;
+      break;
+  }
+}
+
+// Draw current frame of sprite
+void drawSprite(int x, int y, int speedDelayMS=50) {
   static unsigned long lastSpriteChangeMS = 0;
   // Draw sprite pixels
   for (int i=0;i<SPRITE_HEIGHT;i++) { // every sprite line
@@ -244,17 +262,17 @@ void drawSprite(int x, int y, int speedDelayMS=50) {
   }
 
   // Goto next frame, when needed
-  if ((lastSpriteChangeMS == 0) || (millis()-lastSpriteChangeMS > speedDelayMS)) { 
+  if ((lastSpriteChangeMS == 0) || (millis()-lastSpriteChangeMS > speedDelayMS)) {
     g_currentSpriteFrame++;
     if (g_currentSpriteFrame>=MAXFRAMES) g_currentSpriteFrame = 0;
     lastSpriteChangeMS = millis();
   }
 }
 
-// Draw current frame of sprite 
-void drawIcon(int x, int y, byte icon) {  
+// Draw current frame of sprite
+void drawIcon(int x, int y, byte icon) {
   if (icon >= MAXICONS) {
-    SERIALDEBUG.print("Unknown icon ");    
+    SERIALDEBUG.print("Unknown icon ");
     SERIALDEBUG.println(icon);
     return;
   }
@@ -290,63 +308,50 @@ void beep(int type=DEFAULTBEEP) {
   if (!g_soundEnabled) return;
   // User PWM to improve quality
   switch(type) {
-    case DEFAULTBEEP: { // 500 Hz for 200ms
-      ledcSetup(0, 500, 8);
-      ledcAttachPin(BUZZER_PIN, 0);
-      ledcWrite(0, 128);
+    case DEFAULTBEEP: // 500 Hz for 200ms
+      ledcAttach(BUZZER_PIN,500,8);
+      ledcWrite(BUZZER_PIN, 128);
       delay(200);
-      ledcWrite(0, 0);
-      ledcDetachPin(BUZZER_PIN);          
+      ledcWrite(BUZZER_PIN, 0);
+      ledcDetach(BUZZER_PIN);
       break;
-    }
-    case SHORTBEEP: { // 1 kHz for 100ms
-      ledcSetup(0, 1000, 8);
-      ledcAttachPin(BUZZER_PIN, 0);
-      ledcWrite(0, 128);
+    case SHORTBEEP: // 1 kHz for 100ms
+      ledcAttach(BUZZER_PIN,1000,8);
+      ledcWrite(BUZZER_PIN, 128);
       delay(100);
-      ledcWrite(0, 0);
-      ledcDetachPin(BUZZER_PIN);          
+      ledcWrite(BUZZER_PIN, 0);
+      ledcDetach(BUZZER_PIN);
       break;
-    }
-    case LONGBEEP: { // 250 Hz for 400ms
-      ledcSetup(0, 250, 8);
-      ledcAttachPin(BUZZER_PIN, 0);
-      ledcWrite(0, 128);
+    case LONGBEEP: // 250 Hz for 400ms
+      ledcAttach(BUZZER_PIN,250,8);
+      ledcWrite(BUZZER_PIN, 128);
       delay(400);
-      ledcWrite(0, 0);
-      ledcDetachPin(BUZZER_PIN);          
+      ledcWrite(BUZZER_PIN, 0);
+      ledcDetach(BUZZER_PIN);
       break;
-    }
-    case HIGHSHORTBEEP: { // High and short beep 
-      ledcSetup(0, 5000, 8);
-      ledcAttachPin(BUZZER_PIN, 0);
-      ledcWrite(0, 128);
+    case HIGHSHORTBEEP: { // High and short beep
+      ledcAttach(BUZZER_PIN,5000,8);
+      ledcWrite(BUZZER_PIN, 128);
       delay(100);
-      ledcWrite(0, 0);
-      ledcDetachPin(BUZZER_PIN);          
+      ledcWrite(BUZZER_PIN, 0);
+      ledcDetach(BUZZER_PIN);
       break;
     }
     case LASER: { // Laser like sound
       int i = 5000; // Start frequency in Hz (goes down to 300 Hz)
       int j = 300; // Start duration in microseconds (goes up to 5000 microseconds)
-      ledcSetup(0, i, 8);
-      ledcAttachPin(BUZZER_PIN, 0);
-      ledcWrite(0, 0);
+      ledcAttach(BUZZER_PIN,i,8);
       while (i>300) {
         i -=50;
         j +=50;
-        ledcSetup(0, i, 8);
-        ledcWrite(0, 128);
-        delayMicroseconds(j);
-        ledcWrite(0,0);
-        delayMicroseconds(1000);
+        ledcWriteTone(BUZZER_PIN,i);
+        delayMicroseconds(j+1000);
       }
-      ledcWrite(0, 0);
-      ledcDetachPin(BUZZER_PIN);          
+      ledcDetach(BUZZER_PIN);
       break;
     }
     default: {
-      SERIALDEBUG.print("Unknown beep type ");    
+      SERIALDEBUG.print("Unknown beep type ");
       SERIALDEBUG.println(type);
     }
   }
@@ -360,7 +365,7 @@ void centerText(char *strData, int offsetY=0, int offsetX=0) {
 
   g_display.getTextBounds(strData, 0, 0, &x, &y, &w, &h);
   g_display.setCursor((SCREEN_WIDTH-w)/2+offsetX,(SCREEN_HEIGHT-y)/2+offsetY);
-  g_display.print(strData);  
+  g_display.print(strData);
 }
 
 // Show current timeout value on the configuration screen
@@ -372,7 +377,7 @@ void showTimeout() {
   g_display.setCursor(0,0);
   g_display.print(STR_IDLETIMEINSECONDS);
   g_display.setFont(&FreeSans12pt7b);
-  snprintf(strData,MAXSTRDATALENGTH+1,"%lu",g_idleTimeTimeoutS); 
+  snprintf(strData,MAXSTRDATALENGTH+1,"%lu",g_idleTimeTimeoutS);
   g_display.setCursor(0,SCREEN_HEIGHT-2);
   g_display.print(strData);
 }
@@ -386,7 +391,7 @@ void showThreshold() {
   g_display.setCursor(0,0);
   g_display.print(STR_SENSORTHRESHOLD);
   g_display.setFont(&FreeSans12pt7b);
-  snprintf(strData,MAXSTRDATALENGTH+1,"%i",g_motionThreshold); 
+  snprintf(strData,MAXSTRDATALENGTH+1,"%i",g_motionThreshold);
   g_display.setCursor(0,SCREEN_HEIGHT-2);
   g_display.print(strData);
 }
@@ -402,12 +407,12 @@ void showInfos(byte page) {
   if (page >= MAXINFOPAGES) {
     SERIALDEBUG.print("Unknown info page ");
     SERIALDEBUG.println(page);
-    return;     
+    return;
   }
 
   // Enable mpu, if needed
   if (page == PAGEMPU) g_mpu.enableSleep(false); else g_mpu.enableSleep(true);
-    
+
   g_display.setFont();
   g_display.setCursor(0,0);
 
@@ -424,7 +429,7 @@ void showInfos(byte page) {
       g_display.setCursor(0,16);
       for (int i=0;i<6;i++) { // Build mac from chip id
         byte part = ((ESP.getEfuseMac() >> (i*8)) & 0xff);
-        snprintf(strData,MAXSTRDATALENGTH+1,"%02X",part); 
+        snprintf(strData,MAXSTRDATALENGTH+1,"%02X",part);
         g_display.print(strData);
         if (i < 5) g_display.print(":");
       }
@@ -476,9 +481,9 @@ void showInfos(byte page) {
       g_display.println(strData);
       snprintf(strData,MAXSTRDATALENGTH+1,"Z=%5.1f m/s%c",a.acceleration.z,char(252));
       g_display.println(strData);
-      
+
       g_display.setCursor(SCREEN_WIDTH/2+16,16);
-      snprintf(strData,MAXSTRDATALENGTH+1,"T=%2i C%c",(int) round(temp.temperature),char(247));      
+      snprintf(strData,MAXSTRDATALENGTH+1,"T=%2i C%c",(int) round(temp.temperature),char(247));
       g_display.println(strData);
       break;
     }
@@ -512,19 +517,19 @@ void showInfos(byte page) {
       }
       #define DAYINSECS (3600*24)
       if (g_idleTimeSHistory[0] > 10*DAYINSECS) {
-        snprintf(strData,MAXSTRDATALENGTH+1,"%i:%6lud  %i:%6lud",1,g_idleTimeSHistory[0]/DAYINSECS,3,g_idleTimeSHistory[2]/DAYINSECS); 
-        g_display.println(strData);     
-        snprintf(strData,MAXSTRDATALENGTH+1,"%i:%6lud  %i:%6lud",2,g_idleTimeSHistory[1]/DAYINSECS,4,g_idleTimeSHistory[3]/DAYINSECS); 
+        snprintf(strData,MAXSTRDATALENGTH+1,"%i:%6lud  %i:%6lud",1,g_idleTimeSHistory[0]/DAYINSECS,3,g_idleTimeSHistory[2]/DAYINSECS);
+        g_display.println(strData);
+        snprintf(strData,MAXSTRDATALENGTH+1,"%i:%6lud  %i:%6lud",2,g_idleTimeSHistory[1]/DAYINSECS,4,g_idleTimeSHistory[3]/DAYINSECS);
         g_display.print(strData);
       } else {
-        snprintf(strData,MAXSTRDATALENGTH+1,"%i:%6lus  %i:%6lus",1,g_idleTimeSHistory[0],3,g_idleTimeSHistory[2]); 
-        g_display.println(strData);     
-        snprintf(strData,MAXSTRDATALENGTH+1,"%i:%6lus  %i:%6lus",2,g_idleTimeSHistory[1],4,g_idleTimeSHistory[3]); 
+        snprintf(strData,MAXSTRDATALENGTH+1,"%i:%6lus  %i:%6lus",1,g_idleTimeSHistory[0],3,g_idleTimeSHistory[2]);
+        g_display.println(strData);
+        snprintf(strData,MAXSTRDATALENGTH+1,"%i:%6lus  %i:%6lus",2,g_idleTimeSHistory[1],4,g_idleTimeSHistory[3]);
         g_display.print(strData);
-      }            
+      }
       break;
     }
-    default:SERIALDEBUG.println("Unknown info page");return; 
+    default:SERIALDEBUG.println("Unknown info page");return;
   }
 }
 
@@ -573,7 +578,7 @@ bool sendLoRa(unsigned long data) {
   SERIALDEBUG.print("Sending ");
   SERIALDEBUG.println(data,BIN);
 
-  snprintf(strData,MAXSTRDATALENGTH+1,STR_LORAPACKET); 
+  snprintf(strData,MAXSTRDATALENGTH+1,STR_LORAPACKET);
 
   for (int i=0;i < MAXRETRIES;i++){
     LoRa.beginPacket();
@@ -594,13 +599,13 @@ bool sendLoRa(unsigned long data) {
 
       if (v_loraReceived) {
         v_loraReceived = false;
-        while (LoRa.available()) {  
+        while (LoRa.available()) {
           String LoRaData = LoRa.readString();
           received = strtoul (LoRaData.c_str(),&strPtr,10);
-  
+
           if ((0xfffffffful ^ received)== data) { // XOR response
             SERIALDEBUG.println("Response received");
-            responseOK = true;            
+            responseOK = true;
           }
         }
       }
@@ -609,7 +614,7 @@ bool sendLoRa(unsigned long data) {
       SERIALDEBUG.println("Response timeout");
       beep(HIGHSHORTBEEP);
     } else {
-      break; // Exit for loop  
+      break; // Exit for loop
     }
   }
   LoRa.sleep();
@@ -627,12 +632,12 @@ bool isBatteryLow() {
 }
 
 /* Full battery detection
- * This is not easy and 100% reliable because my ESP32 LOLIN32 
- * has no way to communicate with the battery loader 
- * => Try to detect full charge via voltage history  
- * My ESP32 LOLIN32 increases the charging voltage to 4.13V 
+ * This is not easy and 100% reliable because my ESP32 LOLIN32
+ * has no way to communicate with the battery loader
+ * => Try to detect full charge via voltage history
+ * My ESP32 LOLIN32 increases the charging voltage to 4.13V
  * and when the battery is full the voltage drops down to ~4.08V
- * Addtionally assume full battery when voltage is ]4.0V,4.1V[ 
+ * Additionally assume full battery when voltage is ]4.0V,4.1V[
  * for a longer period without significant changes
  */
 bool isBatteryFull(bool reset=false) {
@@ -645,7 +650,7 @@ bool isBatteryFull(bool reset=false) {
   float maxSample;
   float minSample;
 
-  if (reset) { // Reset voltage statistics 
+  if (reset) { // Reset voltage statistics
     for (int i=0;i<MAXSAMPLES;i++) samples[i] = 0.0f;
     currentSample = 0;
     lastSampleMS = millis()-SAMPLEINTERVALMS-1;
@@ -655,7 +660,7 @@ bool isBatteryFull(bool reset=false) {
   if (g_vBat < 4.0f) peakVoltage = 0.0f;
   if (g_vBat > peakVoltage) peakVoltage = g_vBat;
 
-  // While charging the voltage increased up to 4.13V 
+  // While charging the voltage increased up to 4.13V
   // and when the battery is full the voltage drops down to ~4.08V
   if ((peakVoltage >= 4.1f) && (g_vBat < 4.1f) && (g_vBat > 4.0f)) return true;
 
@@ -681,12 +686,12 @@ bool isBatteryFull(bool reset=false) {
       return true;
     }
   }
-  return false;  
+  return false;
 }
 
 // Reset statistics for rough full battery detection
 void resetBatteryFullStatistics() {
-  isBatteryFull(true);  
+  isBatteryFull(true);
 }
 
 // Send LoRa testsignal
@@ -694,16 +699,16 @@ void sendLoRaTest() {
   #define MAXSTRDATALENGTH 80
   char strData[MAXSTRDATALENGTH+1];
 
-  if (sendLoRa(RCSIGNATURE + 
+  if (sendLoRa(RCSIGNATURE +
     (((unsigned long) ID & 7) << 24) +
     ((unsigned long) (g_vBat <= LOWBATWARNING) << 23) +
     ((((unsigned long) round(g_vBat*10))&63) << 17) +
     TESTMESSAGE)) {
-    snprintf(strData,MAXSTRDATALENGTH+1,STR_CONFIRMED); 
+    snprintf(strData,MAXSTRDATALENGTH+1,STR_CONFIRMED);
   } else {
-    snprintf(strData,MAXSTRDATALENGTH+1,STR_SENT); 
+    snprintf(strData,MAXSTRDATALENGTH+1,STR_SENT);
   }
-  
+
   g_display.clearDisplay();
   g_display.setFont(&FreeSans9pt7b);
   centerText(strData);
@@ -724,13 +729,13 @@ void batteryView() {
 
   updateVbat();
   resetBatteryFullStatistics(); // Reset voltage statistics
-  
+
   do {
     esp_task_wdt_reset();
 
     updateVbat();
 
-    snprintf(strData,MAXSTRDATALENGTH+1,"%.2fV",g_vBat); 
+    snprintf(strData,MAXSTRDATALENGTH+1,"%.2fV",g_vBat);
 
     g_display.clearDisplay();
     g_display.setFont();
@@ -741,21 +746,21 @@ void batteryView() {
       // Low battery warning
       if (isBatteryLow()) {
         if ((millis()/1000) & 1) { // Blinking text
-          g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_EMPTY)*6,SCREEN_HEIGHT-1-8); 
+          g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_EMPTY)*6,SCREEN_HEIGHT-1-8);
           g_display.print(STR_EMPTY);
         }
         if (!lowBatBeepDone) { // Beep only once
-          beep(LONGBEEP);      
+          beep(LONGBEEP);
           lowBatBeepDone = true;
         }
       }
       // Full battery
       if (isBatteryFull()) {
-        g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_FULL)*6,SCREEN_HEIGHT-1-8); 
+        g_display.setCursor(SCREEN_WIDTH-1-strlen(STR_FULL)*6,SCREEN_HEIGHT-1-8);
         g_display.print(STR_FULL);
       }
     } else { // Battery powerswitch: Off
-      snprintf(strData,MAXSTRDATALENGTH+1,"%s",STR_OFF); 
+      snprintf(strData,MAXSTRDATALENGTH+1,"%s",STR_OFF);
     }
     g_display.setFont(&FreeSans12pt7b);
     g_display.setCursor(0,SCREEN_HEIGHT-1);
@@ -776,44 +781,53 @@ void batteryView() {
 }
 
  // Change dualstate option
-void changeSetting(NewEncoder *encoder, byte menuItem) {
+void changeSetting(byte menuItem) {
   #define MAXSTRDATALENGTH 80
   char strData[MAXSTRDATALENGTH+1];
   enum options { OPTIONLEFT, OPTIONRIGHT, MAXOPTIONS };
   unsigned long lastInteractMS; // Last interaction time to detect timeout
-  NewEncoder::EncoderState currentEncoderState;
   bool exitLoop = false;
   bool selection = false;
   int currentOption = 0;
-  int currentMaxOptions;
+  int maxOptions;
+  int lastRotaryValue;
+  int rotaryValueBackup;
 
   SERIALDEBUG.print("Selection mode for ");
   SERIALDEBUG.println(menuItem);
 
-  if (menuItem == MENUINFOS) currentMaxOptions = MAXINFOPAGES; else currentMaxOptions = MAXOPTIONS;
-  
+  if (menuItem == MENUINFOS) maxOptions = MAXINFOPAGES; else maxOptions = MAXOPTIONS;
+
   switch(menuItem) {
-    case MENUDISPLAY:encoder->newSettings(-1, currentMaxOptions, g_displayMode, currentEncoderState);break;
-    case MENUSERIAL:encoder->newSettings(-1, currentMaxOptions, (g_serialEnabled)?1:0, currentEncoderState);break;
-    case MENURESET:encoder->newSettings(-1, currentMaxOptions, 0, currentEncoderState);break;
-    case MENUSOUND:encoder->newSettings(-1, currentMaxOptions, (g_soundEnabled)?1:0, currentEncoderState);break;
-    case MENUINFOS:encoder->newSettings(-1, currentMaxOptions, 0, currentEncoderState);break;
+    case MENUDISPLAY:currentOption=g_displayMode;break;
+    case MENUSERIAL:currentOption=(g_serialEnabled)?1:0;break;
+    case MENURESET:currentOption=0;break;
+    case MENUSOUND:currentOption=(g_soundEnabled)?1:0;break;
+    case MENUINFOS:currentOption=0;break;
     default: SERIALDEBUG.println("Unknown menu item"); return;
   }
+
+  // Backup/set rotary encoder start value
+  cli();
+  rotaryValueBackup = v_rotaryValue;
+  currentOption = 0;
+  lastRotaryValue = v_rotaryValue;
+  sei();
 
   lastInteractMS = millis();
   do {
     esp_task_wdt_reset();
 
-    if(encoder->getState(currentEncoderState)) {
-      lastInteractMS = millis(); 
+    // Get rotary value and check for under- or overflow
+    cli();
+    if (v_rotaryValue >= maxOptions) v_rotaryValue = 0;
+    if (v_rotaryValue < 0) v_rotaryValue = maxOptions-1;
+    if (v_rotaryValue != lastRotaryValue) {
+      currentOption = v_rotaryValue;
+      lastRotaryValue = currentOption;
+      lastInteractMS = millis();
     }
-    
-    currentOption = currentEncoderState.currentValue; 
-    // Check for under- or overflow
-    if (currentOption >= currentMaxOptions) currentOption = 0;
-    if (currentOption < 0) currentOption = currentMaxOptions-1;
-    encoder->getAndSet(currentOption,currentEncoderState,currentEncoderState);
+    sei();
 
     g_display.clearDisplay();
     g_display.setFont();
@@ -835,7 +849,7 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
         }
         g_display.setFont(&FreeSans9pt7b);
         centerText(strData,2);
-        break;        
+        break;
       }
       case MENUSOUND: {
         switch(currentOption) {
@@ -863,14 +877,14 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
         g_display.setFont(&FreeSans9pt7b);
         centerText(strData,2);
         break;
-      }  
+      }
     }
     // Overview dots
-    for (int i=0;i<currentMaxOptions;i++) {
+    for (int i=0;i<maxOptions;i++) {
       if (i == currentOption) {
-        g_display.drawFastHLine(SCREEN_WIDTH/2-1-(OVERVIEWGAP*(currentMaxOptions-1))/2 + OVERVIEWGAP*i,SCREEN_HEIGHT-2,2,WHITE);
+        g_display.drawFastHLine(SCREEN_WIDTH/2-1-(OVERVIEWGAP*(maxOptions-1))/2 + OVERVIEWGAP*i,SCREEN_HEIGHT-2,2,WHITE);
       }
-      g_display.drawFastHLine(SCREEN_WIDTH/2-1-(OVERVIEWGAP*(currentMaxOptions-1))/2 + OVERVIEWGAP*i,SCREEN_HEIGHT-1,2,WHITE);
+      g_display.drawFastHLine(SCREEN_WIDTH/2-1-(OVERVIEWGAP*(maxOptions-1))/2 + OVERVIEWGAP*i,SCREEN_HEIGHT-1,2,WHITE);
     }
 
     // Timeout bar
@@ -880,7 +894,7 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
       g_display.drawPixel(SCREEN_WIDTH-1,i*(SCREEN_HEIGHT/4), BLACK);
     }
     g_display.display();
-      
+
     if (millis()-lastInteractMS > USERTIMEOUTMS) {
       beep();
       exitLoop = true;
@@ -910,7 +924,7 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
     }
     case MENUSERIAL: {
       g_serialEnabled = (currentOption == OPTIONRIGHT);
-      setSerialMode();  
+      setSerialMode();
       saveSettings();
       break;
     }
@@ -919,11 +933,16 @@ void changeSetting(NewEncoder *encoder, byte menuItem) {
         initSettings();
         saveSettings();
         SERIALDEBUG.flush();
-        ESP.restart();               
+        ESP.restart();
       }
       break;
     }
   }
+
+  // Restore rotary encoder start value
+  cli();
+  v_rotaryValue = rotaryValueBackup;
+  sei();
 }
 
 // Device menu
@@ -931,43 +950,36 @@ void menu() {
   #define MENUITEMLENGHT 80
   char menuItem[MAXMENUITEMS][MENUITEMLENGHT] = {STR_START,STR_BATTERY,STR_IDLETIME,STR_THRESHOLD,STR_DISPLAY,STR_SOUND,STR_SERIAL,STR_LORATEST,STR_INFO,STR_RESET,STR_RESTART};
   int currentMenuItem = 0;
+  int lastRotaryValue;
   int16_t  x, y;
   uint16_t w, h;
   bool exitLoop = false;
   unsigned long lastInteractMS = 0;
-  
-  NewEncoder::EncoderState currentEncoderState;
-  NewEncoder encoder(ROTARY_CLK_PIN, ROTARY_DT_PIN, -1, MAXMENUITEMS, 0, FULL_PULSE);
-  
+
   SERIALDEBUG.println("Start menu");
 
-  g_mpu.enableSleep(true);
+  cli();
+  v_rotaryValue = 0;
+  currentMenuItem = v_rotaryValue;
+  lastRotaryValue = v_rotaryValue;
+  sei();
 
-  if (!encoder.begin()) {
-    SERIALDEBUG.println("Encoder Failed to Start. Check pin assignments and available interrupts. Aborting.");
-    g_display.clearDisplay();
-    g_display.setFont();
-    g_display.setCursor(0,0);
-    g_display.print(STR_COULDNOTSTARTROTARYENCODER);
-    g_display.display();
-    delay(5000);
-    esp_task_wdt_reset();
-    return;
-  }
+  g_mpu.enableSleep(true);
 
   lastInteractMS = millis();
   do {
     esp_task_wdt_reset();
-    
-    if (encoder.getState(currentEncoderState)) { // Rotary encoder rotation
-      lastInteractMS = millis(); 
+
+    // Get rotary value and check for under- or overflow
+    cli();
+    if (v_rotaryValue >= MAXMENUITEMS) v_rotaryValue = 0;
+    if (v_rotaryValue < 0) v_rotaryValue = MAXMENUITEMS-1;
+    if (v_rotaryValue != lastRotaryValue) {
+      currentMenuItem = v_rotaryValue;
+      lastRotaryValue = currentMenuItem;
+      lastInteractMS = millis();
     }
-    
-    currentMenuItem = currentEncoderState.currentValue; 
-    // Check for under- or overflow
-    if (currentMenuItem >= MAXMENUITEMS) currentMenuItem = 0;
-    if (currentMenuItem < 0) currentMenuItem = MAXMENUITEMS-1;
-    encoder.getAndSet(currentMenuItem,currentEncoderState,currentEncoderState);
+    sei();
 
     if (digitalRead(ROTARY_SW_PIN)==LOW) {
       beep(SHORTBEEP);
@@ -981,9 +993,7 @@ void menu() {
         case MENUTHRESHOLD:
         case MENUTIMEOUT: {
           if (currentMenuItem == MENUTHRESHOLD) g_mpu.enableSleep(false);
-          changeValue(&encoder, currentMenuItem);
-          // Restore encoder settings for the menu
-          encoder.newSettings(-1,MAXMENUITEMS, currentMenuItem,currentEncoderState); 
+          changeValue(currentMenuItem);
           if (currentMenuItem == MENUTHRESHOLD) g_mpu.enableSleep(true);
           break;
         }
@@ -992,16 +1002,12 @@ void menu() {
         case MENUDISPLAY:
         case MENURESET:
         case MENUSERIAL: {
-          changeSetting(&encoder,currentMenuItem);
-          // Restore encoder settings for the menu
-          encoder.newSettings(-1,MAXMENUITEMS, currentMenuItem,currentEncoderState); 
+          changeSetting(currentMenuItem);
           break;
         }
         case MENULORATEST: sendLoRaTest();break;
         case MENUBATTERY: {
           batteryView();
-          // Restore encoder settings for the menu
-          encoder.newSettings(-1,MAXMENUITEMS, currentMenuItem,currentEncoderState); 
           break;
         }
         case MENURESTART: resetIdleTimeHistory();exitLoop = true;break;
@@ -1036,7 +1042,7 @@ void menu() {
       g_display.drawRect(1,0,BATTERY_WIDTH-1,BATTERY_HEIGHT,WHITE);
       g_display.drawFastVLine(0,1,BATTERY_HEIGHT-2,WHITE);
     }
-    
+
     g_display.display();
 
     if (millis() - lastInteractMS > USERTIMEOUTMS) {
@@ -1044,12 +1050,11 @@ void menu() {
       exitLoop = true;
     }
   } while (!exitLoop);
-  encoder.end();
 
   // Enable MPU and send start signal
   g_mpu.enableSleep(false);
   // Send LoRa message
-  sendLoRa(RCSIGNATURE + 
+  sendLoRa(RCSIGNATURE +
     (((unsigned long) ID & 7) << 24) +
     ((unsigned long) (isBatteryLow()) << 23) +
     ((((unsigned long) round(g_vBat*10))&63) << 17) +
@@ -1077,27 +1082,56 @@ void checkMotion(bool passive=false) {
 }
 
 // Change value mode
-void changeValue(NewEncoder *encoder, byte menuItem) {
+void changeValue(byte menuItem) {
   unsigned long lastInteractMS; // Last interaction time to detect timeout
-  NewEncoder::EncoderState currentEncoderState;
   bool exitLoop = false;
-  
+  int currentValue = 0;
+  int maxValue;
+  int minValue;
+  int lastRotaryValue;
+  int rotaryValueBackup;
+
   SERIALDEBUG.print("Change value mode for ");
   SERIALDEBUG.println(menuItem);
 
   switch(menuItem) {
-    case MENUTIMEOUT:encoder->newSettings(10, 600, g_idleTimeTimeoutS, currentEncoderState);break;
-    case MENUTHRESHOLD:encoder->newSettings(1, 255, g_motionThreshold, currentEncoderState);break;
-    default: SERIALDEBUG.println("Unknown menu item"); return;
+    case MENUTIMEOUT:
+      minValue = 10;
+      maxValue = 600;
+      currentValue = g_idleTimeTimeoutS;
+      break;
+    case MENUTHRESHOLD:
+      minValue = 1;
+      maxValue = 255;
+      currentValue = g_motionThreshold;
+      break;
+    default: SERIALDEBUG.println("Unknown menu item");
   }
+
+  // Backup/set rotary encoder start value
+  cli();
+  rotaryValueBackup = v_rotaryValue;
+  lastRotaryValue = currentValue;
+  sei();
 
   lastInteractMS = millis();
   do {
     esp_task_wdt_reset();
-    
+
+    // Get rotary value and check for under- or overflow
+    cli();
+    if (v_rotaryValue > maxValue) v_rotaryValue = maxValue;
+    if (v_rotaryValue < minValue) v_rotaryValue = minValue;
+    if (v_rotaryValue != lastRotaryValue) {
+      currentValue = v_rotaryValue;
+      lastRotaryValue = currentValue;
+      lastInteractMS = millis();
+    }
+    sei();
+
     g_display.clearDisplay();
     g_display.setFont();
-    
+
     switch(menuItem) {
       case MENUTIMEOUT:showTimeout();break;
       case MENUTHRESHOLD:{
@@ -1107,11 +1141,11 @@ void changeValue(NewEncoder *encoder, byte menuItem) {
         if (g_detectionActive) {
           g_display.fillRect(SCREEN_WIDTH-BOXSIZE-4, 0, BOXSIZE, BOXSIZE, WHITE);
         } else {
-          g_display.drawRect(SCREEN_WIDTH-BOXSIZE-4, 0, BOXSIZE, BOXSIZE, WHITE);      
+          g_display.drawRect(SCREEN_WIDTH-BOXSIZE-4, 0, BOXSIZE, BOXSIZE, WHITE);
         }
         break;
       }
-      default: SERIALDEBUG.println("Unknown menu item"); return;
+      default: SERIALDEBUG.println("Unknown menu item");
     }
 
     // Timeout bar
@@ -1122,17 +1156,14 @@ void changeValue(NewEncoder *encoder, byte menuItem) {
     }
     g_display.display();
 
-    if (encoder->getState(currentEncoderState)) {
-      switch(menuItem) {
-        case MENUTIMEOUT:g_idleTimeTimeoutS = currentEncoderState.currentValue;break;
-        case MENUTHRESHOLD:{
-          g_motionThreshold = currentEncoderState.currentValue;
-          g_mpu.setMotionDetectionThreshold(g_motionThreshold);
-          break;
-        }
-        default: SERIALDEBUG.println("Unknown menu item"); return;
-      }      
-      lastInteractMS = millis();
+    switch(menuItem) {
+      case MENUTIMEOUT:g_idleTimeTimeoutS = currentValue;break;
+      case MENUTHRESHOLD:{
+        g_motionThreshold = currentValue;
+        g_mpu.setMotionDetectionThreshold(g_motionThreshold);
+        break;
+      }
+      default: SERIALDEBUG.println("Unknown menu item");
     }
     if (millis()-lastInteractMS > USERTIMEOUTMS) {
       beep();
@@ -1148,7 +1179,12 @@ void changeValue(NewEncoder *encoder, byte menuItem) {
     }
   } while (!exitLoop); // Until button was pressed or timeout
 
-  if (menuItem != MENUINFOS) saveSettings();  
+  if (menuItem != MENUINFOS) saveSettings();
+
+  // Restore rotary encoder start value
+  cli();
+  v_rotaryValue = rotaryValueBackup;
+  sei();
 }
 
 // Reset device in case of a problem
@@ -1156,13 +1192,13 @@ void reset() {
   SERIALDEBUG.println("Reset");
   SERIALDEBUG.flush();
   beep(LONGBEEP);
-  ESP.restart();  
+  ESP.restart();
 }
 
 // Reset list of longest idle time periods
 void resetIdleTimeHistory() {
   for (int i=0;i<MAXTIMEHISTORY;i++) {
-    g_idleTimeSHistory[i]=0;   
+    g_idleTimeSHistory[i]=0;
   }
 }
 
@@ -1186,7 +1222,7 @@ void showIdleTimeHistory() {
   SERIALDEBUG.println("History:");
   for (int i=0;i<MAXTIMEHISTORY;i++) {
     SERIALDEBUG.print(g_idleTimeSHistory[i]);
-    SERIALDEBUG.println("s"); 
+    SERIALDEBUG.println("s");
   }
 }
 
@@ -1211,10 +1247,10 @@ void updateVbat() {
     for (int i=0;i<MAXSAMPLES;i++) {
       if (samples[i] != -1) {
         sum += samples[i];
-        count++; 
+        count++;
       }
     }
-    g_vBat = round(map(sum/count,0,3400,0,4152)*10+5)/10000.0f;    
+    g_vBat = round(map(sum/count,0,3400,0,4152)*10+5)/10000.0f;
     lastReadMS = millis();
   }
 }
@@ -1224,32 +1260,36 @@ void setSerialMode() {
   if (g_serialEnabled) {
     setCpuFrequencyMhz(80); // Serial does not work with cpu frequency <=40 MHz!
     Serial.begin(115200);
-    SERIALDEBUG.println("Serial enabled");    
+    SERIALDEBUG.println("Serial enabled");
   } else {
     setCpuFrequencyMhz(40); // Reduce CPU frequency to reduce power consumption
     Serial.end();
   }
 }
 
-void setup() {  
+void setup() {
   bool earlyButtonPressed = false; // Button pressed early on startup
-  
+
   // Pin modes for rotary encoder (My KY-040 pins have builtin pullup resistors)
   pinMode(ROTARY_CLK_PIN,INPUT);
   pinMode(ROTARY_DT_PIN,INPUT);
   pinMode(ROTARY_SW_PIN,INPUT);
+
+  // Set interrupts for CLK and DT
+  attachInterrupt(digitalPinToInterrupt(ROTARY_CLK_PIN), ISR_rotaryEncoder, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ROTARY_DT_PIN), ISR_rotaryEncoder, CHANGE);
 
   // Passive buzzer
   pinMode(BUZZER_PIN,OUTPUT);
 
   // Analog input connected to a voltage divider (47k/100k resistors) for measure of the battery/loader voltage
   pinMode(VBAT_PIN,INPUT);
-  
+
   // Init device settings
   initSettings();
 
   // Enable Serial, if enabled in initSettings
-  setSerialMode(); 
+  setSerialMode();
 
   if (digitalRead(ROTARY_SW_PIN) == LOW) { // Check button
     SERIALDEBUG.println("Button pressed on startup");
@@ -1277,7 +1317,7 @@ void setup() {
 
   // Enable Serial, if enabled by EEPROM settings
   setSerialMode();
-  
+
   if (esp_reset_reason() == ESP_RST_TASK_WDT) { // Previous WDT-Reset?
     beep(LONGBEEP);
     delay(200);
@@ -1304,21 +1344,30 @@ void setup() {
       case ESP_SLEEP_WAKEUP_TIMER: {
         SERIALDEBUG.println("Timer wakeup");
         if (earlyButtonPressed) g_wakeUpByButton = true;
-        break;      
+        break;
       }
       default:beep(LASER);break;
     }
   }
 
   // Enable WDT for current task
-  esp_task_wdt_init(WDTTIMEOUT,true);
+  esp_task_wdt_config_t twdt_config  = {
+    .timeout_ms = WDTTIMEOUT * 1000,// Timeout im ms
+    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Bitmask of all cores, https://github.com/espressif/esp-idf/blob/v5.2.2/examples/system/task_watchdog/main/task_watchdog_example_main.c
+    .trigger_panic = true // Enable panic to restart ESP32
+  };
+  #if !CONFIG_ESP_TASK_WDT_INIT
+  esp_task_wdt_init(&twdt_config);
+  #else
+  esp_task_wdt_reconfigure(&twdt_config);
+  #endif
   esp_task_wdt_add(NULL);
 
   // I2C init
   Wire.begin(SDA_PIN,SCL_PIN);
 
   // OLED display init
-  if(!g_display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
+  if(!g_display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     SERIALDEBUG.println("Display allocation failed");
     delay(5000);
     esp_task_wdt_reset();
@@ -1355,7 +1404,7 @@ void setup() {
     LoRa.onReceive(callbackLoraReceived);
     LoRa.sleep();
   }
-  
+
   // Init MPU6050 accelerometer and gyroscope
   if (!g_mpu.begin(0x68, &Wire, 0)) {
     SERIALDEBUG.println("Failed to find MPU6050 chip");
@@ -1376,7 +1425,7 @@ void setup() {
   g_mpu.setInterruptPinPolarity(false);
   g_mpu.setMotionInterrupt(true);
   // Disable mpu to reduce current consumption to ~4mA when not waked up by mpu (mpu will be enabled afterwards, when needed)
-  if (!g_wakeUpByMPU) g_mpu.enableSleep(true);  
+  if (!g_wakeUpByMPU) g_mpu.enableSleep(true);
 
   // Reset list of longest idle times only on power on and not on wake up
   if (g_firstBoot) resetIdleTimeHistory();
@@ -1395,7 +1444,7 @@ void loop() {
   unsigned long idleDuration;
 
   esp_task_wdt_reset();
-  
+
   // Goto menu, if rotary encoder button was pressed, waked up by button or power on
   if ((digitalRead(ROTARY_SW_PIN) == LOW) || g_wakeUpByButton || g_firstBoot) {
     // Blank screen
@@ -1425,7 +1474,7 @@ void loop() {
     SERIALDEBUG.println("Timeout reached");
 
     // Send LoRa message
-    bool confirmed = sendLoRa(RCSIGNATURE + 
+    bool confirmed = sendLoRa(RCSIGNATURE +
       (((unsigned long) ID & 7) << 24) +
       ((unsigned long) (isBatteryLow()) << 23) +
       ((((unsigned long) round(g_vBat*10))&63) << 17) +
@@ -1450,8 +1499,8 @@ void loop() {
     esp_deep_sleep_start();
   } else {
     g_display.setFont();
-    if (g_displayMode > MODEMINIMAL) { // More than minimal display mode      
-      snprintf(strData,MAXSTRDATALENGTH+1,"%.2fV",g_vBat); 
+    if (g_displayMode > MODEMINIMAL) { // More than minimal display mode
+      snprintf(strData,MAXSTRDATALENGTH+1,"%.2fV",g_vBat);
       g_display.print(strData);
 
       // Show longest idle times
@@ -1460,22 +1509,22 @@ void loop() {
       for (int i=0;i<historyItems;i++) {
         if (g_idleTimeSHistory[i] >= 0) {
           g_display.setCursor(0,(i+1)*8);
-          snprintf(strData,MAXSTRDATALENGTH+1,"%i:%4lus",i+1,g_idleTimeSHistory[i]); 
+          snprintf(strData,MAXSTRDATALENGTH+1,"%i:%4lus",i+1,g_idleTimeSHistory[i]);
           g_display.print(strData);
         }
       }
 
       // Show idle duration
       snprintf(strData,MAXSTRDATALENGTH+1,"%i",idleDuration);
-      
+
       g_display.setFont(&FreeSans18pt7b);
       g_display.getTextBounds(strData, 0, 0, &x, &y, &w, &h);
-      g_display.setCursor(SCREEN_WIDTH-1-w-x,(SCREEN_HEIGHT+h)/2);    
+      g_display.setCursor(SCREEN_WIDTH-1-w-x,(SCREEN_HEIGHT+h)/2);
       g_display.print(strData);
     };
   }
 
-  // Draw sprite, when motion was detected 
+  // Draw sprite, when motion was detected
   if (g_detectionActive) {
     if (g_displayMode == MODEMINIMAL) { // Delayed sprite and display clear in minimal mode to reduce power consumption
       unsigned long lastMS = millis();
@@ -1486,10 +1535,10 @@ void loop() {
         g_display.display();
       }
       g_wakeUpByMPU = false;
-      return; // Exit loop to check motion and button again (and do not goto deep sleep, if motions are continuous) 
+      return; // Exit loop to check motion and button again (and do not goto deep sleep, if motions are continuous)
     }
   }
-  
+
   g_display.display();
 
   if (g_displayMode == MODEMINIMAL) { // Goto deep sleep in minimal display mode
@@ -1498,15 +1547,15 @@ void loop() {
     esp_sleep_enable_ext1_wakeup((1ULL << MPU_IRQ),ESP_EXT1_WAKEUP_ANY_HIGH);
     esp_sleep_enable_timer_wakeup((g_idleTimeTimeoutS-idleDuration)*1000*1000);
 
-    g_mpu.getMotionInterruptStatus(); // Reset/read interrupt status 
+    g_mpu.getMotionInterruptStatus(); // Reset/read interrupt status
 
     SERIALDEBUG.print("Sleep for ");
     SERIALDEBUG.print(g_idleTimeTimeoutS-idleDuration);
     SERIALDEBUG.print(" seconds");
     SERIALDEBUG.flush();
-    
+
     g_display.ssd1306_command(SSD1306_DISPLAYOFF); // Seems to reduce power consumption by 1mA
     // Deep sleep
-    esp_deep_sleep_start();    
+    esp_deep_sleep_start();
   }
 }

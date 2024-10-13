@@ -24,8 +24,10 @@ Used external libraries from Arduino IDE Library Manager:
 * Adafruit BME280 Library (by Adafruit)
 * Adafruit MPU6050 (by Adafruit)
 * Adafruit SSD1306 (by Adafruit)
-* NewEncoder (by GFVALVO)
 * DHT sensor library (by Adafruit)
+
+Used external libraries from GitHub
+* KY040 (https://github.com/codingABI/KY040 by codingABI)
 
 ## Appendix
 ### Signals
