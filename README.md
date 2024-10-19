@@ -76,7 +76,7 @@ Hardware:
 * Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
 * DHT22 sensor
 * 433MHz FS1000A sender (distance to receiver ~3m without line of sight with one wall between)
-* 3x AA-Batteries without voltage regulation (I use rechargeable AAs and the runtime is ~9 month)
+* 3x AA-Batteries without voltage regulation (I use rechargeable AAs and the runtime is ~10 month)
 * Control LED (blinks every 8 seconds) which can be enabled/disabled on demand with physical jumper SW2
 * Self-designed PCB
 
