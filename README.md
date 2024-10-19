@@ -116,7 +116,7 @@ Hardware:
 * Microcontroller ATmega328P (without crystal, in 8 MHz-RC mode. Board manager: "ATmega328 on a breadboard (8 MHz internal clock)" ) 
 * HT7333 voltage regulator
 * Lora SX1278 Ra-02 (433 MHz, distance to receiver ~5m without line of sight with one wall and a metal case between)
-* 18650 Battery with integrated protection against deep discharge
+* 18650 Battery with integrated protection against deep discharge and 3350mA (Runtime is >2 years)
 * Magnetic reed-switch "normally closed"
 * Control LED which can be enabled/disabled on demand with physical jumper JP2
 * Self-made perfboard
