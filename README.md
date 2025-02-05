@@ -11,7 +11,7 @@ Devices:
 - [Sender 6](#sender-6-433-mhz-lora)
 
 ## License and copyright
-This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Receiver) is licensed under the terms of the 2-Clause BSD License [Copyright (c) 2024 codingABI](LICENSE). 
+This project (except [externalCode.ino](/Receiver/externalCode.ino) for the Receiver) is licensed under the terms of the 2-Clause BSD License [Copyright (c) 2023-2025 codingABI](LICENSE). 
 
 The code in [externalCode.ino](/Receiver/externalCode.ino) is licensed under the terms of MIT/BSD/FreeBSD License [Written by Limor Fried/Ladyada for Adafruit Industries, Copyright (c) 2012 Adafruit Industries, Copyright (c) 2022 Bodmer (https://github.com/Bodmer)](LICENSE.TFT-eSPI).
 
