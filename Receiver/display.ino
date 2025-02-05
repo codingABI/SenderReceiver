@@ -1,7 +1,8 @@
 /* ----------- Stuff for the tft display ----------
  * License: 2-Clause BSD License
- * Copyright (c) 2023 codingABI
+ * Copyright (c) 2023-2025 codingABI
  */
+
 #define FONTCOLOR TFT_WHITE // Color for text
 #define BACKGROUNDCOLOR TFT_BLACK // Default background color
 
@@ -12,7 +13,7 @@ void drawBatteryStates(int LowBattery1, int LowBattery3, int LowBattery5, bool r
   #define BATHEIGHT 10
   #define BATPOSX 1
   #define BATPOSY 2
-  
+
   // Sensor 1
   color = BACKGROUNDCOLOR;
   if (!reset) {
@@ -59,7 +60,7 @@ void drawSwitches() {
     g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, BACKGROUNDCOLOR);
   } else {
     g_tft.fillCircle(x, y, DOTSIZE, BACKGROUNDCOLOR);
-    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);         
+    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);
   }
 
   // Sound switch
@@ -69,7 +70,7 @@ void drawSwitches() {
     g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, BACKGROUNDCOLOR);
   } else {
     g_tft.fillCircle(x, y, DOTSIZE, BACKGROUNDCOLOR);
-    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);         
+    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);
   }
 
   // PIR switch
@@ -79,7 +80,7 @@ void drawSwitches() {
     g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, BACKGROUNDCOLOR);
   } else {
     g_tft.fillCircle(x, y, DOTSIZE, BACKGROUNDCOLOR);
-    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);         
+    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);
   }
 
   y = SWITCHPOSY+32;
@@ -91,7 +92,7 @@ void drawSwitches() {
     g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, BACKGROUNDCOLOR);
   } else {
     g_tft.fillCircle(x, y, DOTSIZE, BACKGROUNDCOLOR);
-    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);         
+    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);
   }
 
   // Demo mode switch
@@ -101,23 +102,23 @@ void drawSwitches() {
     g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, BACKGROUNDCOLOR);
   } else {
     g_tft.fillCircle(x, y, DOTSIZE, BACKGROUNDCOLOR);
-    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);         
+    g_tft.fillCircle(x + DOTDISTANCE, y, DOTSIZE, TFT_DARKGREY);
   }
 
   // Mail alert symbol
   #define SYMBOLSIZE 20 // width = SYMBOLSIZE*2, height = SYMBOLSIZE
   x = 80+80+80/2-SYMBOLSIZE;
   y = SWITCHPOSY+32-SYMBOLSIZE/2;
-  if (g_mailAlert) {
+  if (getMailAlertFromEEPROM()) {
     g_tft.fillRect(x,y,SYMBOLSIZE*2,SYMBOLSIZE,TFT_RED);
     g_tft.drawRect(x,y,SYMBOLSIZE*2,SYMBOLSIZE,TFT_WHITE);
     g_tft.drawLine(x,y,x+SYMBOLSIZE-1,y+SYMBOLSIZE/2,TFT_WHITE);
-    g_tft.drawLine(x+SYMBOLSIZE,y+SYMBOLSIZE/2,x+SYMBOLSIZE*2-1,y,TFT_WHITE);    
+    g_tft.drawLine(x+SYMBOLSIZE,y+SYMBOLSIZE/2,x+SYMBOLSIZE*2-1,y,TFT_WHITE);
   } else g_tft.fillRect(x,y,SYMBOLSIZE*2,SYMBOLSIZE,BACKGROUNDCOLOR);
 }
 
-// Reset min/max/last data
-void resetLastMinMaxData(sensorData *datLast,sensorData *datMin, sensorData *datMax) {
+// Reset last/min/max data
+void resetLastMinMaxData(sensorData *datLast, sensorData *datMin, sensorData *datMax) {
   datLast->sensor1LowBattery = -NOVALIDLOWBATTERY;
   datLast->sensor1Temperature = -NOVALIDTEMPERATUREDATA;
   datLast->sensor1Humidity = -NOVALIDHUMIDITYDATA;
@@ -144,12 +145,12 @@ void resetLastMinMaxData(sensorData *datLast,sensorData *datMin, sensorData *dat
   datMax->sensor3Humidity = -NOVALIDHUMIDITYDATA;
 }
 
-// display current, min and max temperature value
+// Display current, min and max temperature value
 void drawTemperatureText(int x, int y, int &currentValue, int &lastValue, int &maxValue, int &minValue) {
   #define MAXSTRDATALENGTH 79
   char strData[MAXSTRDATALENGTH+1];
 
-  if (lastValue == currentValue) return; // no nothing if value unchanged
+  if (lastValue == currentValue) return; // Do nothing if value unchanged
 
   // Current value
   g_tft.setTextDatum(MR_DATUM);
@@ -162,7 +163,7 @@ void drawTemperatureText(int x, int y, int &currentValue, int &lastValue, int &m
   g_tft.setTextDatum(ML_DATUM);
   g_tft.setTextPadding( g_tft.textWidth("+88", 1) );
   strData[0]='\0';
-  if ((abs(currentValue) != NOVALIDTEMPERATUREDATA) && 
+  if ((abs(currentValue) != NOVALIDTEMPERATUREDATA) &&
     (maxValue < currentValue)) {
     maxValue = currentValue;
     snprintf(strData,MAXSTRDATALENGTH+1,"%d",maxValue);
@@ -172,7 +173,7 @@ void drawTemperatureText(int x, int y, int &currentValue, int &lastValue, int &m
 
   // Min value
   strData[0]='\0';
-  if ((abs(currentValue) != NOVALIDTEMPERATUREDATA) && 
+  if ((abs(currentValue) != NOVALIDTEMPERATUREDATA) &&
     (minValue > currentValue)) {
     minValue = currentValue;
     snprintf(strData,MAXSTRDATALENGTH+1,"%d",minValue);
@@ -182,12 +183,12 @@ void drawTemperatureText(int x, int y, int &currentValue, int &lastValue, int &m
   g_tft.setTextPadding(0);
 }
 
-// display current, min and max humidity value
+// Display current, min and max humidity value
 void drawHumidityText(int x, int y, byte &currentValue, byte &lastValue, byte &maxValue, byte &minValue) {
   #define MAXSTRDATALENGTH 79
   char strData[MAXSTRDATALENGTH+1];
 
-  if (lastValue == currentValue) return; // no nothing if value unchanged
+  if (lastValue == currentValue) return; // Do nothing if value unchanged
 
   // Current value
   g_tft.setTextDatum(MR_DATUM);
@@ -200,7 +201,7 @@ void drawHumidityText(int x, int y, byte &currentValue, byte &lastValue, byte &m
   g_tft.setTextDatum(ML_DATUM);
   g_tft.setTextPadding( g_tft.textWidth("188", 1) );
   strData[0]='\0';
-  if ((abs(currentValue) != NOVALIDHUMIDITYDATA) && 
+  if ((abs(currentValue) != NOVALIDHUMIDITYDATA) &&
     (maxValue < currentValue)) {
     maxValue = currentValue;
     snprintf(strData,MAXSTRDATALENGTH+1,"%d",maxValue);
@@ -210,7 +211,7 @@ void drawHumidityText(int x, int y, byte &currentValue, byte &lastValue, byte &m
 
   // Min value
   strData[0]='\0';
-  if ((abs(currentValue) != NOVALIDHUMIDITYDATA) && 
+  if ((abs(currentValue) != NOVALIDHUMIDITYDATA) &&
     (minValue > currentValue)) {
     minValue = currentValue;
     snprintf(strData,MAXSTRDATALENGTH+1,"%d",minValue);
@@ -220,12 +221,12 @@ void drawHumidityText(int x, int y, byte &currentValue, byte &lastValue, byte &m
   g_tft.setTextPadding(0);
 }
 
-// display current, min and max pressure value
+// Display current, min and max pressure value
 void drawPressureText(int x, int y, int &currentValue, int &lastValue, int &maxValue, int &minValue) {
   #define MAXSTRDATALENGTH 79
   char strData[MAXSTRDATALENGTH+1];
 
-  if (lastValue == currentValue) return; // no nothing if value unchanged
+  if (lastValue == currentValue) return; // Do nothing if value unchanged
 
   // Current value
   g_tft.setTextDatum(MR_DATUM);
@@ -238,7 +239,7 @@ void drawPressureText(int x, int y, int &currentValue, int &lastValue, int &maxV
   g_tft.setTextDatum(ML_DATUM);
   g_tft.setTextPadding( g_tft.textWidth("1888", 1) );
   strData[0]='\0';
-  if ((abs(currentValue) != NOVALIDPRESSUREDATA) && 
+  if ((abs(currentValue) != NOVALIDPRESSUREDATA) &&
     (maxValue < currentValue)) {
     maxValue = currentValue;
     snprintf(strData,MAXSTRDATALENGTH+1,"%d",maxValue);
@@ -248,7 +249,7 @@ void drawPressureText(int x, int y, int &currentValue, int &lastValue, int &maxV
 
   // Min value
   strData[0]='\0';
-  if ((abs(currentValue) != NOVALIDPRESSUREDATA) && 
+  if ((abs(currentValue) != NOVALIDPRESSUREDATA) &&
     (minValue > currentValue)) {
     minValue = currentValue;
     snprintf(strData,MAXSTRDATALENGTH+1,"%d",minValue);
@@ -265,10 +266,9 @@ void taskDisplay(void * parameter) {
   #define SPRITEY 160
   #define MAXSTRDATALENGTH 79
   char strData[MAXSTRDATALENGTH+1];
-  #define GRAPHDATAMAXITEMS 48 // Polygonpoints for graph. 48 is a step size of 5 pixel (Width-1)/(GRAPHDATAMAXITEMS-1)
-  int graphData[GRAPHDATAMAXITEMS];
+  byte graphData[GRAPHDATAMAXITEMS];
   byte graphHour[GRAPHDATAMAXITEMS];
-  int graphLastPos, graphNextPos, graphIterationPos;
+  byte graphLastPos, graphNextPos, graphIterationPos;
 
   bool touchWaitingRelease = true;
   unsigned long lastScreensaverMS=0;
@@ -277,6 +277,7 @@ void taskDisplay(void * parameter) {
   uint16_t x, y, touchX, touchY;
   uint16_t yDraw = 0;
   time_t now;
+  bool initialDisplay = true;
   struct tm * ptrTimeinfo;
   TFT_eSprite img = TFT_eSprite(&g_tft);
 
@@ -290,9 +291,9 @@ void taskDisplay(void * parameter) {
 
   for (int i=0;i<GRAPHDATAMAXITEMS;i++) { graphData[i]=NOVALIDHUMIDITYDATA; graphHour[i]=255; };
   graphLastPos=0;
+  getGraphDataFromEEPROM(graphData, graphHour,graphLastPos);
 
   resetLastMinMaxData(&datLast,&datMin,&datMax);
-
   img.setColorDepth(16);
   img.createSprite(240, 40);
 
@@ -321,7 +322,7 @@ void taskDisplay(void * parameter) {
     x = g_tft.width()/2+67;
     y = 118;
     g_tft.drawString("hPa",x,y,2);
-    
+
     setupScrollArea(TOP_FIXED_AREA,0);
 
     xSemaphoreGive( g_semaphoreSPIBus );
@@ -331,37 +332,44 @@ void taskDisplay(void * parameter) {
     beep();
     beep();
   }
-  
+
   for (;;) {
     if (xSemaphoreTake( g_semaphoreSPIBus, 10000 / portTICK_PERIOD_MS) == pdTRUE) {
-      
-      while( xQueueReceive( displayMsgQueue,&msg , 0 ) == pdPASS ) { // Process complete message queue 
+
+      while( xQueueReceive( displayMsgQueue,&msg , 0 ) == pdPASS ) { // Process complete message queue
         if ((msg.id == ID_INFO) || (msg.id == ID_ALERT)) {
-          // Log message to logfile
-          fs::File file = LittleFS.open(LOGFILE, "r");
-          if (file) {
-            // Create backup of logfile when logfile is to big and delete previous backup
-            if (file.size() > MAXLOGFILESIZE) {
-              file.close();
-              LittleFS.remove(BACKUPLOGFILE);
-              LittleFS.rename(LOGFILE,BACKUPLOGFILE);
-            } else file.close();
+          if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
+            // Log message to logfile
+            fs::File file = LittleFS.open(LOGFILE, "r");
+            if (file) {
+              // Create backup of logfile when logfile is too big and delete previous backup
+              if (file.size() > MAXLOGFILESIZE) {
+                file.close();
+                LittleFS.remove(BACKUPLOGFILE);
+                LittleFS.rename(LOGFILE,BACKUPLOGFILE);
+              } else file.close();
+            }
+            xSemaphoreGive( g_semaphoreLittleFS );
+          } else {
+            SERIALDEBUG.println("Error: LittleFS Semaphore Timeout");
+            beep();
+            beep(SHORTBEEP);
+            beep();
           }
           struct timeval tv;
-          gettimeofday(&tv, NULL);
+          gettimeofday(&tv, NULL); // Use gettimeofday to get usecs
           ptrTimeinfo = gmtime ( &tv.tv_sec );
           snprintf(strData,MAXSTRDATALENGTH+1,"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ;%s;%s",ptrTimeinfo->tm_year + 1900,ptrTimeinfo->tm_mon + 1,ptrTimeinfo->tm_mday,ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min,ptrTimeinfo->tm_sec,((tv.tv_usec / 1000) % 1000),(msg.id == ID_ALERT)?"ERR":"INF",msg.strData);
           appendToFile(LOGFILE,strData,"UTC-Time;Type;Message");
 
-          time(&now);
-          ptrTimeinfo = localtime ( &now );
+          ptrTimeinfo = localtime ( &msg.timeStamp );
           snprintf(strData,MAXSTRDATALENGTH+1,"%02d:%02d:%02d %s",ptrTimeinfo->tm_hour,ptrTimeinfo->tm_min,ptrTimeinfo->tm_sec,msg.strData);
-          
+
           #define MAXSCREENCHARS 40
           if (strlen(strData) > MAXSCREENCHARS) {
             strData[MAXSCREENCHARS]='\0';
             strData[MAXSCREENCHARS-1]='.';
-            strData[MAXSCREENCHARS-2]='.';                    
+            strData[MAXSCREENCHARS-2]='.';
           }
           g_tft.setTextDatum(TL_DATUM);
           yDraw = scroll_line(g_tft.textWidth(strData,1));
@@ -371,28 +379,34 @@ void taskDisplay(void * parameter) {
               beep(LONGBEEP);
             } else g_tft.setTextColor(TFT_WHITE,TFT_BLACK);
           } else {
-            if (msg.id == ID_ALERT) g_tft.setTextColor(TFT_RED,TFT_NAVY); else g_tft.setTextColor(TFT_YELLOW,TFT_NAVY);          
+            if (msg.id == ID_ALERT) g_tft.setTextColor(TFT_RED,TFT_NAVY); else g_tft.setTextColor(TFT_YELLOW,TFT_NAVY);
           }
           g_tft.drawString(strData,0, yDraw, 1);
-  
         }
         if ((msg.id == ID_DISPLAYON) || (msg.id == ID_ALERT)) lastScreensaverMS = millis();
         if (msg.id == ID_REFESHBUTTONS) drawSwitches();
-        if (msg.id == ID_RESET) {
+        if (msg.id == ID_RESET) { // Reset (typically after a demo mode change)
           for (int i=0;i<GRAPHDATAMAXITEMS;i++) { graphData[i]=NOVALIDHUMIDITYDATA; graphHour[i]=255; };
           graphLastPos=0;
           g_tft.fillRect(0,SPRITEY,img.width(),img.height(),BACKGROUNDCOLOR); // Overwrite sprite area
           drawBatteryStates(NOVALIDLOWBATTERY,NOVALIDLOWBATTERY,NOVALIDLOWBATTERY,true);
           resetLastMinMaxData(&datLast,&datMin,&datMax);
+          if (!g_demoModeEnabled) {
+            getGraphDataFromEEPROM(graphData, graphHour,graphLastPos);
+            initialDisplay = true;
+          }
         }
         if (msg.id == ID_BEEP) beep(LONGBEEP);
       }
 
-      if( xQueueReceive( displayDatQueue,&dat , 0 ) == pdPASS ) { // Process next data queue entry
-        time(&now);
-        ptrTimeinfo = localtime ( &now );
+      if (initialDisplay) { // Initial dataset at startup
+        dat = getLastDatasetFromEEPROM();
+      }
 
-        // show battery states
+      if (initialDisplay || (xQueueReceive( displayDatQueue,&dat , 0 ) == pdPASS) ) { // Process next data queue entry
+        ptrTimeinfo = localtime ( &dat.time );
+
+        // Show battery states
         drawBatteryStates(dat.sensor1LowBattery,dat.sensor3LowBattery,dat.sensor5LowBattery);
 
         // ------------------ Temperature -----------------
@@ -400,16 +414,16 @@ void taskDisplay(void * parameter) {
         x = g_tft.width()/2-10;
         y = 16;
         drawTemperatureText(x, y,     dat.sensor1Temperature, datLast.sensor1Temperature, datMax.sensor1Temperature, datMin.sensor1Temperature);
-        drawTemperatureText(x, y+=32, dat.sensor3Temperature, datLast.sensor3Temperature, datMax.sensor3Temperature, datMin.sensor3Temperature); 
-        drawTemperatureText(x, y+=32, dat.sensor2Temperature, datLast.sensor2Temperature, datMax.sensor2Temperature, datMin.sensor2Temperature); 
-  
+        drawTemperatureText(x, y+=32, dat.sensor3Temperature, datLast.sensor3Temperature, datMax.sensor3Temperature, datMin.sensor3Temperature);
+        drawTemperatureText(x, y+=32, dat.sensor2Temperature, datLast.sensor2Temperature, datMax.sensor2Temperature, datMin.sensor2Temperature);
+
         // ------------------ Humidity -----------------
         x = g_tft.width()/2+75;
         y = 16;
         drawHumidityText(x, y,     dat.sensor1Humidity, datLast.sensor1Humidity, datMax.sensor1Humidity, datMin.sensor1Humidity);
-        drawHumidityText(x, y+=32, dat.sensor3Humidity, datLast.sensor3Humidity, datMax.sensor3Humidity, datMin.sensor3Humidity); 
-        drawHumidityText(x, y+=32, dat.sensor2Humidity, datLast.sensor2Humidity, datMax.sensor2Humidity, datMin.sensor2Humidity); 
-        
+        drawHumidityText(x, y+=32, dat.sensor3Humidity, datLast.sensor3Humidity, datMax.sensor3Humidity, datMin.sensor3Humidity);
+        drawHumidityText(x, y+=32, dat.sensor2Humidity, datLast.sensor2Humidity, datMax.sensor2Humidity, datMin.sensor2Humidity);
+
         // ------------------ Pressure -----------------
         x = g_tft.width()/2+65;
         y = 112;
@@ -431,7 +445,7 @@ void taskDisplay(void * parameter) {
                 g_tft.drawLine(x+CROSSWIDTH/2,y,x+CROSSWIDTH/2,y+CROSSHEIGHT-1,TFT_BLACK);
                 g_tft.drawLine(x,y+CROSSHEIGHT/2,x+CROSSWIDTH-1,y+CROSSHEIGHT/2,TFT_BLACK);
             } else {
-              if (dat.sensor3Switch1 == 1) { // Tilted 
+              if (dat.sensor3Switch1 == 1) { // Tilted
                 g_tft.drawLine(x+CROSSWIDTH/2,y,x+CROSSWIDTH/2,y+CROSSHEIGHT/2-1,TFT_BLACK);
                 g_tft.drawLine(x+CROSSWIDTH/2,y+CROSSHEIGHT/2,x+CROSSWIDTH/2,y+CROSSHEIGHT-1,TFT_WHITE);
                 g_tft.drawLine(x,y+CROSSHEIGHT/2,x+CROSSWIDTH-1,y+CROSSHEIGHT/2,TFT_WHITE);
@@ -465,21 +479,32 @@ void taskDisplay(void * parameter) {
         // ------------------ Graph -----------------
 
         // Store current value in list at next position
-        if (dat.sensor1Humidity != NOVALIDHUMIDITYDATA) {
+        if ((dat.sensor1Humidity != NOVALIDHUMIDITYDATA) && !initialDisplay) {
           graphLastPos++;
           if (graphLastPos > GRAPHDATAMAXITEMS - 1) graphLastPos = 0;
-          if (g_demoModeEnabled) graphHour[graphLastPos] = (graphLastPos % 24); else graphHour[graphLastPos]=ptrTimeinfo->tm_hour; 
+          if (g_demoModeEnabled) graphHour[graphLastPos] = (graphLastPos % 24); else graphHour[graphLastPos]=ptrTimeinfo->tm_hour;
           graphData[graphLastPos]=dat.sensor1Humidity;
+          if (!g_demoModeEnabled) setGraphDataToEEPROM(graphData, graphHour,graphLastPos);
+        }
+
+        // Get min/max
+        byte graphDataMinValue = NOVALIDHUMIDITYDATA;
+        byte graphDataMaxValue = 0;
+        for (int i=0;i<GRAPHDATAMAXITEMS;i++) {
+          if (graphData[i] != NOVALIDHUMIDITYDATA) {
+            if (graphData[i] < graphDataMinValue) graphDataMinValue = graphData[i];
+            if (graphData[i] > graphDataMaxValue) graphDataMaxValue = graphData[i];
+          }
         }
 
         // Create line graph
-        if ((datMax.sensor1Humidity - datMin.sensor1Humidity) > 0) {
+        if ((graphDataMaxValue - graphDataMinValue) > 0) {
           img.fillSprite(TFT_BLACK);
 
           // First: Create the grid
           img.drawFastHLine(0,0,g_tft.width(),TFT_DARKGREY);
           img.drawFastHLine(0,39,g_tft.width(),TFT_DARKGREY);
- 
+
           graphIterationPos = graphLastPos;
           for (int i=0;i<GRAPHDATAMAXITEMS;i++) {
             graphIterationPos++; // Iterate from oldest to newest value
@@ -491,23 +516,23 @@ void taskDisplay(void * parameter) {
                 img.drawFastVLine(
                   g_tft.width()-1 - ((g_tft.width()-1)/(GRAPHDATAMAXITEMS-1))*(GRAPHDATAMAXITEMS-1 - i),
                   1, 38,TFT_DARKGREY);
-              } else { 
+              } else {
                 if (graphHour[graphIterationPos] == 12) { // Middle size grid line at 12:00/noon
                   img.drawFastVLine(
                     g_tft.width()-1 - ((g_tft.width()-1)/(GRAPHDATAMAXITEMS-1))*(GRAPHDATAMAXITEMS-1 - i),
-                    1, 10,TFT_DARKGREY);              
+                    1, 10,TFT_DARKGREY);
                   img.drawFastVLine(
                     g_tft.width()-1 - ((g_tft.width()-1)/(GRAPHDATAMAXITEMS-1))*(GRAPHDATAMAXITEMS-1 - i),
-                    29,10,TFT_DARKGREY);        
-                } else { 
+                    29,10,TFT_DARKGREY);
+                } else {
                   // Default short grid lines
                   img.drawFastVLine(
                     g_tft.width()-1 - ((g_tft.width()-1)/(GRAPHDATAMAXITEMS-1))*(GRAPHDATAMAXITEMS-1 - i),
-                    1, 5,TFT_DARKGREY);              
+                    1, 5,TFT_DARKGREY);
                   img.drawFastVLine(
                     g_tft.width()-1 - ((g_tft.width()-1)/(GRAPHDATAMAXITEMS-1))*(GRAPHDATAMAXITEMS-1 - i),
-                    34,5,TFT_DARKGREY); 
-                }             
+                    34,5,TFT_DARKGREY);
+                }
               }
             }
           }
@@ -516,16 +541,23 @@ void taskDisplay(void * parameter) {
           // Note: Font size 1 in this sprite gave me an esp32 exception
           x = 0;
           y = 1;
-          img.setTextColor(TFT_DARKGREY,BACKGROUNDCOLOR);    
+          img.setTextColor(TFT_DARKGREY,BACKGROUNDCOLOR);
           img.setTextDatum(TL_DATUM);
-          snprintf(strData,MAXSTRDATALENGTH+1,"%d%%",datMax.sensor1Humidity);
+          snprintf(strData,MAXSTRDATALENGTH+1,"%d%%",graphDataMaxValue);
           img.drawString(strData,x,y,2);
- 
+          x = g_tft.width()-1;
+          img.setTextDatum(TR_DATUM);
+          img.drawString(strData,x,y,2);
+
           y = 38;
+          x = 0;
           img.setTextDatum(BL_DATUM);
-          snprintf(strData,MAXSTRDATALENGTH+1,"%d%%",datMin.sensor1Humidity);
-          img.drawString(strData,x,y,2);  
+          snprintf(strData,MAXSTRDATALENGTH+1,"%d%%",graphDataMinValue);
+          img.drawString(strData,x,y,2);
           img.setTextPadding(0);
+          x = g_tft.width()-1;
+          img.setTextDatum(BR_DATUM);
+          img.drawString(strData,x,y,2);
 
           // Third: Draw line graph
           graphIterationPos = graphLastPos;
@@ -538,34 +570,35 @@ void taskDisplay(void * parameter) {
             if (graphData[graphIterationPos] != NOVALIDHUMIDITYDATA) {
               img.drawLine(
                 g_tft.width()-1 - ((g_tft.width()-1)/(GRAPHDATAMAXITEMS-1))*(GRAPHDATAMAXITEMS-1 - i),
-                39 - 39 * ((float)(graphData[graphIterationPos]-datMin.sensor1Humidity)/(datMax.sensor1Humidity - datMin.sensor1Humidity)) , 
+                39 - 39 * ((float)(graphData[graphIterationPos]-graphDataMinValue)/(graphDataMaxValue - graphDataMinValue)) ,
                 g_tft.width()-1 - ((g_tft.width()-1)/(GRAPHDATAMAXITEMS-1))*(GRAPHDATAMAXITEMS-1 - i-1),
-                39 - 39 * ((float)(graphData[graphNextPos]-datMin.sensor1Humidity)/(datMax.sensor1Humidity - datMin.sensor1Humidity)),
+                39 - 39 * ((float)(graphData[graphNextPos]-graphDataMinValue)/(graphDataMaxValue - graphDataMinValue)),
                 FONTCOLOR);
             }
           }
-          graphLastPos = graphNextPos;
-          
           img.pushSprite(0,SPRITEY);
         }
         datLast = dat;
+        initialDisplay = false;
+        // Store last dataset to EEPROM
+        if (!g_demoModeEnabled) setLastDatasetToEEPROM(datLast);
       }
       if (digitalRead(TFT_LED) == LOW) { // Is display powered off/screensaver active?
         if (v_touchedTFT) { // touch IRQ?
           lastScreensaverMS = millis();
           detachInterrupt(TIRQ_PIN); // g_tft.getTouch pulls IRQ pin to LOW and would cause next interrupt
-          v_touchedTFT = false; 
+          v_touchedTFT = false;
         }
-      } else { 
-        if (g_tft.getTouch(&touchY, &touchX)) { // touch pad was pressed?
+      } else {
+        if (g_tft.getTouch(&touchY, &touchX)) { // Touch pad was pressed?
           // Fix touch x/y when using setRotation(0) in TFT_eSPI-Lib
           touchX = ((240 * touchX) / 320);
           touchY = ((320 * touchY) / 240);
           lastScreensaverMS = millis();
-  
+
           if (digitalRead(TFT_LED) == HIGH) { // Is display powered on?
             if (millis() - lastTouchMS > 1000) touchWaitingRelease = false;
-   
+
             if ((millis() - lastTouchMS > 300) && !touchWaitingRelease) {
               y = 200; // Begin of the button area
               if ((touchX < 80) && (touchY > y) && (touchY < y+32)) {
@@ -590,7 +623,7 @@ void taskDisplay(void * parameter) {
                 beep(SHORTBEEP);
                 touchWaitingRelease = true;
               }
-              y = y + 32; // next line
+              y = y + 32; // Next line
               if ((touchX < 80) && (touchY > y) && (touchY < y+32)) {
                 g_wifiSwitch = !g_wifiSwitch;
                 drawSwitches();
@@ -603,10 +636,10 @@ void taskDisplay(void * parameter) {
                 drawSwitches();
                 lastTouchMS = millis();
                 beep(SHORTBEEP);
-                touchWaitingRelease = true;          
+                touchWaitingRelease = true;
               }
-              if ((touchX > 80+80) && (touchY > y) && (touchY < y+32) && g_mailAlert) {
-                g_mailAlert=false; 
+              if ((touchX > 80+80) && (touchY > y) && (touchY < y+32) && getMailAlertFromEEPROM()) {
+                setMailAlertToEEPROM(false);
                 g_pendingBlynkMailAlert = clear;
                 drawSwitches();
                 lastTouchMS = millis();
@@ -629,7 +662,7 @@ void taskDisplay(void * parameter) {
         ptrTimeinfo = localtime ( &now );
 
         g_tft.setTextDatum(ML_DATUM);
-        g_tft.setTextColor(FONTCOLOR,BACKGROUNDCOLOR);          
+        g_tft.setTextColor(FONTCOLOR,BACKGROUNDCOLOR);
 
         x = g_tft.width()/2 + 16;
         y = 144;
@@ -642,7 +675,7 @@ void taskDisplay(void * parameter) {
       }
       // Power off display when screensaver timeout is reached
       if ((millis() - lastScreensaverMS > SCREENSAVERMS) && g_ScreenSaverEnabled) {
-        digitalWrite(TFT_LED,LOW); 
+        digitalWrite(TFT_LED,LOW);
         attachInterrupt(TIRQ_PIN, TouchISR, FALLING); // Enable touch IRQ
       } else {
         digitalWrite(TFT_LED,HIGH);
@@ -656,5 +689,5 @@ void taskDisplay(void * parameter) {
       beep();
     }
     vTaskDelay(1 / portTICK_PERIOD_MS);
-  }  
+  }
 }

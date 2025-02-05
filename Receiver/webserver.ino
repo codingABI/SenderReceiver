@@ -1,16 +1,16 @@
 /* ----------- Stuff for the webserver ----------
  * License: 2-Clause BSD License
- * Copyright (c) 2024 codingABI
+ * Copyright (c) 2023-2025 codingABI
  */
- 
+
 // Inline background pattern for webpages (My first svg background pattern :-) )
 #define BACKGROUNDPATTERN "        background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24'%3E%3Cpath stroke='none' fill='%23252525' d='M23,4l-8 -4l-8 4l16 8l16 -8l-8 -4z M7,12 l-8 4v8l16 -8z M39,12 l8 4l2 -1v8l-2 1-16 -8z'/%3E%3Cpath stroke='none' fill='%23171717' d='M15,0l8 4v-5h-8zM23,12v13h-6l-2 -1v-8l-8 -4v-8zM31 0l8 4v8l8 4l2 -1v-18h-18zM31 16v8l2 1h14v-1z'/%3E%3Cpath stroke='%23000000' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' fill='none' d='M23,-1v5l-8 -4v-1m0 1l-8 4l16 8l16 -8l-8 -4v-1m0 1l-8 4m-16 0v8l8 4v8m-2 1l2 -1l2 1m-2 -9l-16 8v1m0 -1l-2 -1m2 -7v-16l-2 -1m2 1l2 -1m-4 16l2 1l8 -4m16 0v13m6 0l2 -1l2 1m-2 -1v-8l8 -4v-8m10 19l-2 1v1m0 -1l-16 -8m8 -4l8 4l2 -1l-2 1v-16l-2 -1m2 1l2 -1'/%3E%3C/svg%3E\")"
 
 // Task for a simple webserver
 void taskWebServer(void * parameter) {
   #define RECEIVELIMIT 80
-  char header[RECEIVELIMIT];
-  char payload[RECEIVELIMIT];
+  char strHeader[RECEIVELIMIT];
+  char strPayload[RECEIVELIMIT];
   #define MAXFILENAMELENGTH 59
   char strFile[MAXFILENAMELENGTH+1];
   char* ptrString;
@@ -27,6 +27,8 @@ void taskWebServer(void * parameter) {
 
   for (;;) {
 
+    xSemaphoreTake( g_semaphoreWebserver, portMAX_DELAY );
+
     // Check for client requests
     WiFiClient client = g_server.available();
     if (client) {
@@ -36,8 +38,8 @@ void taskWebServer(void * parameter) {
 
       clientConnectTimeMS = millis();
       boolean currentLineIsBlank = true;
-      header[0] = '\0';
-  
+      strHeader[0] = '\0';
+
       while (client.connected()) {
         if ((millis() - clientConnectTimeMS) > 100) {
           // Disconnect hanging clients (Connected, but does not send requests)
@@ -50,70 +52,71 @@ void taskWebServer(void * parameter) {
           clientConnectTimeMS = millis();
           char c = client.read();
           SERIALDEBUG.write(c);
-          if (strlen(header) < RECEIVELIMIT-1) { 
-            header[strlen(header)+1] = '\0';
-            header[strlen(header)] = c;
+          if (strlen(strHeader) < RECEIVELIMIT-1) {
+            strHeader[strlen(strHeader)+1] = '\0';
+            strHeader[strlen(strHeader)] = c;
           }
           if (c == '\n' && currentLineIsBlank) { // After a blank line the header is complete
             strFile[0] = '\0';
-            if (g_wifiAPMode && strncmp(header,"POST /cfg HTTP/1.1",18) == 0) { // POST-requests for configuration changes are only allowed in AP mode             
-              payload[0] = '\0';
+            if (g_wifiAPMode && strncmp(strHeader,"POST /cfg HTTP/1.1",18) == 0) { // POST-requests for configuration changes are only allowed in AP mode
+              strHeader[0] = '\0';
               payloadTooLarge = false;
               while(client.available()) { // Read payload
-                if (strlen(payload) < RECEIVELIMIT-1) { 
-                  payload[strlen(payload)+1] = '\0';
-                  payload[strlen(payload)] = client.read();
+                if (strlen(strHeader) < RECEIVELIMIT-1) {
+                  strHeader[strlen(strHeader)+1] = '\0';
+                  strHeader[strlen(strHeader)] = client.read();
                 } else payloadTooLarge = true;
               }
               if (payloadTooLarge) {
                 client.println("HTTP/1.1 413 Payload Too Large\r\n");
               } else {
-                SERIALDEBUG.print("New WIFI config received");
-                parse(payload,"a",g_wifiSSID,MAXSSIDLENGTH,false);
-                urlDecode(g_wifiSSID);
-                parse(payload,"b",g_wifiPassword,MAXPASSWORDLENGTH,false);
-                urlDecode(g_wifiPassword);
-                SendConfigChangeToClient(&client);
+                char strWifiSSID[MAXSSIDLENGTH+1] = "";
+                char strWifiPassword[MAXPASSWORDLENGTH+1] = "";
+                SERIALDEBUG.print("New WiFi config received");
+                parse(strHeader,"a",strWifiSSID,MAXSSIDLENGTH,false);
+                urlDecode(strWifiSSID);
+                parse(strHeader,"b",strWifiPassword,MAXPASSWORDLENGTH,false);
+                urlDecode(strWifiPassword);
+                SendConfigChangeToClient(&client,strWifiSSID,strWifiPassword);
               }
-              break;              
-            } else if (strncmp(header,"GET /",5) == 0) { // "common" GET-request...
+              break;
+            } else if (strncmp(strHeader,"GET /",5) == 0) { // "common" GET-request...
               // get GET and file name from header
-              ptrString = strstr(header, " HTTP/1.1");
+              ptrString = strstr(strHeader, " HTTP/1.1");
               if (ptrString != NULL) {
                 ptrString[0] = '\0';
-                if (strlcpy(strFile, header + 4, sizeof(strFile)) < sizeof(strFile)) {
+                if (strlcpy(strFile, strHeader + 4, sizeof(strFile)) < sizeof(strFile)) {
                 } else {
                   SERIALDEBUG.print("Warning: filename too long:");
-                  SERIALDEBUG.println(header + 4);
+                  SERIALDEBUG.println(strHeader + 4);
                   strFile[0] = '\0';
                   client.println("HTTP/1.1 431 Request Header Fields Too Large\r\n");
                 }
               } else {
                 SERIALDEBUG.println("Warning: No HTTP/1.1 in header found");
-                strFile[0] = '\0';                
+                strFile[0] = '\0';
               }
             }
             if (strcmp(strFile, "/favicon.ico") == 0) {
               SendFileToClient(&client, strFile, "Cache-Control: public, max-age=31536000\r\n"
-                "X-Content-Type-Options: nosniff\r\n"         
-                "Content-Type: image/x-icon\r\n");              
+                "X-Content-Type-Options: nosniff\r\n"
+                "Content-Type: image/x-icon\r\n");
               break;
             }
-
             if (strcmp(strFile, "/test.csv") == 0) { // Test file for performance tests
-              SendTestFileToClient(&client, strFile, "Content-Type: Content-Type: text/csv; charset=utf-8");              
+              SendTestFileToClient(&client, strFile, "Content-Type: Content-Type: text/csv; charset=utf-8");
               break;
             }
             if (strcmp(strFile, "/chartbackground.png") == 0) {
-              SendFileToClient(&client, strFile, "Content-Type: image/png");              
+              SendFileToClient(&client, strFile, "Content-Type: image/png");
               break;
             }
             if ((strcmp(strFile, "/") == 0) || strcmp(strFile, "/index.html") == 0) {
-              SendFileToClient(&client, "/index.html", "Content-Type: text/html; charset=utf-8");              
+              SendFileToClient(&client, "/index.html", "Content-Type: text/html; charset=utf-8");
               break;
             }
             if (strcmp(strFile + strlen(strFile) - 4 , ".csv") == 0) {
-              SendFileToClient(&client, strFile, "Content-Type: text/csv; charset=utf-8");              
+              SendFileToClient(&client, strFile, "Content-Type: text/csv; charset=utf-8");
               break;
             }
             if (strcmp(strFile, "/files.json") == 0) {
@@ -124,7 +127,7 @@ void taskWebServer(void * parameter) {
               SendInfoToClient(&client);
               break;
             }
-            if (g_wifiAPMode && strcmp(strFile, "/cfg") == 0) { // Wifi config page is only allowed in AP mode
+            if (g_wifiAPMode && strcmp(strFile, "/cfg") == 0) { // WiFi config page is only allowed in AP mode
               SendConfigPageToClient(&client);
               break;
             }
@@ -150,43 +153,43 @@ void taskWebServer(void * parameter) {
       client.stop();
       SERIALDEBUG.println("client disconnected");
     }
-    vTaskDelay(10 / portTICK_PERIOD_MS);    
+    xSemaphoreGive( g_semaphoreWebserver );
+    vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
 
 // Send file from LittleFS to client
 void SendFileToClient(WiFiClient *client, char *strFile, char *strHeader) {
   int bytesRead;
-  DisplayMessage msg;
-  
+
   SERIALDEBUG.print("Sending ");
   SERIALDEBUG.println(strFile);
 
   if (xSemaphoreTake( g_semaphoreLittleFS, 10000 / portTICK_PERIOD_MS) == pdTRUE) {
-      if (!LittleFS.exists(strFile)) { 
-        client->println("HTTP/1.1 404 Not Found\r\n");
-        SERIALDEBUG.println("File not found");
+    if (!LittleFS.exists(strFile)) {
+      client->println("HTTP/1.1 404 Not Found\r\n");
+      SERIALDEBUG.println("File not found");
+    } else {
+      fs::File file = LittleFS.open(strFile, "r");
+      if (!file) {
+        client->println("HTTP/1.1 500 Internal Server Error\r\n");
+        SERIALDEBUG.println("Error: LittleFS open file failure");
       } else {
-        fs::File file = LittleFS.open(strFile, "r");
-        if (!file) {
-          client->println("HTTP/1.1 500 Internal Server Error\r\n");
-          SERIALDEBUG.println("Error: LittleFS open file failure");
-        } else {
-          client->println("HTTP/1.1 200 OK");
-          client->println(strHeader);
-          client->print("Content-Length: ");
-          client->println(file.size());
-          client->println("Connection: close");
-          client->println();
+        client->println("HTTP/1.1 200 OK");
+        client->println(strHeader);
+        client->print("Content-Length: ");
+        client->println(file.size());
+        client->println("Connection: close");
+        client->println();
 
-          while (file.available()) {
-            bytesRead = file.read(g_buffer,sizeof(g_buffer));
-            if (bytesRead > 0) {              
-              client->write(g_buffer,bytesRead); // Send buffer to client
-            }
+        while(file.available()) {
+          bytesRead = file.read(g_buffer,sizeof(g_buffer));
+          if (bytesRead > 0) {
+            client->write(g_buffer,bytesRead); // Send buffer to client
           }
-          file.close();
         }
+        file.close();
+      }
     }
     xSemaphoreGive( g_semaphoreLittleFS );
   } else {
@@ -203,12 +206,12 @@ void SendTestFileToClient(WiFiClient *client, char *strFile, char *strHeader) {
   // 400-500 KB/s should be possible
   SERIALDEBUG.print("Sending ");
   SERIALDEBUG.println(strFile);
-  
+
   client->println("HTTP/1.1 200 OK");
   client->println(strHeader);
   client->print("Content-Length: ");
   client->println(1400 * 100);
-  client->println("Connection: close\r\n"); 
+  client->println("Connection: close\r\n");
 
   for (int i=0;i < 100;i++) {
 
@@ -221,6 +224,7 @@ void SendInfoToClient(WiFiClient *client) {
   byte mac[6];
   #define MAXSTRDATALENGTH 254
   char strData[MAXSTRDATALENGTH+1];
+  char strWifiSSID[MAXSSIDLENGTH+1]="";
   struct tm * ptrTimeinfo;
   time_t now;
   sensorData sensorDataSet;
@@ -236,8 +240,7 @@ void SendInfoToClient(WiFiClient *client) {
   client->println("Content-Type: text/html; charset=utf-8");
   client->println("Cache-Control: no-cache");
   client->println("X-Content-Type-Options: nosniff");
-  client->println("Connection: close"); 
-//  client->println("Refresh: 10");  // Autoreload every x seconds
+  client->println("Connection: close");
   client->println();
   client->println(R"html(<!DOCTYPE HTML>
 <html lang="de">
@@ -248,9 +251,9 @@ void SendInfoToClient(WiFiClient *client) {
     <title>Info</title>
     <style>
       body {
-        background-color:#202020; 
+        background-color:#202020;
         color:white;
-        margin:0; 
+        margin:0;
         padding:0;)html");
   client->print(BACKGROUNDPATTERN);
   client->println(";");
@@ -325,7 +328,14 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("Reset reason CPU0",rtc_get_reset_reason(0))
   SIMPLETABLELINE("Internal temperature",temperatureRead())
   SIMPLETABLELINE("Compile time",__DATE__ " " __TIME__)
-  snprintf(strData,MAXSTRDATALENGTH+1,"%lld seconds (%lld days)",esp_timer_get_time()/1000/1000,esp_timer_get_time()/1000/1000/SECS_PER_DAY);
+  unsigned int uptime = esp_timer_get_time()/1000/1000/SECS_PER_DAY;
+  if (uptime > getMaxUptimeFromEEPROM()) {
+    setMaxUptimeToEEPROM(uptime);
+  }
+  if (uptime > 0) // Uptime greater one day => Show days
+    snprintf(strData,MAXSTRDATALENGTH+1,"%u days (max. %u days)",uptime,getMaxUptimeFromEEPROM());
+  else // Show secs
+    snprintf(strData,MAXSTRDATALENGTH+1,"%lld seconds (max. %u days)",esp_timer_get_time()/1000/1000,getMaxUptimeFromEEPROM());
   SIMPLETABLELINE("Uptime",strData)
 
   if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
@@ -342,8 +352,8 @@ void SendInfoToClient(WiFiClient *client) {
       SIMPLETABLELINE("Backup logfile",strData)
     }
   } else { // Semaphore timeout
-    SERIALDEBUG.println("Skip displaying logfile information because could not get semaphore in 1 second"); 
-  } 
+    SERIALDEBUG.println("Skip displaying logfile information because could not get semaphore in 1 second");
+  }
   SIMPLETABLEEND
 
   SIMPLETABLEHEADER("Variablen:");
@@ -352,23 +362,25 @@ void SendInfoToClient(WiFiClient *client) {
   SIMPLETABLELINE("g_PIREnabled",g_PIREnabled)
   SIMPLETABLELINE("g_wifiEnabled",g_wifiEnabled);
   SIMPLETABLELINE("g_demoModeEnabled",g_demoModeEnabled)
-  SIMPLETABLELINE("g_mailAlert",g_mailAlert)
+  SIMPLETABLELINE("mailAlertFromEEPROM",getMailAlertFromEEPROM())
   SIMPLETABLELINE("g_pendingBlynkMailAlert",g_pendingBlynkMailAlert);
   SIMPLETABLELINE("g_BME280ready",g_BME280ready);
-  SIMPLETABLELINE("g_LORAready",g_LORAready);  
+  SIMPLETABLELINE("g_LORAready",g_LORAready);
   SIMPLETABLEEND
 
   SIMPLETABLEHEADER("Netzwerk:");
   WiFi.macAddress(mac);
+  getWiFiConnectionDataFromEEPROM(strWifiSSID,NULL);
+
   snprintf(strData,MAXSTRDATALENGTH+1,"%02X:%02X:%02X:%02X:%02X:%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
   SIMPLETABLELINE("MAC",strData)
   SIMPLETABLELINE("IP",WiFi.localIP())
   SIMPLETABLELINE("Subnetmask",WiFi.subnetMask())
   SIMPLETABLELINE("Gateway",WiFi.gatewayIP())
   SIMPLETABLELINE("DNS",WiFi.dnsIP())
-  SIMPLETABLELINE("SSID",g_wifiSSID)
-  SIMPLETABLELINE("RSSI",WiFi.RSSI());
-  SIMPLETABLELINE("Channel",WiFi.channel());
+  SIMPLETABLELINE("SSID",strWifiSSID)
+  SIMPLETABLELINE("RSSI",WiFi.RSSI())
+  SIMPLETABLELINE("Channel",WiFi.channel())
   SIMPLETABLEEND
 
   if (xSemaphoreTake( g_semaphoreLittleFS, 1000 / portTICK_PERIOD_MS) == pdTRUE) {
@@ -394,20 +406,20 @@ void SendInfoToClient(WiFiClient *client) {
       RADIUS+1, // center x
       RADIUS+1 // center y
     );
-  
+
     SIMPLETABLEHEADER(strData);
     SIMPLETABLELINE("Total bytes",totalBytes)
     SIMPLETABLELINE("Used bytes",usedBytes)
-    SIMPLETABLELINE("Free bytes",totalBytes-usedBytes)  
+    SIMPLETABLELINE("Free bytes",totalBytes-usedBytes)
     SIMPLETABLEEND
 
   } else { // Semaphore timeout
     SERIALDEBUG.println("Skip displaying LittleFS information because could not get semaphore in 1 second");
-    
+
     SIMPLETABLEHEADER("LittleFS");
     SIMPLETABLELINE("Total bytes","timeout")
     SIMPLETABLELINE("Used bytes","timeout")
-    SIMPLETABLELINE("Free bytes","timeout")  
+    SIMPLETABLELINE("Free bytes","timeout")
     SIMPLETABLEEND
   }
 
@@ -419,7 +431,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("Erste NTP-Zeit",strData)
@@ -428,7 +440,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("Letzte NTP-Zeit",strData)
@@ -438,7 +450,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("Aktuelle Uhrzeit",strData)
@@ -459,7 +471,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("sensor1LastDataTime",strData)
@@ -475,7 +487,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("sensor2LastDataTime",strData)
@@ -490,7 +502,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("sensor3LastDataTime",strData)
@@ -508,7 +520,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("sensor4LastDataTime",strData)
@@ -523,7 +535,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("sensor5LastDataTime",strData)
@@ -539,7 +551,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("sensor6LastDataTime",strData)
@@ -553,7 +565,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("last433MhzCafeOn",strData)
@@ -562,7 +574,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("last433MhzCafeOff",strData)
@@ -571,7 +583,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("last433MhzBathOn",strData)
@@ -580,7 +592,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("last433MhzBathOff",strData)
@@ -589,7 +601,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("last433MhzWifiOn",strData)
@@ -598,7 +610,7 @@ void SendInfoToClient(WiFiClient *client) {
     ptrTimeinfo->tm_mday,
     ptrTimeinfo->tm_mon + 1,
     ptrTimeinfo->tm_year + 1900,
-    ptrTimeinfo->tm_hour,                 
+    ptrTimeinfo->tm_hour,
     ptrTimeinfo->tm_min,
     ptrTimeinfo->tm_sec);
   SIMPLETABLELINE("last433MhzWifiOff",strData)
@@ -614,7 +626,7 @@ void SendInfoToClient(WiFiClient *client) {
         ptrTimeinfo->tm_mday,
         ptrTimeinfo->tm_mon + 1,
         ptrTimeinfo->tm_year + 1900,
-        ptrTimeinfo->tm_hour,                 
+        ptrTimeinfo->tm_hour,
         ptrTimeinfo->tm_min,
         sensorDataSet.sensor1LowBattery,
         sensorDataSet.sensor1Temperature,
@@ -633,7 +645,7 @@ void SendInfoToClient(WiFiClient *client) {
       client->println(strData);
     }
   }
-  client->println("</tbody></table><p align=\"right\">&copy; codingABI 2024</p></div></div></body></html>");    
+  client->println("</tbody></table><p align=\"right\">&copy; 2023-2025 codingABI</p></div></div></body></html>");
 }
 
 // Send existing data CSV files names as json file
@@ -651,7 +663,7 @@ void SendFilesJsonToClient(WiFiClient *client) {
       client->println("Content-Type: application/json");
       client->println("Cache-Control: no-cache");
       client->println("X-Content-Type-Options: nosniff");
-      client->println("Connection: close"); 
+      client->println("Connection: close");
       client->println();
       client->print("[");
 
@@ -663,33 +675,34 @@ void SendFilesJsonToClient(WiFiClient *client) {
           } else { // Add comma after first file
             snprintf(strData,MAXSTRDATALENGTH+1,",\"%s\"",filename.substring(String(CSVBASEFOLDER).length()).c_str());
           }
-          firstFile = false; 
+          firstFile = false;
           client->print(strData);
         }
         filename = root.getNextFileName();
-      }    
+      }
 
       root.close();
-      xSemaphoreGive( g_semaphoreLittleFS );
       client->println("]");
     } else {
       client->println("HTTP/1.1 404 Not Found\r\n");
     }
+    xSemaphoreGive( g_semaphoreLittleFS );
   } else { // Semaphore timeout
     SERIALDEBUG.println("Error: LittleFS Semaphore Timeout");
     client->println("HTTP/1.1 504 Gateway Timeout\r\n");
     beep();
     beep(SHORTBEEP);
     beep();
-  }  
+  }
 }
 
-// Send Wifi config page
+// Send WiFi config page
 void SendConfigPageToClient(WiFiClient *client) {
   byte mac[6];
   #define MAXSTRDATALENGTH 254
   char strData[MAXSTRDATALENGTH+1];
-  
+  char strWifiSSID[MAXSSIDLENGTH+1] = "";
+
   client->println("HTTP/1.1 200 OK");
   client->println("Content-Type: text/html; charset=utf-8");
   client->println("Cache-Control: no-cache");
@@ -701,13 +714,13 @@ void SendConfigPageToClient(WiFiClient *client) {
   <head>
     <meta charSet="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Wifi configuration">
+    <meta name="description" content="WiFi configuration">
     <title>Config</title>
     <style>
       body {
-        background-color:#202020; 
+        background-color:#202020;
         color:white;
-        margin:0; 
+        margin:0;
         padding:0;)html");
   client->print(BACKGROUNDPATTERN);
   client->println(", radial-gradient(circle,#000000 0%,#555555 100%);");
@@ -776,8 +789,9 @@ void SendConfigPageToClient(WiFiClient *client) {
   client->print(strData);
   client->print(R"html(</p></div>
     <div class="item1cols"><label for="a">SSID</label></div>
-    <div class="item1cols"><input id="a" title="SSID/Wifi-Name" type="text" name="a" value=")html");
-  client->print(g_wifiSSID);
+    <div class="item1cols"><input id="a" title="SSID/WiFi-Name" type="text" name="a" value=")html");
+  getWiFiConnectionDataFromEEPROM(strWifiSSID,NULL);
+  client->print(strWifiSSID);
   client->print(R"html(" maxlength=)html");
   client->print(MAXSSIDLENGTH);
   client->print(R"html( autofocus></div>
@@ -786,14 +800,14 @@ void SendConfigPageToClient(WiFiClient *client) {
   client->print(MAXPASSWORDLENGTH);
   client->println(R"html(></div>
     <div class="item2cols"><input type="submit" class="button" value="Anwenden"></div>
-    <div class="item2cols"><p align="right">&copy; codingABI 2024</p></div>
+    <div class="item2cols"><p align="right">&copy; 2023-2025 codingABI </p></div>
     </form>
   </body>
 </html>)html");
 }
 
-// Send Wifi config confirmation and reset the device, if config was ok
-void SendConfigChangeToClient(WiFiClient *client) {
+// Send WiFi config confirmation and reset the device, if config was ok
+void SendConfigChangeToClient(WiFiClient *client,char strWifiSSID[],char strWifiPassword[]) {
   client->println("HTTP/1.1 200 OK");
   client->println("Content-Type: text/html; charset=utf-8");
   client->println("Cache-Control: no-cache");
@@ -809,11 +823,11 @@ void SendConfigChangeToClient(WiFiClient *client) {
     <title>Config</title>
     <style>
       body {
-        background-color:#202020; 
+        background-color:#202020;
         color:white;
-        margin:0; 
+        margin:0;
         padding:0;)html");
-  // background-image inline because esp reboots soon and does not process additional requests 
+  // background-image inline because esp reboots soon and does not process additional requests
   client->print(BACKGROUNDPATTERN);
   client->println(", radial-gradient(circle,#000000 0%,#555555 100%);");
   client->println(R"html(        background-blend-mode: darken;
@@ -853,33 +867,36 @@ void SendConfigChangeToClient(WiFiClient *client) {
   </head>
   <body>
     <div class="container">)html");
-  if (strlen(g_wifiSSID) > 0) {
+  if (strlen(strWifiSSID) > 0) {
     client->println(R"html(      <div class="item"><h1>&Auml;nderung wurde angenommen</h1></div>
       <div class="item"><p>Das Ger&auml;t wird in wenigen Sekunden mit den &Auml;nderungen neu gestartet...</p><p>Dieses Fenster kann nun geschlossen werden.</p></div>
-      <div class="item"><p align="right">&copy; codingABI 2024</p></div>
+      <div class="item"><p align="right">&copy; 2023-2025 codingABI</p></div>
     </div>
   </body>
 </html>)html");
     client->stop();
-    storeWifiConnectionDataToEEPROM();
+    setWiFiConnectionDataToEEPROM(strWifiSSID,strWifiPassword);
+    portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
+    portENTER_CRITICAL(&mutex); // Prevents task switches while waiting
     delay(1000);
+    portEXIT_CRITICAL(&mutex);
     reset();
   } else { // Empty SSID
     client->println(R"html(      <div class="item"><h1>Die &Auml;nderungen sind ung&uuml;ltig und werden nicht gespeichert</h1></div>
       <div class="item"><p>Eine leere SSID ist nicht erlaubt.</p></div>
       <div class="item"><form><input type="button" class="button" value="Zur&uuml;ck" onclick="history.back()"></form></div>
-      <div class="item"><p align="right">&copy; codingABI 2024</p></div>
+      <div class="item"><p align="right">&copy; 2023-2025 codingABI</p></div>
     </div>
   </body>
 </html>)html");
   }
 }
 
-/* 
+/*
  * Simple HTTP-request parser to get the value of a parameter
  * The function returns 1, if parsing was successful or 0 if parsing failed
- * maxlength is the maximum allowed count of returned chars for the value 
- * To parse for a GET-Request set requestGET to true otherwise a POST-request is parsed 
+ * maxlength is the maximum allowed count of returned chars for the value
+ * To parse for a GET-Request set requestGET to true otherwise a POST-request is parsed
  */
 byte parse(const char *data,const char *parameter,char *value,int maxlength, bool requestGET) {
   enum STATES { STATE_START, STATE_DEFAULT, STATE_EQUAL, STATE_AND };
@@ -889,14 +906,14 @@ byte parse(const char *data,const char *parameter,char *value,int maxlength, boo
   bool parameterMatches;
   byte state = STATE_START;
 
-  if (requestGET) byte state = STATE_DEFAULT; 
+  if (requestGET) byte state = STATE_DEFAULT;
   parameterStartPos=0;
   *value = '\0';
   parameterMatches=true;
   if (strlen(data)==0) return 0;
   do {
     switch (data[i]) {
-      case '?': if (requestGET) { state=STATE_START;parameterStartPos = i+1;parameterMatches=true;} break;      
+      case '?': if (requestGET) { state=STATE_START;parameterStartPos = i+1;parameterMatches=true;} break;
       case '=': {
         if ((state==STATE_START) || (state==STATE_AND)) {
           if ((parameterMatches) && (i-parameterStartPos) == strlen(parameter)) {
@@ -940,7 +957,7 @@ byte parse(const char *data,const char *parameter,char *value,int maxlength, boo
 }
 
 /*
- * Translates a ULR-coded string to ASCII code  
+ * Translates a ULR-coded string to ASCII code
  */
 void urlDecode(char *data) {
   enum STATES { STATE_DEFAULT, STATE_PERCENT, STATE_DIGIT1 };
@@ -983,7 +1000,7 @@ void urlDecode(char *data) {
                 for (int j=i-2;j<strlen(data)-2;j++) {
                   data[j]=data[j+3];
                 }
-                i-=3;                
+                i-=3;
               } else {
                 data[i-2] = (char) asciiChar;
                 for (int j=i-1;j<strlen(data)-1;j++) {

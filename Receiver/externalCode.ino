@@ -87,6 +87,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y) {
       if (!bmpFS)
       {
         SERIALDEBUG.print("File not found");
+        xSemaphoreGive( g_semaphoreLittleFS );
         return;
       }
     

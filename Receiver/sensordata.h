@@ -1,6 +1,6 @@
 /* ----------- Sensor data definitions ----------
    License: 2-Clause BSD License
-   Copyright (c) 2023 codingABI
+   Copyright (c) 2023-2025 codingABI
 */
 
 // Invalid sensor values (to distinguish valid values)
