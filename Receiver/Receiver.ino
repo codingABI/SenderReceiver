@@ -77,7 +77,7 @@
 
 #include "secrets.h"
 
-#define DEBUG false  // true for Serial.print
+#define DEBUG false // true for Serial.print
 #define SERIALDEBUG if (DEBUG) Serial
 
 // Blynk defines (must be defined before #include <BlynkSimpleEsp32.h>)
